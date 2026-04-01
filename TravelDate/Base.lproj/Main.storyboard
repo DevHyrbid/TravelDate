@@ -35,10 +35,10 @@
             </objects>
             <point key="canvasLocation" x="46.564885496183201" y="-2.1126760563380285"/>
         </scene>
-        <!--Sign Up Vc-->
+        <!--Sign Up View Controller-->
         <scene sceneID="MUD-uH-Y6K">
             <objects>
-                <viewController storyboardIdentifier="SignUpVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="VAV-Ie-lCl" customClass="SignUpVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SignUpViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="VAV-Ie-lCl" customClass="SignUpViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Km5-Dz-voM">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
