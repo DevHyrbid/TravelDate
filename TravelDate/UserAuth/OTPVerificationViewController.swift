@@ -62,7 +62,7 @@ class OTPVerificationViewController: UIViewController {
                 if index < inputFields.count - 1 {
                     inputFields[index + 1].becomeFirstResponder()
                 }
-            } else if text.count == 0, index > 0 {
+            } else if textField.text?.count == 0, index > 0 {
                 inputFields[index - 1].becomeFirstResponder()
             }
         }
