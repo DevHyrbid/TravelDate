@@ -1,111 +1,134 @@
 import UIKit
 
-class OTPVerificationViewController: UIViewController {
+class OTPVc: UIViewController, UITextFieldDelegate {
 
-    var inputFields: [UITextField] = []
-    var resendButton: UIButton!
-    var timerLabel: UILabel!
-    var timer: Timer?
-    var secondsRemaining: Int = 30
-
+    private var otpFields: [UITextField] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        startResendTimer()
     }
 
     private func setupUI() {
-        view.backgroundColor = .white
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.distribution = .equalSpacing
-        stackView.spacing = 10
-
-        for _ in 0..<4 {
-            let textField = UITextField()
-            textField.borderStyle = .roundedRect
-            textField.textAlignment = .center
-            textField.keyboardType = .numberPad
-            textField.delegate = self
-            textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-            inputFields.append(textField)
-            stackView.addArrangedSubview(textField)
+        view.backgroundColor = .black
+        
+        // LOGO
+        let logo = UILabel()
+        logo.text = "Trips"
+        logo.textColor = .orange
+        logo.font = .systemFont(ofSize: 28, weight: .semibold)
+        logo.textAlignment = .center
+        logo.layer.borderWidth = 1
+        logo.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+        logo.layer.cornerRadius = 12
+        logo.clipsToBounds = true
+        logo.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(logo)
+        
+        // TITLE
+        let title = UILabel()
+        title.text = "Verification"
+        title.textColor = .white
+        title.font = .systemFont(ofSize: 22, weight: .semibold)
+        title.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(title)
+        
+        // SUBTITLE
+        let subtitle = UILabel()
+        subtitle.text = "Enter 4 digit code"
+        subtitle.textColor = .lightGray
+        subtitle.font = .systemFont(ofSize: 14)
+        subtitle.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(subtitle)
+        
+        // OTP STACK
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.distribution = .fillEqually
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stack)
+        
+        // CREATE 4 FIELDS
+        for i in 0..<4 {
+            let tf = UITextField()
+            tf.backgroundColor = UIColor(white: 0.15, alpha: 1)
+            tf.textAlignment = .center
+            tf.font = .systemFont(ofSize: 20, weight: .medium)
+            tf.textColor = .white
+            tf.layer.cornerRadius = 25
+            tf.keyboardType = .numberPad
+            tf.delegate = self
+            tf.tag = i
+            tf.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+            
+            stack.addArrangedSubview(tf)
+            otpFields.append(tf)
         }
-
-        let confirmButton = UIButton(type: .system)
-        confirmButton.setTitle("Confirm", for: .normal)
-        confirmButton.addTarget(self, action: #selector(confirmOTP), for: .touchUpInside)
-
-        resendButton = UIButton(type: .system)
-        resendButton.setTitle("Resend Code", for: .normal)
-        resendButton.addTarget(self, action: #selector(resendCode), for: .touchUpInside)
-
-        timerLabel = UILabel()
-        timerLabel.text = "Resend in \(secondsRemaining) seconds"
-
-        let stackViewContainer = UIStackView(arrangedSubviews: [stackView, confirmButton, timerLabel, resendButton])
-        stackViewContainer.axis = .vertical
-        stackViewContainer.spacing = 20
-        stackViewContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stackViewContainer)
-
+        
+        // CONFIRM BUTTON
+        let btn = UIButton()
+        btn.setTitle("Confirm", for: .normal)
+        btn.backgroundColor = .orange
+        btn.layer.cornerRadius = 25
+        btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+        view.addSubview(btn)
+        
+        // CONSTRAINTS
         NSLayoutConstraint.activate([
-            stackViewContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            stackViewContainer.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            logo.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
+            logo.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            logo.widthAnchor.constraint(equalToConstant: 100),
+            logo.heightAnchor.constraint(equalToConstant: 100),
+            
+            title.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 30),
+            title.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            subtitle.topAnchor.constraint(equalTo: title.bottomAnchor, constant: 8),
+            subtitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            stack.topAnchor.constraint(equalTo: subtitle.bottomAnchor, constant: 30),
+            stack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stack.heightAnchor.constraint(equalToConstant: 50),
+            stack.widthAnchor.constraint(equalToConstant: 240),
+            
+            btn.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 40),
+            btn.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            btn.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            btn.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 
-    @objc private func textFieldDidChange(_ textField: UITextField) {
-        if let index = inputFields.firstIndex(of: textField) {
-            if let text = textField.text, text.count > 1 {
-                textField.text = String(text.last!)
-                if index < inputFields.count - 1 {
-                    inputFields[index + 1].becomeFirstResponder()
-                }
-            } else if textField.text?.count == 0, index > 0 {
-                inputFields[index - 1].becomeFirstResponder()
+    // MARK: - OTP Handling
+    
+    @objc private func textChanged(_ textField: UITextField) {
+        if textField.text?.count == 1 {
+            let next = textField.tag + 1
+            if next < otpFields.count {
+                otpFields[next].becomeFirstResponder()
+            } else {
+                textField.resignFirstResponder()
             }
         }
     }
-
-    @objc private func confirmOTP() {
-        let otp = inputFields.map { $0.text ?? "" }.joined()
-        if otp.count < 4 {
-            showError("Please enter a valid 4-digit OTP.")
-            return
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // backspace support
+        if string.isEmpty {
+            textField.text = ""
+            let prev = textField.tag - 1
+            if prev >= 0 {
+                otpFields[prev].becomeFirstResponder()
+            }
+            return false
         }
-        // Handle OTP verification logic here
-        print("OTP Entered: \(otp)")
+        return textField.text?.isEmpty ?? true
     }
-
-    private func showError(_ message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
-
-    @objc private func resendCode() {
-        // Implement resend code logic
-        secondsRemaining = 30
-        startResendTimer()
-        print("Resend code clicked")
-    }
-
-    private func startResendTimer() {
-        timerLabel.isHidden = false
-        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-    }
-
-    @objc private func updateTimer() {
-        if secondsRemaining > 0 {
-            timerLabel.text = "Resend in \(secondsRemaining) seconds"
-            secondsRemaining -= 1
-        } else {
-            timer?.invalidate()
-            timerLabel.isHidden = true
-            resendButton.isEnabled = true
-        }
+    
+    @objc private func confirmTapped() {
+        let otp = otpFields.compactMap { $0.text }.joined()
+        print("OTP:", otp)
     }
 }
-
-extension OTPVerificationViewController: UITextFieldDelegate {}

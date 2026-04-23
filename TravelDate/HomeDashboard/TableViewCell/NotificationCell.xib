@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="109" id="KGk-i7-Jjw" customClass="NotificationCell" customModule="TravelDate" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="361" height="109"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="361" height="109"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLady" translatesAutoresizingMaskIntoConstraints="NO" id="XKb-2I-xUX">
+                        <rect key="frame" x="20" y="22" width="65" height="65"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="65" id="FfA-H9-6In"/>
+                            <constraint firstAttribute="height" constant="65" id="bMt-ju-dPR"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New Match !" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lhc-dp-wfo">
+                        <rect key="frame" x="100" y="32" width="101.66666666666669" height="20"/>
+                        <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New Match !" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="j2a-zW-FK9">
+                        <rect key="frame" x="100" y="57" width="85" height="18"/>
+                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="2m ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H03-3f-8ZU">
+                        <rect key="frame" x="283.66666666666669" y="48" width="37.333333333333314" height="13"/>
+                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AT6-9t-X8m">
+                        <rect key="frame" x="331" y="49.666666666666664" width="10" height="10"/>
+                        <color key="backgroundColor" name="ThemeOrange"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="10" id="4RX-Um-KWN"/>
+                            <constraint firstAttribute="height" constant="10" id="y3W-ha-MXV"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" name="ThemeTxt"/>
+                <constraints>
+                    <constraint firstItem="AT6-9t-X8m" firstAttribute="centerY" secondItem="XKb-2I-xUX" secondAttribute="centerY" id="1aU-Kv-Orh"/>
+                    <constraint firstItem="H03-3f-8ZU" firstAttribute="centerY" secondItem="AT6-9t-X8m" secondAttribute="centerY" id="8E8-Ak-Zjq"/>
+                    <constraint firstItem="XKb-2I-xUX" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="20" id="9bK-wE-hR1"/>
+                    <constraint firstItem="XKb-2I-xUX" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="CWI-eX-lQg"/>
+                    <constraint firstItem="j2a-zW-FK9" firstAttribute="leading" secondItem="Lhc-dp-wfo" secondAttribute="leading" id="FNs-Km-63p"/>
+                    <constraint firstItem="j2a-zW-FK9" firstAttribute="top" secondItem="Lhc-dp-wfo" secondAttribute="bottom" constant="5" id="Y7l-SF-Nh4"/>
+                    <constraint firstItem="Lhc-dp-wfo" firstAttribute="top" secondItem="XKb-2I-xUX" secondAttribute="top" constant="10" id="c21-Bf-QNc"/>
+                    <constraint firstAttribute="trailing" secondItem="AT6-9t-X8m" secondAttribute="trailing" constant="20" id="iob-Ky-GkE"/>
+                    <constraint firstItem="Lhc-dp-wfo" firstAttribute="leading" secondItem="XKb-2I-xUX" secondAttribute="trailing" constant="15" id="ruA-KB-SiK"/>
+                    <constraint firstItem="AT6-9t-X8m" firstAttribute="leading" secondItem="H03-3f-8ZU" secondAttribute="trailing" constant="10" id="vkm-aJ-mrp"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="imgVw" destination="XKb-2I-xUX" id="sX8-ev-2rn"/>
+                <outlet property="lblDesc" destination="j2a-zW-FK9" id="UYV-bL-cQE"/>
+                <outlet property="lblOnline" destination="AT6-9t-X8m" id="D3g-qo-Hlv"/>
+                <outlet property="lblTime" destination="H03-3f-8ZU" id="aAk-KA-mhA"/>
+                <outlet property="lblTitle" destination="Lhc-dp-wfo" id="YtB-Xb-VL1"/>
+            </connections>
+            <point key="canvasLocation" x="35.877862595419849" y="26.408450704225352"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="imgLady" width="186.66667175292969" height="186.66667175292969"/>
+        <namedColor name="ThemeOrange">
+            <color red="0.96899998188018799" green="0.40000000596046448" blue="0.024000000208616257" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="ThemeTxt">
+            <color red="0.082000002264976501" green="0.090000003576278687" blue="0.093999996781349182" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>
