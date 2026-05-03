@@ -14,26 +14,31 @@ class LoginViewController: BaseClassVc {
 
     private let titleBox: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 16
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+        view.backgroundColor = .clear
         return view
     }()
 
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Trips"
-        label.textColor = UIColor(named: "ThemeOrange") ?? .orange
-        label.setFont(.bold, size: 22)
-        label.textAlignment = .center
-        return label
+//    private let titleLabel: UILabel = {
+//        let label = UILabel()
+//        label.text = "Trips"
+//        label.textColor = UIColor(named: "ThemeOrange") ?? .orange
+//        label.setFont(.bold, size: 22)
+//        label.textAlignment = .center
+//        return label
+//    }()
+    
+    
+    private let tripsImg: UIImageView = {
+        let img = UIImageView()
+        img.image = UIImage(named: "trips")
+        return img
     }()
 
     private let loginLabel: UILabel = {
         let label = UILabel()
         label.text = "Log In"
         label.textColor = .white
-        label.setFont(.semiBold, size: 22.0)
+        label.setFont(.bold, size: 20.0)
         return label
     }()
     
@@ -54,7 +59,7 @@ class LoginViewController: BaseClassVc {
         let btn = UIButton()
         btn.setTitle("Forgot Password?", for: .normal)
         btn.setTitleColor(UIColor(named: "ThemeOrange") ?? .orange, for: .normal)
-        btn.titleLabel?.setFont(.semiBold, size: 13.0)
+        btn.titleLabel?.setFont(.semiBold, size: 12.0)
         btn.addTarget(self, action: #selector(openForgot), for: .touchUpInside)
         return btn
     }()
@@ -146,7 +151,14 @@ class LoginViewController: BaseClassVc {
             self.request.social_id = socialId
             
             self.request.socialLogin { loginUser, errMsg, errCode in
-                
+                if errCode == 200 {
+                    DispatchQueue.main.async {
+                        self.pushVC(TripsTabBarController.self, from: .Home)
+                        
+                    }
+                }  else {
+                    self.showAlert(errMsg)
+                }
             }
         }
     }
@@ -200,7 +212,9 @@ class LoginViewController: BaseClassVc {
                     
                 }
             }  else {
-                self.showAlert(errMsg)
+                DispatchQueue.main.async {
+                    self.showAlert(errMsg)
+                }
             }
             
         }
@@ -216,7 +230,7 @@ class LoginViewController: BaseClassVc {
         view.addSubview(titleBox)
         view.addSubview(emailTitle)
         view.addSubview(passwordTitle)
-        titleBox.addSubview(titleLabel)
+        titleBox.addSubview(tripsImg)
         view.addSubview(loginLabel)
         view.addSubview(emailField)
         view.addSubview(passwordField)
@@ -233,7 +247,7 @@ class LoginViewController: BaseClassVc {
 
         // MARK: - Disable autoresizing masks
         [
-            titleBox, titleLabel, loginLabel,
+            titleBox, tripsImg, loginLabel,
             emailTitle, emailField,
             passwordTitle, passwordField,
             forgotButton, loginButton,
@@ -249,8 +263,8 @@ class LoginViewController: BaseClassVc {
             titleBox.widthAnchor.constraint(equalToConstant: 100),
             titleBox.heightAnchor.constraint(equalToConstant: 100),
 
-            titleLabel.centerXAnchor.constraint(equalTo: titleBox.centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: titleBox.centerYAnchor),
+            tripsImg.centerXAnchor.constraint(equalTo: titleBox.centerXAnchor),
+            tripsImg.centerYAnchor.constraint(equalTo: titleBox.centerYAnchor),
 
             // Screen Title
             loginLabel.topAnchor.constraint(equalTo: titleBox.bottomAnchor, constant: 24),

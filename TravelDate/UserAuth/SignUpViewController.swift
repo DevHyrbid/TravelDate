@@ -41,7 +41,7 @@ class CustomTextField: UIView {
             attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.6)]
         )
         textField.textColor = .white
-        textField.setFont(.regular, size: 16)
+        textField.setFont(.regular, size: 12)
         textField.isSecureTextEntry = isSecure
 
         addSubview(iconView)
@@ -175,9 +175,12 @@ class SignUpViewController: BaseClassVc {
     private let emailField = CustomTextField(placeholder: "Enter email", icon: "envelope")
     private let passwordField = CustomTextField(placeholder: "Enter your password", icon: "lock", isSecure: true)
 
+    private let locationField = CustomTextField(placeholder: "Enter your password", icon: "lock", isSecure: true)
+
     private lazy var nameTitle = makeFieldTitle("Full Name")
     private lazy var emailTitle = makeFieldTitle("Email")
     private lazy var passwordTitle = makeFieldTitle("Password")
+    private lazy var locationTitle = makeFieldTitle("Location")
 
     private let loginButton = CustomButton(title: "Sign Up", filled: true)
     private let googleButton = CustomButton(title: "Continue with Google", filled: false, hasIcon: true)
@@ -225,29 +228,17 @@ class SignUpViewController: BaseClassVc {
         request.deviceType = Constants.device_Config.deviceType
         request.signUp { loginUser, errMsg, errCode in
             if errCode == 200 {
+                LocalNotificationManager.shared.scheduleNotification(
+                    id: "welcome_user",
+                    title: "Hey \(self.nameField.text ?? "") Welcome to TravelDate ✈️",
+                    body: "You're all set! Let's find your perfect travel group.",
+                    timeInterval: 4 // small delay to avoid instant spam
+                )
                 self.pushVC(TripsTabBarController.self, from: .Home)
             } else {
                 self.showAlert(errMsg)
             }
         }
-//
-//        APIManager.shared.request(
-//            url: "http://85.31.234.205:9800/api/v1/users/create",
-//            body: params
-//        ) { result in
-//            
-//            switch result {
-//            case .success(let response):
-//                print("Signup Success:", response)
-//                DispatchQueue.main.async {
-//                    self.handleAuthResponse(response)
-//                    self.pushVC(TripsTabBarController.self, from: .Home)
-//                }
-//
-//            case .failure(let error):
-//                print("Signup Error:", error.localizedDescription)
-//            }
-//        }
     }
     
     @objc private func handleGoogleTap() {
@@ -276,7 +267,14 @@ class SignUpViewController: BaseClassVc {
             self.request.social_id = socialId
             
             self.request.socialLogin { loginUser, errMsg, errCode in
-                
+                if errCode == 200 {
+                    DispatchQueue.main.async {
+                        self.pushVC(TripsTabBarController.self, from: .Home)
+                        
+                    }
+                }  else {
+                    self.showAlert(errMsg)
+                }
             }
             
 
@@ -294,6 +292,7 @@ class SignUpViewController: BaseClassVc {
             nameTitle, nameField,
             emailTitle, emailField,
             passwordTitle, passwordField,
+            locationTitle, locationField,
             loginButton, googleButton,
             signupLabel
         ].forEach {
@@ -345,7 +344,15 @@ class SignUpViewController: BaseClassVc {
             passwordField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             passwordField.heightAnchor.constraint(equalToConstant: 50),
 
-            loginButton.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 24),
+            locationTitle.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 16),
+            locationTitle.leadingAnchor.constraint(equalTo: passwordField.leadingAnchor),
+
+            locationField.topAnchor.constraint(equalTo: locationTitle.bottomAnchor, constant: 6), // ✅ fix here
+            locationField.leadingAnchor.constraint(equalTo: passwordField.leadingAnchor),
+            locationField.trailingAnchor.constraint(equalTo: passwordField.trailingAnchor),
+            locationField.heightAnchor.constraint(equalToConstant: 50),
+            
+            loginButton.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 24),
             loginButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             loginButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             loginButton.heightAnchor.constraint(equalToConstant: 50),

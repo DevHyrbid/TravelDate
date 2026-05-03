@@ -16,7 +16,7 @@ struct Theme {
 
 import UIKit
 
-class WelcomeViewController: UIViewController {
+class WelcomeViewController: BaseClassVc {
 
     // MARK: - UI
 
@@ -115,6 +115,7 @@ class WelcomeViewController: UIViewController {
         b.layer.cornerRadius = 26
         b.titleLabel?.setFont(.semiBold, size: 16)
         //font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        b.addTarget(self, action: #selector(btnJoin), for: .touchUpInside)
         return b
     }()
 
@@ -125,13 +126,63 @@ class WelcomeViewController: UIViewController {
         view.backgroundColor = .black
         setupUI()
         layout()
+        setupBackButton()
+    }
+    
+    @objc func btnJoin(_ sender:UIButton) {
+        if linkField.text == "" {
+            self.showAlert(message: "Please add the link")
+        } else {
+            //d26z7uv5
+            print("JOIN GROUP API ")
+            request.code = "d26z7uv5"
+            request.joinGroupAPi { errMsg, errCode in
+                if errCode == 200 {
+                    self.showAlertAction("Group Joined Successfully") {
+                        //
+                        self.pushVC(TripsTabBarController.self, from: .Home) { vc in
+                            vc.selectedIndex = 1
+                        }
+                    }
+                } else {
+                    self.showAlert(errMsg)
+                }
+            }
+        }
     }
 
     
+    private func setupBackButton() {
+        let backButton = UIButton(type: .system)
+        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        backButton.tintColor = .white
+        backButton.backgroundColor = UIColor.white.withAlphaComponent(0.1)
+        backButton.layer.cornerRadius = 18
+
+        backButton.addTarget(self, action: #selector(handleBack), for: .touchUpInside)
+
+        view.addSubview(backButton)
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            backButton.widthAnchor.constraint(equalToConstant: 36),
+            backButton.heightAnchor.constraint(equalToConstant: 36)
+        ])
+    }
+    
+    @objc private func handleBack() {
+        if let nav = navigationController {
+            nav.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
+    
     @objc func openCreateGroup() {
-        let vc = UIHostingController(rootView: InviteFriendsView())
-        navigationController?.pushViewController(vc, animated: true)
-        //navigationController?.pushViewController(CreateGroupViewController(), animated: true)
+        self.pushVC(CreateGroupViewController.self, from: .Home)
+       
     }
     private func setupUI() {
         view.addSubview(logoView)

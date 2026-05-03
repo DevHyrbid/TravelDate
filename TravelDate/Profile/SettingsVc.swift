@@ -22,6 +22,10 @@ extension SettingsVc {
         super.backTapped()
     }
     
+    @IBAction func btnChangePassword(_ sender:UIButton) {
+        self.pushVC(ChangePasswordVC.self, from: .Settings)
+    }
+    
     @IBAction func btnPrivacy(_ sender:UIButton) {
         self.pushVC(PrivacySecurityVc.self, from: .Settings)
     }
@@ -34,12 +38,14 @@ extension SettingsVc {
             break
         case 101:
             self.blurVw.isHidden = true
+            User.resetCurrentUser()
             self.pushVC(LoginViewController.self, from: .Main)
             break
         case 102:
             self.blurVw.isHidden = true
 //            SessionManager.shared.clearSession()
-//            self.pushVC(LoginViewController.self, from: .Home)
+            
+            self.pushVC(LoginViewController.self, from: .Home)
             break
         default:
             break 

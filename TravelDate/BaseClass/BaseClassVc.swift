@@ -5,9 +5,26 @@
 //  Created by Dev CodingZone on 01/04/26.
 //
 
+// MARK: - Colors
+// MARK: - Colors
+extension UIColor {
+    static let appBg        = UIColor(hex: "#0E0E0E")
+    static let appCard      = UIColor(hex: "#1A1A1A")
+    static let appOrange    = UIColor(hex: "#FF6B00")
+    static let appGrayText  = UIColor(hex: "#9E9E9E")
+    static let appPlaceholder = UIColor(hex: "#6F6F6F")
+    static let appBorder    = UIColor(hex: "#2A2A2A")
+ 
+    
+    
+}
+
+
 
 import Foundation
 import UIKit
+import Kingfisher
+
 struct LabeledTextField {
     let container: UIView
     let textField: UITextField
@@ -17,6 +34,7 @@ typealias CollectionDelegate = UICollectionViewDelegate & UICollectionViewDataSo
 
 class BaseClassVc: UIViewController {
     
+     lazy var imagePicker = ImagePickerManager(presentingVC: self)
     var request = User.new()
     private var lastOffset: CGFloat = 0
     private var isScrollingDown = false
@@ -24,8 +42,64 @@ class BaseClassVc: UIViewController {
         super.viewDidLoad()
         
        
+        
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        view.applyGlowGradient()
+    }
+    
+    
+    func formatDateRange(start: String, end: String) -> String {
+        
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        guard let startDate = isoFormatter.date(from: start),
+              let endDate = isoFormatter.date(from: end) else {
+            return ""
+        }
+        
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "d MMMM"
+        
+        let endFormatter = DateFormatter()
+        endFormatter.dateFormat = "d MMMM yyyy"
+        
+        let startStr = dayFormatter.string(from: startDate)
+        let endStr = endFormatter.string(from: endDate)
+        
+        return "\(startStr) - \(endStr)"
+    }
+    
+
+    func loadImage(_ img:UIImageView, url: URL) {
+        img.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "User"), // optional
+            options: [
+                .transition(.fade(0.3)),
+                .cacheOriginalImage
+            ]
+        )
+    }
+    
+    
+    func getGreeting() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        
+        switch hour {
+        case 5..<12:
+            return "Good Morning"
+        case 12..<17:
+            return "Good Afternoon"
+        case 17..<21:
+            return "Good Evening"
+        default:
+            return "Good Night"
+        }
+    }
   
 
     func handleScroll(_ scrollView: UIScrollView) {
@@ -96,9 +170,11 @@ class BaseClassVc: UIViewController {
     
     
     func showAlert(_ message: String) {
-        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+       
+            let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        
     }
     
     func showAlertAction(_ message: String, onOk: (() -> Void)? = nil) {
@@ -156,16 +232,16 @@ class BaseClassVc: UIViewController {
     
     func uploadImg(_ data: Data, completion: @escaping (String?) -> Void) {
 //        
-//        request.uploadImage(data) { errMsg, errCode in
-//            DispatchQueue.main.async {
-//                if errCode == Constants.APIResponseCodes.statusCodeSuccessfull {
-//                    completion(errMsg)   // image name / URL
-//                } else {
-//                    print(errMsg)
-//                    completion(nil)
-//                }
-//            }
-//        }
+        request.uploadImage(data) { errMsg, errCode in
+            DispatchQueue.main.async {
+                if errCode == Constants.APIResponseCodes.statusCodeSuccessfull {
+                    completion(errMsg)   // image name / URL
+                } else {
+                    print(errMsg)
+                    completion(nil)
+                }
+            }
+        }
     }
     
     
@@ -530,3 +606,38 @@ class Toast {
 }
 
 
+import UIKit
+
+extension UIView {
+    
+    func applyGlowGradient() {
+        // Remove old gradients
+        layer.sublayers?.removeAll(where: { $0.name == "glowGradient" })
+        
+        // Base color
+        backgroundColor = UIColor(hex: "#111211")
+        
+        let gradient = CAGradientLayer()
+        gradient.name = "glowGradient"
+        gradient.frame = bounds
+        
+        gradient.colors = [
+            UIColor(hex: "#F76606").withAlphaComponent(0.6).cgColor,
+            UIColor(hex: "#FE294D").withAlphaComponent(0.5).cgColor,
+            UIColor.clear.cgColor
+        ]
+        
+        // This creates "glow from bottom"
+        gradient.startPoint = CGPoint(x: 0.5, y: 1.0)
+        gradient.endPoint = CGPoint(x: 0.5, y: 0.0)
+        
+        gradient.locations = [0.0, 0.4, 1.0]
+        
+        // Add blur effect feel
+        gradient.type = .radial
+        gradient.startPoint = CGPoint(x: 0.5, y: 1.2) // slightly below screen
+        gradient.endPoint = CGPoint(x: 0.5, y: 0.0)
+        
+        layer.insertSublayer(gradient, at: 0)
+    }
+}

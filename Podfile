@@ -14,4 +14,6 @@ pod 'GoogleSignIn'
  pod 'Kingfisher', '~> 7.11'
  pod 'Firebase'
  pod 'FirebaseMessaging'
+ pod 'CountryKit'
+ pod 'Socket.IO-Client-Swift', '~> 16.0'
 end

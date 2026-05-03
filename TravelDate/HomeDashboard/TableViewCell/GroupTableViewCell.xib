@@ -236,7 +236,9 @@
             <connections>
                 <outlet property="btnEdit" destination="S3X-Ng-F5z" id="bvz-Mj-tl8"/>
                 <outlet property="imgUser" destination="3Vx-tv-GdT" id="gUM-KT-sPs"/>
+                <outlet property="lblDescription" destination="I0s-MO-HCc" id="Q7Q-yj-uZf"/>
                 <outlet property="lblLocation" destination="GZk-aE-djX" id="CxZ-n5-OdA"/>
+                <outlet property="lblName" destination="hzP-vA-PNR" id="HVG-d1-4YB"/>
             </connections>
             <point key="canvasLocation" x="-22.137404580152669" y="116.90140845070422"/>
         </tableViewCell>

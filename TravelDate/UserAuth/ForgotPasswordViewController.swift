@@ -34,7 +34,7 @@ class ForgotPasswordViewController: BaseClassVc {
     private let logoLabel: UILabel = {
         let l = UILabel()
         l.text = "Trips"
-        l.textColor = .orange
+        l.textColor = .themeOrange
         l.font = .montserrat(24, weight: .bold)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -78,7 +78,7 @@ class ForgotPasswordViewController: BaseClassVc {
         b.setTitle("Send", for: .normal)
         b.setTitleColor(.white, for: .normal)
         b.titleLabel?.font = .montserrat(16, weight: .semiBold)
-        b.backgroundColor = .orange
+        b.backgroundColor = .themeOrange
         b.layer.cornerRadius = 27
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
@@ -94,7 +94,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let l = UILabel()
         let fullText = "Don't have an account? Sign Up"
         let attr = NSMutableAttributedString(string: fullText)
-        attr.addAttribute(.foregroundColor, value: UIColor.orange,
+        attr.addAttribute(.foregroundColor, value: UIColor.themeOrange,
                           range: (fullText as NSString).range(of: "Sign Up"))
         l.attributedText = attr
         l.textColor = .white
@@ -239,7 +239,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
     private let logoLabel: UILabel = {
         let l = UILabel()
         l.text = "Trips"
-        l.textColor = .orange
+        l.textColor = .themeOrange
         l.font = .montserrat(24, weight: .bold)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -287,7 +287,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         b.setTitle("Confirm", for: .normal)
         b.setTitleColor(.white, for: .normal)
         b.titleLabel?.font = .montserrat(16, weight: .semiBold)
-        b.backgroundColor = .orange
+        b.backgroundColor = .themeOrange
         b.layer.cornerRadius = 27
         b.translatesAutoresizingMaskIntoConstraints = false
         return b
@@ -297,7 +297,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let l = UILabel()
         let fullText = "Resend Code?"
         let attr = NSMutableAttributedString(string: fullText)
-        attr.addAttribute(.foregroundColor, value: UIColor.orange,
+        attr.addAttribute(.foregroundColor, value: UIColor.themeOrange,
                           range: (fullText as NSString).range(of: "Resend Code?"))
         l.attributedText = attr
         l.textColor = .white
@@ -312,7 +312,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let l = UILabel()
         let fullText = "Already have an account? Log In"
         let attr = NSMutableAttributedString(string: fullText)
-        attr.addAttribute(.foregroundColor, value: UIColor.orange,
+        attr.addAttribute(.foregroundColor, value: UIColor.themeOrange,
                           range: (fullText as NSString).range(of: "Log In"))
         l.attributedText = attr
         l.textColor = .white

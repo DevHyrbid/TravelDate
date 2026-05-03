@@ -12,4 +12,9 @@ class PrivacySecurityVc: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
     }
+    
+    @IBAction func btnBack(_ sender:UIButton){
+        super.backTapped()
+    }
+    
 }

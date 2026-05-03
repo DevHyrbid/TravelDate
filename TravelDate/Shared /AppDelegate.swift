@@ -20,7 +20,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        IQKeyboardManager.shared.enableAutoToolbar = true
+        IQKeyboardManager.shared.isEnabled = true
+            
+              // Show toolbar above keyboard
+              // Optional configs (recommended)
+        IQKeyboardManager.shared.resignOnTouchOutside = true
+        IQKeyboardManager.shared.keyboardDistance = 20
 
         
         FirebaseApp.configure()

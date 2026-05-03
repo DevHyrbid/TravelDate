@@ -9,6 +9,8 @@ import UIKit
 
 class GroupTableViewCell: UITableViewCell {
 
+    @IBOutlet weak var lblName: UILabel!
+    @IBOutlet weak var lblDescription: UILabel!
     @IBOutlet weak var btnEdit:UIButton!
     @IBOutlet weak var lblLocation:UILabel!
     @IBOutlet weak var imgUser:UIImageView!

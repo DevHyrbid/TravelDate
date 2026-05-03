@@ -288,6 +288,8 @@ class NetworkManger {
         if !token.isEmpty {
             headers["Authorization"] = "Bearer \(token)"
         }
+        
+        print(token,"HEADWE_______---_____")
         return headers
     }
 }
@@ -420,9 +422,11 @@ final class AppLoader {
     /// Hide Loader
     static func hide() {
         guard isShowing else { return }
-
-        overlayView?.removeFromSuperview()
-        overlayView = nil
-        isShowing = false
+        DispatchQueue.main.async {
+            overlayView?.removeFromSuperview()
+            overlayView = nil
+            isShowing = false
+        }
+        
     }
 }

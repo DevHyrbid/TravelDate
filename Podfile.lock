@@ -10,6 +10,7 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - CountryKit (2.0.1)
   - Firebase (12.11.0):
     - Firebase/Core (= 12.11.0)
   - Firebase/Core (12.11.0):
@@ -167,21 +168,27 @@ PODS:
   - nanopb/encode (3.30910.0)
   - ObjectMapper (4.4.2)
   - PromisesObjC (2.4.0)
+  - Socket.IO-Client-Swift (16.1.1):
+    - Starscream (~> 4.0.8)
+  - Starscream (4.0.8)
 
 DEPENDENCIES:
   - Alamofire
+  - CountryKit
   - Firebase
   - FirebaseMessaging
   - GoogleSignIn
   - IQKeyboardManagerSwift
   - Kingfisher (~> 7.11)
   - ObjectMapper (~> 4.2)
+  - Socket.IO-Client-Swift (~> 16.0)
 
 SPEC REPOS:
   trunk:
     - Alamofire
     - AppAuth
     - AppCheckCore
+    - CountryKit
     - Firebase
     - FirebaseAnalytics
     - FirebaseCore
@@ -207,11 +214,14 @@ SPEC REPOS:
     - nanopb
     - ObjectMapper
     - PromisesObjC
+    - Socket.IO-Client-Swift
+    - Starscream
 
 SPEC CHECKSUMS:
   Alamofire: eec6cd8f73b242b59e34153a606a909eb9864b14
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  CountryKit: 29eeed8159ddfe30056cf5fbe68ad8ab111e8139
   Firebase: 3c3a624c4eb42b091c32590a87678cfee193c9c5
   FirebaseAnalytics: 2513f181a22ba7d5ba547ce0a65f82352cc8a0c9
   FirebaseCore: 1b39aa6e67b4b4d5771045abf9c9a57a585ff1e7
@@ -237,7 +247,9 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   ObjectMapper: e6e4d91ff7f2861df7aecc536c92d8363f4c9677
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  Socket.IO-Client-Swift: 3614bea82ba005df1c2ff01154f4004993e05ad7
+  Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
 
-PODFILE CHECKSUM: 09fcb6120dda23392d27fd6844b2b1b82faffe22
+PODFILE CHECKSUM: 9cd46dfe230ae6a5ca7d1f595b06c28cca3113b2
 
 COCOAPODS: 1.16.2

@@ -89,9 +89,7 @@ class OnboardingViewController: BaseClassVc {
             at: .centeredHorizontally, animated: true)
         updateUI(for: currentIndex, animated: true)
         self.hideNavigate(true)
-        if User.currentUserExists {
-            self.pushVC(TripsTabBarController.self, from: .Home)
-        }
+        
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -102,6 +100,15 @@ class OnboardingViewController: BaseClassVc {
         
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if collectionView.collectionViewLayout is UICollectionViewFlowLayout {
+            let layout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+            layout.itemSize = collectionView.bounds.size
+        }
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.setNavigationBarHidden(false, animated: animated)
@@ -229,17 +236,31 @@ class OnboardingViewController: BaseClassVc {
     // MARK: - Actions
 
     @objc private func nextTapped() {
-        if currentIndex < items.count - 1 {
-            currentIndex += 1
-            collectionView.scrollToItem(
-                at: IndexPath(item: currentIndex, section: 0),
-                at: .centeredHorizontally, animated: true)
+        
+        let pageWidth = collectionView.bounds.width
+        guard pageWidth > 0 else { return } // safety
+        
+        let currentPage = Int(round(collectionView.contentOffset.x / pageWidth))
+        let nextPage = currentPage + 1
+
+        if nextPage < items.count {
+            
+            let offset = CGPoint(
+                x: CGFloat(nextPage) * pageWidth,
+                y: 0
+            )
+            
+            collectionView.setContentOffset(offset, animated: true)
+            
+            currentIndex = nextPage
             updateUI(for: currentIndex, animated: true)
+            
         } else {
             goToLogin()
         }
     }
-
+    
+   
     @objc private func skipTapped() { goToLogin() }
 
     private func goToLogin() {
@@ -293,8 +314,18 @@ extension OnboardingViewController: UICollectionViewDelegate,
                         sizeForItemAt indexPath: IndexPath) -> CGSize { cv.frame.size }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        let index = Int(scrollView.contentOffset.x / scrollView.frame.width)
-        guard index != currentIndex else { return }
+        updateCurrentIndex()
+    }
+
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        updateCurrentIndex()
+    }
+
+    private func updateCurrentIndex() {
+        let pageWidth = collectionView.bounds.width
+        guard pageWidth > 0 else { return }
+        
+        let index = Int(round(collectionView.contentOffset.x / pageWidth))
         currentIndex = index
         updateUI(for: index, animated: true)
     }

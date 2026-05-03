@@ -6,20 +6,28 @@
 //
 import UIKit
 class APiConstant : NSObject {
-//    http://85.31.234.205:9800/api/v1/users/social-login
+    
     static let port  = 9800
-    static let base = "85.31.234.205:9800/"
-    static let baseUrl = "http://85.31.234.205:\(port)/api/v1/"
+    static let base = "http://187.124.251.134:\(port)"
+    static let baseUrl = "http://187.124.251.134:\(port)/api/v1/"
     static let baseUrlImg = baseUrl + "uploads/"
     static let loginAPi = baseUrl + "users/login"
     static let registerAPi = baseUrl + "users/create"
     static let forgotPassword = baseUrl + "auth/forgot-password"
     static let checkEmail = baseUrl + "auth/check-email"
+    static let createGroup = baseUrl + "group"
+    static let myGroup = baseUrl + "group/my-groups?limit=10&page="
+    static let users = baseUrl + "users/all-users?limit=10&page="
     static let socialLogin = baseUrl + "users/social-login"
-    static let changePassword = baseUrl + "auth/change-password"
-    static let updateUser = baseUrl + "auth/updateUser"
-    static let uploadMedia = baseUrl + "users/upload"
+    static let changePassword = baseUrl + "users/change-password"
+    static let updateUser = baseUrl + "users/profile"
+    static let uploadMedia = baseUrl + "upload/images"
     static let logout = baseUrl + "auth/logout"
     static let delete = baseUrl + "auth/delete"
-    static let profile = baseUrl + "auth/profile"
+    static let profile = baseUrl + "users/profile"
+    static let joinGroup = baseUrl + "group/join/"
+    static let inviteUser = baseUrl + "group/invite"
+    
 }
+
+

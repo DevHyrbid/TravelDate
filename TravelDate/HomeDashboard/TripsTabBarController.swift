@@ -62,7 +62,7 @@ class TripsTabBarController: UIViewController {
     }()
 
     private var tabButtons: [UIButton] = []
-    private var selectedIndex: Int = 0
+     var selectedIndex: Int = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -151,9 +151,9 @@ class TripsTabBarController: UIViewController {
         return vc
     }
     
-    private static func instantiateGroupVC() -> MyGroupViewController {
+    private static func instantiateGroupVC() -> NewMatchVc {
         let storyboard = UIStoryboard(name: "Home", bundle: nil) // change if different
-        guard let vc = storyboard.instantiateViewController(withIdentifier: "MyGroupViewController") as? MyGroupViewController else {
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "NewMatchVc") as? NewMatchVc else {
             fatalError("HomeViewController not found in storyboard")
         }
         return vc

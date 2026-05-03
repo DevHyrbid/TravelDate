@@ -2,6 +2,7 @@ ${PODS_ROOT}/Target Support Files/Pods-TravelDate/Pods-TravelDate-frameworks.sh
 ${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework
 ${BUILT_PRODUCTS_DIR}/AppAuth/AppAuth.framework
 ${BUILT_PRODUCTS_DIR}/AppCheckCore/AppCheckCore.framework
+${BUILT_PRODUCTS_DIR}/CountryKit/CountryKit.framework
 ${BUILT_PRODUCTS_DIR}/FirebaseCore/FirebaseCore.framework
 ${BUILT_PRODUCTS_DIR}/FirebaseCoreInternal/FirebaseCoreInternal.framework
 ${BUILT_PRODUCTS_DIR}/FirebaseInstallations/FirebaseInstallations.framework
@@ -22,4 +23,6 @@ ${BUILT_PRODUCTS_DIR}/IQTextView/IQTextView.framework
 ${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework
 ${BUILT_PRODUCTS_DIR}/ObjectMapper/ObjectMapper.framework
 ${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework
+${BUILT_PRODUCTS_DIR}/Socket.IO-Client-Swift/SocketIO.framework
+${BUILT_PRODUCTS_DIR}/Starscream/Starscream.framework
 ${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework
