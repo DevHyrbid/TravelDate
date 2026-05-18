@@ -59,7 +59,7 @@ class User : Mappable {
     var startDate : String?
     var endDate  : String?
     var maxGroupSize  : Int?
-    var travelStyle : String?
+    var travelStyle : [String]?
     var isActive : Bool?
     
     var code  : String?
@@ -114,9 +114,18 @@ class User : Mappable {
     var is_push_notification : Int?
     
     var groupId : String?
+    var action : String?
+
+    var latitude :  String?
+    var longitude : String?
+    var location_string :  String?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        action <- map["action"]
+        latitude <- map["latitude"]
+        longitude <- map["longitude"]
+        location_string <- map["location_string"]
         groupId <- map["groupId"]
         short_bio <- map["short_bio"]
         travelStyles <- map["travelStyles"]
@@ -227,7 +236,7 @@ class User : Mappable {
         _id <- map["_id"]
         id <- map["id"]
         audioURL <- map["audioURL"]
-        dob <- map["dob"]
+        dob <- map["date_of_birth"]
         name <- map["name"]
         password <- map["password"]
         email <- map["email"]
@@ -294,19 +303,44 @@ class User : Mappable {
             callBack(nil,Constants.Validation.password,400)
         }else {
             NetworkManger.sendRequestAF(urlPath: APiConstant.registerAPi, type: .post, parms: self.toJSON()) { responseObject, suces in
+                
                 print(responseObject)
-                if responseObject["code"] as? Int ?? 0 == 201 {
-                    if let data = responseObject["data"] as? [String :Any] {
-                        print(data,"USER")
-                        UserDefaults.standard.setValue(data["access_token"], forKey: "UserToken")
-                        User.curentUser = Mapper<User>().map(JSON: data["user"] as? [String:Any] ?? [:])
-                        callBack(User.curentUser,responseObject["message"] as? String ?? "",200)
-                    } else {
-                        callBack(nil,responseObject["message"] as? String ?? "",404)
-                    }
-                }else {
-                    callBack(nil,responseObject["message"] as? String ?? "",404)
+                
+                // ✅ 1. Correct key
+                let statusCode = responseObject["code"] as? Int ?? 0
+                
+                guard statusCode == 201 else {
+                    callBack(nil, responseObject["message"] as? String ?? "Something went wrong", statusCode)
+                    return
                 }
+                
+                // ✅ 2. Get data
+                guard let data = responseObject["data"] as? [String: Any] else {
+                    callBack(nil, "Invalid data format", 404)
+                    return
+                }
+                
+                // ✅ 3. Correct token key
+                if let token = data["token"] as? String {
+                    UserDefaults.standard.setValue(token, forKey: "UserToken")
+                }
+                
+                // ✅ 4. Get user
+                guard let userDict = data["user"] as? [String: Any] else {
+                    callBack(nil, "User data missing", 404)
+                    return
+                }
+                
+                print(userDict, "USER")
+                
+                // ✅ 5. Map user
+                User.curentUser = Mapper<User>().map(JSON: userDict)
+                //            joinCode = 41hdhnf7;
+
+                callBack(User.curentUser, responseObject["message"] as? String ?? "", 200)
+                
+                
+                
             } faliure: { errMsg, errCode in
                 callBack(nil,errMsg, errCode)
             }
@@ -644,9 +678,19 @@ class User : Mappable {
         
     }
     
-    func getGroups(callBack:(( _ res:GroupsResponse?, _ errMsg:String,_ errCode:Int)->Void)!) {
+    func getGroups(_ type:Int?,callBack:(( _ res:GroupsResponse?, _ errMsg:String,_ errCode:Int)->Void)!) {
+        var url = ""
+        if type == 0 { // CURRENT
+            url  = APiConstant.myGroup + "current"
+        } else  if type == 1 {
+            url  = APiConstant.allGroups
+        } else if type == 2 {
+            url = APiConstant.matchedGroup
+        } else if type == 3 { // Past
+            url  = APiConstant.myGroup + "past"
+        }
         
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.myGroup)" + "1", params: [:], method: "GET") { responseObject, suces in
+        NetworkManger.sendRequestUrlSession(url: url , params: [:], method: "GET") { responseObject, suces in
             print(responseObject)
             
             
@@ -662,6 +706,40 @@ class User : Mappable {
             }
         } faliure: { errMsg, errCode in
             callBack(nil,errMsg, errCode)
+        }
+        
+    }
+    
+    
+    func  deleteGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")", params: [:], method: "DELETE") { responseObject, suces in
+            print(self.toJSON(),"JSON")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    
+    func  swipeAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, suces in
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
         }
         
     }

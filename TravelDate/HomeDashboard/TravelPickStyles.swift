@@ -113,13 +113,13 @@ final class TravelStylePickerView: UIView {
         // Title
         titleLabel.text      = "Travel Style"
         titleLabel.textColor = .white
-        titleLabel.font      = .systemFont(ofSize: 18, weight: .bold)
+        titleLabel.setFont(.bold, size: 18.0)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Subtitle
         subtitleLabel.text          = "How do you like to travel?"
         subtitleLabel.textColor     = .appGrayText
-        subtitleLabel.font          = .systemFont(ofSize: 13)
+        subtitleLabel.setFont(.regular, size: 13.0)
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         sheetView.addSubview(titleLabel)
@@ -142,7 +142,7 @@ final class TravelStylePickerView: UIView {
         // Confirm button
         confirmButton.setTitle("Confirm", for: .normal)
         confirmButton.setTitleColor(.white, for: .normal)
-        confirmButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        confirmButton.titleLabel?.setFont(.semiBold, size: 16.0)
         confirmButton.backgroundColor  = .appOrange
         confirmButton.layer.cornerRadius = 28
         confirmButton.translatesAutoresizingMaskIntoConstraints = false

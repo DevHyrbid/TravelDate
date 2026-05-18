@@ -328,16 +328,7 @@ class LoginViewController: BaseClassVc {
 
     // MARK: - Gradient
 
-    private func addGradient() {
-        let gradient = CAGradientLayer()
-        gradient.colors = [
-            UIColor.black.cgColor,
-            UIColor(red: 0.2, green: 0.1, blue: 0.1, alpha: 1).cgColor
-        ]
-        gradient.locations = [0.0, 1.0]
-        gradient.frame = view.bounds
-        view.layer.insertSublayer(gradient, at: 0)
-    }
+   
 }
 
 
@@ -352,7 +343,16 @@ extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizatio
         if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
 
             let userId = credential.user
-            let email = credential.email ?? UserDefaults.standard.string(forKey: "apple_email") ?? ""
+
+            let savedEmail = UserDefaults.standard.string(forKey: "apple_email")
+
+            // Create safe fallback email
+            let safeUserId = userId
+                .replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+
+            let email = credential.email
+                ?? savedEmail
+                ?? "\(safeUserId)@privaterelay.appleid.com"
             
             let fullName = credential.fullName
             let name = "\(fullName?.givenName ?? "") \(fullName?.familyName ?? "")"
@@ -373,7 +373,14 @@ extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizatio
             self.request.social_id = userId
             
             self.request.socialLogin { loginUser, errMsg, errCode in
-                
+                if errCode == 200 {
+                    DispatchQueue.main.async {
+                        self.pushVC(TripsTabBarController.self, from: .Home)
+                        
+                    }
+                }  else {
+                    self.showAlert(errMsg)
+                }
             }
         }
     }

@@ -10,11 +10,12 @@ import UIKit
 class NotificationVc: BaseClassVc {
    
     @IBOutlet weak var tblVw:UITableView!
-
+    @IBOutlet weak var lblTitle:UILabel!
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
        registerNib()
+        lblTitle.setFont(.medium, size: 18.0)
     }
     
     func registerNib(){

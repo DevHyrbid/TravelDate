@@ -35,7 +35,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let l = UILabel()
         l.text = "Trips"
         l.textColor = .themeOrange
-        l.font = .montserrat(24, weight: .bold)
+        l.setFont(.bold, size: 24.0)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -45,7 +45,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let l = UILabel()
         l.text = "Forgot Password"
         l.textColor = .white
-        l.font = .montserrat(22, weight: .semiBold)
+        l.setFont(.bold, size: 22.0)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -55,7 +55,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let l = UILabel()
         l.text = "Please enter your email here, you will receive a link for creating new password."
         l.textColor = UIColor.white.withAlphaComponent(0.55)
-        l.font = .montserrat(13)
+        l.setFont(.regular, size: 13.0)
         l.numberOfLines = 0
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -201,13 +201,7 @@ class ForgotPasswordViewController: BaseClassVc {
         ])
     }
 
-    private func addGradient() {
-        let g = CAGradientLayer()
-        g.colors = [UIColor.black.cgColor,
-                    UIColor(red: 0.12, green: 0.04, blue: 0.01, alpha: 1).cgColor]
-        g.frame = view.bounds
-        view.layer.insertSublayer(g, at: 0)
-    }
+    
 }
 
 // MARK: - Extension for textValue on CustomTextField

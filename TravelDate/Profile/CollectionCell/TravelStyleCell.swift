@@ -115,7 +115,7 @@ final class AboutEditView: UIView {
         // TextView
         textView.backgroundColor = UIColor(hex: "#1A1A1A")
         textView.textColor = .white
-        textView.font = UIFont.systemFont(ofSize: 14)
+        textView.setFont(.regular, size: 14.0)
         textView.layer.cornerRadius = 12
         textView.translatesAutoresizingMaskIntoConstraints = false
 

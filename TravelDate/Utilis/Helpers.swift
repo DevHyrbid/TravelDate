@@ -472,28 +472,43 @@ open class DesignableView:UIView {
     
 }
 
+import UIKit
+
 enum AppFont {
 
     static func regular(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Inter-Regular", size: size) ??
+        UIFont(name: "Poppins-Regular", size: size) ??
         UIFont.systemFont(ofSize: size)
     }
 
     static func medium(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Inter-Medium", size: size) ??
+        UIFont(name: "Poppins-Medium", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .medium)
     }
-    
+
     static func semibold(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Inter-SemiBold", size: size) ??
-        UIFont.systemFont(ofSize: size, weight: .medium)
+        UIFont(name: "Poppins-SemiBold", size: size) ??
+        UIFont.systemFont(ofSize: size, weight: .semibold)
     }
-    
-//
 
     static func bold(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Inter-Bold", size: size) ??
+        UIFont(name: "Poppins-ExtraBold", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .bold)
+    }
+
+    static func light(_ size: CGFloat) -> UIFont {
+        UIFont(name: "Poppins-Light", size: size) ??
+        UIFont.systemFont(ofSize: size, weight: .light)
+    }
+
+    static func extraLight(_ size: CGFloat) -> UIFont {
+        UIFont(name: "Poppins-ExtraLight", size: size) ??
+        UIFont.systemFont(ofSize: size, weight: .ultraLight)
+    }
+
+    static func thin(_ size: CGFloat) -> UIFont {
+        UIFont(name: "Poppins-Thin", size: size) ??
+        UIFont.systemFont(ofSize: size, weight: .thin)
     }
 }
 
@@ -551,8 +566,8 @@ final class SkeletonView: UIView {
 class Constants : NSObject {
     
     struct StreamKeys{
-        static let youtube_key = "5pht-r040-chtz-q2qq-5myb"
-        static let facebook_key = "122132673794916498-0-Ab30elO2Uw-dw5bWc5Adtk9U"
+        static let youtube_key = "5pht"
+        static let facebook_key = "1221"
     }
     struct APIResponseCodes {
         static let statusCodeSuccessfull = 200

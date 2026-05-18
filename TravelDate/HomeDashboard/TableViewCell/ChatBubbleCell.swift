@@ -1,9 +1,9 @@
-// MARK: - ChatBubbleCell
+// MARK: - ChatBubbleCell.swift
 import UIKit
+
 class ChatBubbleCell: UITableViewCell {
 
     // MARK: Subviews
-
     private let avatarView   = UIView()
     private let avatarLabel  = UILabel()
     private let senderLabel  = UILabel()
@@ -14,62 +14,59 @@ class ChatBubbleCell: UITableViewCell {
 
     // MARK: Layout constants
     private let avatarSize: CGFloat = 36
-    private let bubbleMaxWidth: CGFloat = UIScreen.main.bounds.width * 0.65
 
     // MARK: Constraints to toggle
     private var outgoingConstraints: [NSLayoutConstraint] = []
     private var incomingConstraints: [NSLayoutConstraint] = []
 
     // MARK: Init
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
-
     required init?(coder: NSCoder) { fatalError() }
 
     // MARK: Setup
-
     private func setupViews() {
         backgroundColor = .clear
         selectionStyle  = .none
 
-        // Avatar circle
+        // Avatar
         avatarView.layer.cornerRadius = avatarSize / 2
         avatarView.clipsToBounds = true
         avatarView.translatesAutoresizingMaskIntoConstraints = false
 
         avatarLabel.textAlignment = .center
-        avatarLabel.font          = .systemFont(ofSize: 14, weight: .semibold)
+        avatarLabel.setFont(.semiBold, size: 15.0)
+            //.font          = .systemFont(ofSize: 14, weight: .semibold)
         avatarLabel.textColor     = .white
         avatarLabel.translatesAutoresizingMaskIntoConstraints = false
         avatarView.addSubview(avatarLabel)
 
         // Sender name
-        senderLabel.font      = .systemFont(ofSize: 12, weight: .semibold)
+        senderLabel.setFont(.semiBold, size: 12.0)
         senderLabel.textColor = .lightGray
         senderLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Bubble
+        // Bubble — NO hugging/compression overrides
         bubbleView.layer.cornerRadius = 18
         bubbleView.clipsToBounds      = true
         bubbleView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Message text
+        // Message
         messageLabel.numberOfLines = 0
-        messageLabel.font          = .systemFont(ofSize: 15)
+        messageLabel.setFont(.regular, size: 16.0)
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Image (for image messages)
-        msgImageView.contentMode          = .scaleAspectFill
-        msgImageView.clipsToBounds        = true
-        msgImageView.layer.cornerRadius   = 12
-        msgImageView.isHidden             = true
+        // Image
+        msgImageView.contentMode        = .scaleAspectFill
+        msgImageView.clipsToBounds      = true
+        msgImageView.layer.cornerRadius = 12
+        msgImageView.isHidden           = true
         msgImageView.translatesAutoresizingMaskIntoConstraints = false
 
         // Time
-        timeLabel.font      = .systemFont(ofSize: 10)
+        timeLabel.setFont(.medium, size: 10.0)
         timeLabel.textColor = UIColor(white: 0.55, alpha: 1)
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -80,8 +77,8 @@ class ChatBubbleCell: UITableViewCell {
         bubbleView.addSubview(msgImageView)
         contentView.addSubview(timeLabel)
 
+        // ── Fixed constraints (always active) ──────────────────────
         NSLayoutConstraint.activate([
-            // avatarLabel centered in avatarView
             avatarLabel.centerXAnchor.constraint(equalTo: avatarView.centerXAnchor),
             avatarLabel.centerYAnchor.constraint(equalTo: avatarView.centerYAnchor),
 
@@ -89,14 +86,13 @@ class ChatBubbleCell: UITableViewCell {
             avatarView.heightAnchor.constraint(equalToConstant: avatarSize),
             avatarView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
 
-            // Message inside bubble
+            // messageLabel inside bubble
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 10),
             messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -10),
             messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 14),
             messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -14),
-            messageLabel.widthAnchor.constraint(lessThanOrEqualToConstant: bubbleMaxWidth - 28),
 
-            // Image inside bubble
+            // msgImageView inside bubble
             msgImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 6),
             msgImageView.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -6),
             msgImageView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 6),
@@ -119,6 +115,7 @@ class ChatBubbleCell: UITableViewCell {
             bubbleView.leadingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 8),
             bubbleView.topAnchor.constraint(equalTo: senderLabel.bottomAnchor, constant: 4),
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            bubbleView.widthAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.width * 0.65),
 
             timeLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 4),
             timeLabel.topAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: 4),
@@ -129,12 +126,11 @@ class ChatBubbleCell: UITableViewCell {
         outgoingConstraints = [
             avatarView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
 
-            senderLabel.trailingAnchor.constraint(equalTo: avatarView.leadingAnchor, constant: -8),
-            senderLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
-
             bubbleView.trailingAnchor.constraint(equalTo: avatarView.leadingAnchor, constant: -8),
             bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            bubbleView.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 80),
+            bubbleView.widthAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.width * 0.65),
 
             timeLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -4),
             timeLabel.topAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: 4),
@@ -142,14 +138,12 @@ class ChatBubbleCell: UITableViewCell {
     }
 
     // MARK: Configure
-
-     func configure(msg: MessageModel, currentUserId: String) {
+    func configure(msg: MessageModel, currentUserId: String) {
         let isOutgoing = msg.senderId == currentUserId
 
         NSLayoutConstraint.deactivate(incomingConstraints + outgoingConstraints)
         NSLayoutConstraint.activate(isOutgoing ? outgoingConstraints : incomingConstraints)
 
-        // ─── Avatar ───────────────────────────────────────────────
         avatarView.isHidden  = isOutgoing
         senderLabel.isHidden = isOutgoing
 
@@ -160,53 +154,51 @@ class ChatBubbleCell: UITableViewCell {
 
             if let imgStr = msg.senderImage, let url = URL(string: imgStr) {
                 avatarLabel.isHidden = true
-                loadAvatarImage(url: url)              // ✅ avatarView mein load
+                loadAvatarImage(url: url)
             } else {
                 avatarLabel.isHidden = false
-                avatarLabel.text = String(name.prefix(1)).uppercased()
+                avatarLabel.text     = String(name.prefix(1)).uppercased()
             }
         }
 
-        // ─── Bubble color ─────────────────────────────────────────
         bubbleView.backgroundColor = isOutgoing
             ? UIColor(red: 1.0, green: 0.42, blue: 0.0, alpha: 1)
             : UIColor(white: 0.16, alpha: 1)
         messageLabel.textColor = .white
 
-        // ─── Content (COMPLETELY separate from avatar logic) ──────
         let isImage = msg.contentType == "image"
         msgImageView.isHidden = !isImage
         messageLabel.isHidden = isImage
 
         if isImage, let urlStr = msg.imageUrl, let url = URL(string: urlStr) {
-            loadImage(url: url)                        // ✅ msgImageView mein load
+            loadImage(url: url)
         } else {
-            messageLabel.text = msg.content            // ✅ hamesha set hoga
+            messageLabel.text = msg.content
         }
 
-        // ─── Time ─────────────────────────────────────────────────
         timeLabel.text = formattedTime(from: msg.createdAt)
+
+        // ── Force layout so constraints apply cleanly ──
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
-    // ─── Avatar image loader (avatarView ke liye) ─────────────────
+    // MARK: Image Loaders
     private func loadAvatarImage(url: URL) {
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let self, let data = data, let img = UIImage(data: data) else { return }
             DispatchQueue.main.async {
-                self.avatarView.subviews
-                    .compactMap { $0 as? UIImageView }
-                    .forEach { $0.removeFromSuperview() }
+                self.avatarView.subviews.compactMap { $0 as? UIImageView }.forEach { $0.removeFromSuperview() }
                 let iv = UIImageView(frame: self.avatarView.bounds)
-                iv.image             = img
-                iv.contentMode       = .scaleAspectFill
-                iv.clipsToBounds     = true
+                iv.image              = img
+                iv.contentMode        = .scaleAspectFill
+                iv.clipsToBounds      = true
                 iv.layer.cornerRadius = self.avatarSize / 2
                 self.avatarView.addSubview(iv)
             }
         }.resume()
     }
 
-    // ─── Message image loader (msgImageView ke liye) ──────────────
     private func loadImage(url: URL) {
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
             guard let data = data, let img = UIImage(data: data) else { return }
@@ -215,17 +207,15 @@ class ChatBubbleCell: UITableViewCell {
     }
 
     // MARK: Helpers
-
     private func avatarColor(for name: String) -> UIColor {
         let colors: [UIColor] = [
-            UIColor(red: 0.20, green: 0.60, blue: 0.86, alpha: 1), // blue  (S)
-            UIColor(red: 0.18, green: 0.80, blue: 0.44, alpha: 1), // green (M)
-            UIColor(red: 0.91, green: 0.30, blue: 0.24, alpha: 1), // red   (E)
-            UIColor(red: 0.61, green: 0.35, blue: 0.71, alpha: 1), // purple
-            UIColor(red: 0.95, green: 0.61, blue: 0.07, alpha: 1), // amber
+            UIColor(red: 0.20, green: 0.60, blue: 0.86, alpha: 1),
+            UIColor(red: 0.18, green: 0.80, blue: 0.44, alpha: 1),
+            UIColor(red: 0.91, green: 0.30, blue: 0.24, alpha: 1),
+            UIColor(red: 0.61, green: 0.35, blue: 0.71, alpha: 1),
+            UIColor(red: 0.95, green: 0.61, blue: 0.07, alpha: 1),
         ]
-        let index = abs(name.hashValue) % colors.count
-        return colors[index]
+        return colors[abs(name.hashValue) % colors.count]
     }
 
     private func formattedTime(from isoString: String?) -> String {
@@ -238,11 +228,11 @@ class ChatBubbleCell: UITableViewCell {
         return fmt.string(from: date)
     }
 
-   
     override func prepareForReuse() {
         super.prepareForReuse()
         msgImageView.image = nil
         messageLabel.text  = nil
         senderLabel.text   = nil
+        NSLayoutConstraint.deactivate(incomingConstraints + outgoingConstraints)
     }
 }

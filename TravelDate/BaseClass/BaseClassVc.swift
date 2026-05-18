@@ -8,11 +8,11 @@
 // MARK: - Colors
 // MARK: - Colors
 extension UIColor {
-    static let appBg        = UIColor(hex: "#0E0E0E")
-    static let appCard      = UIColor(hex: "#1A1A1A")
+    static let appBg        = UIColor(hex: "#151718")
+    static let appCard      = UIColor(hex: "#111211")
     static let appOrange    = UIColor(hex: "#FF6B00")
     static let appGrayText  = UIColor(hex: "#9E9E9E")
-    static let appPlaceholder = UIColor(hex: "#6F6F6F")
+    static let appPlaceholder = UIColor(hex: "FFFFFF")
     static let appBorder    = UIColor(hex: "#2A2A2A")
  
     
@@ -41,8 +41,52 @@ class BaseClassVc: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       
+        addGradient()
         
+    }
+    
+    
+    func applyGlassEffect(to button: UIButton) {
+        
+        // Background
+        button.backgroundColor = UIColor.white.withAlphaComponent(0.06)
+        
+        // Rounded
+        button.layer.cornerRadius = button.frame.height / 2
+        button.clipsToBounds = true
+        
+        // Border
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
+        
+        // Blur
+        let blur = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blurView = UIVisualEffectView(effect: blur)
+        
+        blurView.frame = button.bounds
+        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blurView.isUserInteractionEnabled = false
+        blurView.layer.cornerRadius = button.frame.height / 2
+        blurView.clipsToBounds = true
+        
+        button.insertSubview(blurView, at: 0)
+        
+        // Shadow / Glow
+        button.layer.shadowColor = UIColor.white.withAlphaComponent(0.08).cgColor
+        button.layer.shadowOpacity = 1
+        button.layer.shadowRadius = 12
+        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+    }
+    
+    func addGradient() {
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            UIColor.black.cgColor,
+            UIColor(red: 0.2, green: 0.1, blue: 0.1, alpha: 1).cgColor
+        ]
+        gradient.locations = [0.0, 1.5]
+        gradient.frame = view.bounds
+        view.layer.insertSublayer(gradient, at: 0)
     }
     
     override func viewDidLayoutSubviews() {
@@ -102,38 +146,63 @@ class BaseClassVc: UIViewController {
     }
   
 
+   
+
     func handleScroll(_ scrollView: UIScrollView) {
 
         let currentOffset = scrollView.contentOffset.y
         let delta = currentOffset - lastOffset
 
-        // Ignore tiny movements (important)
+        // Ignore very small movements
         guard abs(delta) > 5 else { return }
 
+        // Ignore top bounce
+        if currentOffset <= 0 {
+            tripsTabBarController?.showTabBar()
+            lastOffset = currentOffset
+            return
+        }
+
+        // Ignore bottom bounce
+        let maxOffset = scrollView.contentSize.height - scrollView.frame.height
+        if currentOffset >= maxOffset {
+            lastOffset = currentOffset
+            return
+        }
+
+        // Scroll DOWN → hide
         if delta > 0 && currentOffset > 50 {
-            // 👇 Scrolling DOWN
+
             if !isScrollingDown {
                 isScrollingDown = true
-                tripsTabBarController?.hideTabBar()
+
+                UIView.animate(withDuration: 0.25) {
+                    self.tripsTabBarController?.hideTabBar()
+                }
             }
-        } else if delta < 0 {
-            // 👆 Scrolling UP
+
+        }
+        // Scroll UP → show
+        else if delta < 0 {
+
             if isScrollingDown {
                 isScrollingDown = false
-                tripsTabBarController?.showTabBar()
+
+                UIView.animate(withDuration: 0.25) {
+                    self.tripsTabBarController?.showTabBar()
+                }
             }
         }
 
         lastOffset = currentOffset
     }
-    
 
     
      func makeFieldTitle(_ text: String) -> UILabel {
         let label = UILabel()
         label.text = text
         label.textColor = .white
-        label.setFont(.semiBold, size: 14)
+        label.setFont(.medium, size: 14)
         return label
     }
     
@@ -396,18 +465,19 @@ import UIKit
 extension UIFont {
 
     enum AppFont: String {
-        case bold = "Inter24pt-Bold"
-        case semiBold = "Inter24pt-SemiBold"
-        case medium = "Inter24pt-Medium"
-        case regular = "Inter24pt-Regular"
-        case light = "Inter24pt-Light"
-        case extraLight = "Inter24pt-ExtraLight"
-        case thin = "Inter24pt-Thin"
+        case bold = "Poppins-Bold"
+        case extraBold = "Poppins-ExtraBold"
+        case light = "Poppins-Light"
+        case extraLight = "Poppins-ExtraLight"
+        case medium = "Poppins-Medium"
+        case regular = "Poppins-Regular"
+        case semiBold = "Poppins-SemiBold"
+        case thin = "Poppins-Thin"
     }
 
     static func appFont(_ font: AppFont, size: CGFloat) -> UIFont {
         return UIFont(name: font.rawValue, size: size)
-        ?? UIFont.systemFont(ofSize: size)
+            ?? UIFont.systemFont(ofSize: size)
     }
 }
 

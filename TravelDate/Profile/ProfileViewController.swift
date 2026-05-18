@@ -15,6 +15,7 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var imgProfile: UIImageView!
     @IBOutlet weak var lblName: UILabel!
     @IBOutlet weak var collectionVw: UICollectionView!
+    @IBOutlet weak var lblProfileTitle: UILabel!
     
     // MARK: - Arr
     var arr = [String]()
@@ -22,6 +23,7 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        lblProfileTitle.setFont(.medium, size: 18.0)
         if User.curentUser?.travelStyles != nil {
             for i  in 0..<User.curentUser!.travelStyles!.count {
                 arr.append(User.curentUser!.travelStyles?[i] ?? "")
@@ -31,9 +33,9 @@ class ProfileViewController: BaseClassVc {
                 self.collectionVw.reloadData()
             })
         }
-            collectionVw.register(TravelStyleCell.self,
-                                  forCellWithReuseIdentifier: TravelStyleCell.identifier)
-        }
+        collectionVw.register(TravelStyleCell.self,
+                              forCellWithReuseIdentifier: TravelStyleCell.identifier)
+    }
     
     
     
@@ -44,6 +46,10 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewViewWillAppear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        txtAbout.setFont(.medium, size: 14.0)
+        lblName.setFont(.bold, size: 18.0)
+        lblUserName.setFont(.bold, size: 16.0)
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
         lblUserName.text = "@\(User.curentUser?.userName ?? "")"
@@ -59,11 +65,16 @@ class ProfileViewController: BaseClassVc {
     
     func saveAPi() {
         
-        request.editProfileAPi { msg, errCode in
-            if errCode == 200 {
-                self.showAlert("Profile UpdatedSuccesfully")
-            }
-        }
+        request.editProfileAPi {[self] msg, errCode in
+            if User.curentUser?.travelStyles != nil {
+                for i  in 0..<User.curentUser!.travelStyles!.count {
+                    arr.append(User.curentUser!.travelStyles?[i] ?? "")
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
+                    
+                    self.collectionVw.reloadData()
+                })
+            }        }
         
     }
     
@@ -80,18 +91,18 @@ extension ProfileViewController {
         } else if sender.tag == 102 {
             openAboutEdit()
         }
-       
+        
     }
     
     @IBAction func btnAddStyles(_ sender:UIButton){
         let picker = TravelStylePickerView()
-           picker.delegate = self
-           picker.present(in: self)
+        picker.delegate = self
+        picker.present(in: self)
     }
     
     func openAboutEdit() {
         let editView = AboutEditView()
-
+        
         editView.onSave = { [weak self] text in
             guard let self = self else { return }
             
@@ -102,9 +113,9 @@ extension ProfileViewController {
             request.editProfileAPi { msg, errCode in
                 
             }
-           
+            
         }
-
+        
         editView.present(in: self.view, text: txtAbout.text)
     }
 }

@@ -137,7 +137,7 @@ extension FloatingDropdownTextField: UITableViewDelegate, UITableViewDataSource 
 
         cell.textLabel?.text = result.title
         cell.textLabel?.textColor = .white
-        cell.textLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        cell.textLabel?.setFont(.medium, size: 15.0)
 
         cell.detailTextLabel?.text = result.subtitle
         cell.detailTextLabel?.textColor = .lightGray
@@ -222,7 +222,7 @@ class OverlappingAvatarsView: UIView {
             let label = UILabel()
             label.text = "+\(extraCount)"
             label.textColor = .white
-            label.font = .systemFont(ofSize: 12, weight: .medium)
+            label.setFont(.medium, size: 16.0)
 
             let bgView = UIView(frame: CGRect(
                 x: CGFloat(images.count) * (size - overlap),

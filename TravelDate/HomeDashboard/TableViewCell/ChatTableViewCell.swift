@@ -17,11 +17,11 @@ class ChatTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        lblTitle.font = AppFont.semibold(16)
-        lblDesc.font = AppFont.regular(14)
+        lblTitle.font = AppFont.regular(18)
+        lblDesc.font = AppFont.regular(13)
         lblOnline.layer.cornerRadius = 5
         lblOnline.clipsToBounds = true
-        lblTime.font = AppFont.regular(12)
+        lblTime.font = AppFont.regular(11)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

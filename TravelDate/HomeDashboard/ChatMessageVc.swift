@@ -100,10 +100,17 @@ class ChatMessageVc: BaseClassVc {
         setupInputBar()
         setupKeyboardObservers()
 
-//        SocketIOManager.shared.delegate = self
-//        SocketIOManager.shared.connect()
-//        SocketIOManager.shared.setupListeners()
+        SocketIOManager.shared.delegate = self
+        SocketIOManager.shared.connect()
+        SocketIOManager.shared.setupListeners()
 //        joinRoom()
+    }
+    
+    func socketConnected() {
+
+        print("🚀 Now joining room")
+
+        joinRoom()
     }
     
     
@@ -128,21 +135,16 @@ class ChatMessageVc: BaseClassVc {
     private func joinRoom() {
         SocketIOManager.shared.currentGroupId = groupId  // 👈 ADD
         
-        if roomId.isEmpty {
+        
             SocketIOManager.shared.joinRoom(
                 participants: participants,
                 type:         roomType,
-                groupId:      groupId
+                groupId:      groupId,roomId:roomId
             )
-        } else {
-            SocketIOManager.shared.joinRoom(
-                participants: participants,
-                type:         roomType,
-                groupId:      groupId,
-                roomId:       roomId
-            )
+        
+            SocketIOManager.shared.getMessages(roomId: roomId)
         }
-    }
+    
 }
 
 // MARK: - ChatSocketDelegate
@@ -151,13 +153,19 @@ extension ChatMessageVc: ChatSocketDelegate {
 
     func didReceiveNewMessage(_ message: MessageModel) {
         messages.append(message)
-        tableView.reloadData()
+
+        let indexPath = IndexPath(row: messages.count - 1, section: 0)
+
+        tableView.performBatchUpdates({
+            tableView.insertRows(at: [indexPath], with: .none)
+        })
+
         scrollToBottom()
     }
-
     func didJoinRoom(roomId: String) {
         self.roomId = roomId
         print("✅ Joined room: \(roomId)")
+        
         SocketIOManager.shared.getMessages(roomId: roomId)
     }
 
@@ -209,7 +217,16 @@ extension ChatMessageVc: ChatSocketDelegate {
     }
 
     func didReceiveRooms(_ rooms: [[String: Any]]) {
-        // Handle in rooms list screen
+
+        print("🏠 rooms received:", rooms)
+
+        guard let room = rooms.first,
+              let roomId = room["id"] as? String
+        else { return }
+
+        self.roomId = roomId
+
+        print("✅ ROOM ID:", roomId)
     }
 }
 
@@ -239,12 +256,12 @@ extension ChatMessageVc {
         onlineDot.translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.text      = roomTitle
-        titleLabel.font      = .systemFont(ofSize: 16, weight: .bold)
+        titleLabel.setFont(.bold, size: 16.0)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         subtitleLabel.text      = memberCount > 0 ? "📍 \(memberCount) travelers" : ""
-        subtitleLabel.font      = .systemFont(ofSize: 12)
+        subtitleLabel.setFont(.regular, size: 12.0)
         subtitleLabel.textColor = .lightGray
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -300,6 +317,8 @@ extension ChatMessageVc: UITableViewDelegate, UITableViewDataSource {
         tableView.register(ChatBubbleCell.self, forCellReuseIdentifier: "ChatBubbleCell")
         tableView.delegate   = self
         tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 80
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
@@ -319,11 +338,22 @@ extension ChatMessageVc: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
 
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
+    }
     private func scrollToBottom(animated: Bool = true) {
         guard messages.count > 0 else { return }
-        tableView.scrollToRow(at: IndexPath(row: messages.count - 1, section: 0),
-                              at: .bottom, animated: animated)
+
+        DispatchQueue.main.async {
+            let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
+
+            if self.tableView.numberOfRows(inSection: 0) > indexPath.row {
+                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: animated)
+            }
+        }
     }
+    
+    
 }
 
 // MARK: - Typing Label
@@ -375,7 +405,7 @@ extension ChatMessageVc: UITextFieldDelegate {
 
         textField.placeholder     = "Type a message..."
         textField.textColor       = .white
-        textField.font            = .systemFont(ofSize: 15)
+        textField.setFont(.regular, size: 15.0)
         textField.backgroundColor = .clear
         textField.delegate        = self
         textField.returnKeyType   = .send
@@ -431,13 +461,20 @@ extension ChatMessageVc: UITextFieldDelegate {
     }
 
     @objc private func sendTapped() {
-        
-        print(roomId,"ROOOMID")
+
         guard let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !text.isEmpty, !roomId.isEmpty else { return }
-        SocketIOManager.shared.sendTextMessage(roomId: roomId, content: text)
+              !text.isEmpty,
+              !roomId.isEmpty else {
+            print("❌ roomId missing")
+            return
+        }
+
+        SocketIOManager.shared.sendTextMessage(
+            roomId: roomId,
+            content: text
+        )
+
         textField.text = nil
-        stopTyping()
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

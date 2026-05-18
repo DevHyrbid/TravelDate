@@ -11,17 +11,6 @@ struct DS {
     static let orange = UIColor(red: 1.0, green: 0.47, blue: 0.0, alpha: 1)
 }
 
-// MARK: - MODEL
-struct Member: Hashable {
-    let id = UUID()
-    let name: String
-    let age: Int
-    let city: String
-    let bio: String
-    let tags: [String]
-    let isYou: Bool
-}
-
 // MARK: - CONTROLLER
 class MyGroupViewController: BaseClassVc {
 
@@ -39,34 +28,39 @@ class MyGroupViewController: BaseClassVc {
     @IBOutlet weak var imgTrips:UIImageView!
     
     // MARK: - Properties
-    var data: GroupsData? = nil 
+    var res : Group? = nil
     var timer: Timer?
     var targetDate: Date?
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-       registerNib()
+        lblDate.setFont(.regular, size: 12.0)
+        lblLocation.setFont(.regular, size: 12.0)
+        lblHours.setFont(.bold, size: 16.0)
+        lblMin.setFont(.bold, size: 16.0)
+        lblSec.setFont(.bold, size: 16.0)
+        lblDay.setFont(.bold, size: 16.0)
         loadData()
     }
     
     func loadData() {
-        
-        if let res = self.data?.groups?.first {
+        if let res = self.res {
+            
             self.setupCountdown(startDateString: res.startDate ?? "")
             
             self.lblDate.text = self.formatDateRange(
                 start: res.startDate ?? "",
                 end: res.endDate ?? ""
             )
+            
+            lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
             self.lblLocation.text = res.destination ?? ""
             self.lblTitle.text = res.groupTitle ?? ""
             if let url = URL(string: res.coverImage ?? "") {
                 loadImage(self.imgTrips, url: url)
-                
             }
-            
-            
         }
+        registerNib()
     }
     
     func setupCountdown(startDateString: String) {
@@ -119,7 +113,7 @@ class MyGroupViewController: BaseClassVc {
     
     func registerNib(){
         tblVw.register(GroupTableViewCell.self)
-        tblVwHeight.constant = 100 + (CGFloat(self.data?.groups?.first?.members?.count ?? 0) * 400)
+        tblVwHeight.constant = 100 + (CGFloat(self.res?.members?.count ?? 0) * 400)
     }
 }
 
@@ -132,26 +126,27 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return self.data?.groups?.first?.members?.count ?? 0
+        return self.res?.members?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : GroupTableViewCell = tableView.dequeue(GroupTableViewCell.self, for: indexPath)
-        let model = self.data?.groups?.first?.members?[indexPath.row]
-//        cell.lblDescription.text = model.des
-        cell.lblLocation.text = "Bali"
+        let model = self.res?.members?[indexPath.row]
         if User.curentUser?.name ?? "" == model?.name {
             cell.lblName.text = "You"
+            cell.lblLocation.text = UserDefaults.standard.value(forKey: "user_loc") as? String ?? "No Location"
             cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
-            cell.backgroundColor = .clear
+            cell.btnEdit.backgroundColor = .clear
         } else {
+            cell.lblLocation.text = "No Location"
             cell.lblName.text = model?.name ?? ""
             cell.btnEdit.setTitle("Message", for: .normal)
-            cell.backgroundColor = .themeOrange
+            cell.btnEdit.backgroundColor = .themeOrange
         }
         
-        let url = URL(string: model?.profileImage ?? "")
-        self.loadImage(cell.imgUser, url: url!)
+        if let url = URL(string: model?.profileImage ?? "") {
+            self.loadImage(cell.imgUser, url: url)
+        }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true
         return cell
@@ -161,9 +156,13 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         
     }
     
+    @objc func editUser() {
+        
+    }
+    
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 400
+        return 430
     }
     
     

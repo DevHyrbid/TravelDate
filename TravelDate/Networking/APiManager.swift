@@ -27,7 +27,7 @@ class NetworkManger {
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.allHTTPHeaderFields = getJSONHeaderWithAccessToken()
-        
+        print(url,"SSJSJSJ_URLLLL")
         if let params = params, !params.isEmpty {
             request.httpBody = try? JSONSerialization.data(withJSONObject: params)
         }
@@ -159,14 +159,11 @@ class NetworkManger {
             return
         }
         
-        let skipLoader =
-        urlPath.contains("auth/profile") ||
-        urlPath.contains("type=video") ||
-        urlPath.contains("category") || urlPath.contains("video/progress") || urlPath.contains("favourite") || urlPath.contains("like") || urlPath.contains("video/training/day") || urlPath.contains("video/weekly-progress")
         
-        if !skipLoader {
+        
+        
             AppLoader.show(text: "")
-        }
+        
         
         var request = URLRequest(url: URL(string: urlPath.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!)
         request.httpMethod = type.rawValue
@@ -382,7 +379,7 @@ final class AppLoader {
         if let text = text, !text.isEmpty {
             label = UILabel()
             label?.text = text
-            label?.font = UIFont.systemFont(ofSize: 14)
+            label?.setFont(.medium, size: 14.0)
             label?.textAlignment = .center
             label?.numberOfLines = 0
             label?.translatesAutoresizingMaskIntoConstraints = false

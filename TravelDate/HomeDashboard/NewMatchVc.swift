@@ -14,18 +14,48 @@ enum MatchTab {
 
 class NewMatchVc: BaseClassVc {
     @IBOutlet weak var tblVw:UITableView!
+    @IBOutlet weak var lblNewMatch:UILabel!
+    @IBOutlet weak var lblMatchCount:UILabel!
     @IBOutlet weak var btnNew:UIButton!
     @IBOutlet weak var btnSave:UIButton!
     @IBOutlet weak var btnActive:UIButton!
     
+    @IBOutlet weak var lblNoData:UILabel!
     var selectedTab: MatchTab = .new
-
+    var data: [Group]? = nil
+    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-       registerNib()
+        lblNoData.setFont(.medium, size: 20.0)
+        lblNewMatch.setFont(.medium, size: 18.0)
+        lblMatchCount.setFont(.regular, size: 16.0)
+        btnSave.setFont(.medium, size: 15.0)
+        btnNew.setFont(.medium, size: 15.0)
+        btnNew.layer.cornerRadius = 20
+        btnSave.layer.cornerRadius = 20
+        registerNib()
         selectTab(.new) // default selected
+        getGroups()
     }
+    
+    func getGroups() {
+        request.getGroups(2) { [weak self] res, errMsg, errCode in
+            guard let self = self else { return }
+
+            if errCode == 200 {
+                DispatchQueue.main.async {
+                    if let res = res?.data?.groups {
+                        self.data = res
+                        self.tblVw.reloadData()
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    
     
     // MARK: - Methods
     func registerNib(){
@@ -72,7 +102,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return data?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -81,7 +111,25 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
 
         switch selectedTab {
         case .new:
-//            cell.vie
+            let model = data?[indexPath.row]
+            cell.lblTitle.text = model?.groupTitle ?? ""
+            cell.lblLocation.text = model?.destination ?? ""
+            if let url = URL(string: model?.coverImage ?? "" ){
+                self.loadImage(cell.imgVw, url: url)
+            }
+            cell.lblTime.text = self.formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? "")
+            cell.membersView.configure(members: model?.members ?? [], totalCount: (model?.maxGroupSize ?? 0), completedCount: model?.members?.count ?? 0)
+
+            cell.membersView.onAvatarStackTapped = {
+                print("Avatar stack tapped — show members list")
+            }
+            cell.membersView.onProgressTapped = {
+                print("Progress bar tapped — show progress details")
+            }
+            cell.membersView.onContainerTapped = {
+                print("Container tapped — open group detail")
+            }
+
             cell.savedVw.isHidden = true
         case .saved:
 //            cell.configureForSaved()
@@ -110,7 +158,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch selectedTab {
         case .new:
-            return 750
+            return 550
         case .saved:
             return 600
         case .active:

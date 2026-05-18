@@ -66,6 +66,8 @@ class LocationSearchView: UIView {
         textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
         textField.addTarget(self, action: #selector(beginEditing), for: .editingDidBegin)
     }
+    
+    
 
     @objc private func textChanged() {
         completer.queryFragment = attachedTextField?.text ?? ""
@@ -106,8 +108,8 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
 
             let address = [
                 placemark.name,
-                placemark.locality,
-                placemark.administrativeArea,
+//                placemark.locality,
+//                placemark.administrativeArea,
                 placemark.country
             ].compactMap { $0 }.joined(separator: ", ")
 

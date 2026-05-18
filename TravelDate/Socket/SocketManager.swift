@@ -25,6 +25,7 @@ protocol ChatSocketDelegate: AnyObject {
     func didReceiveMessagesDeleted(messageIds: [String])
     func didLeaveGroupChat(roomId: String)
     func didReceiveRooms(_ rooms: [[String: Any]])
+    func socketConnected()
 }
 
 // Optional defaults so VC doesn't have to implement all
@@ -78,6 +79,10 @@ class SocketIOManager {
     func connect() {
         guard socket.status != .connected else {
             print("⚡ Socket already connected")
+            
+            socket.disconnect()
+                socket.connect()
+                
             return
         }
         socket.connect()
@@ -97,6 +102,7 @@ class SocketIOManager {
         // ─── Connection ───────────────────────────────────────────
         socket.on(clientEvent: .connect) { _, _ in
             print("✅ Socket connected")
+            self.delegate?.socketConnected()
         }
 
         socket.on(clientEvent: .disconnect) { data, _ in
@@ -176,13 +182,7 @@ class SocketIOManager {
 
         // ─── 7. rooms ────────────────────────────────────────────
         // Server sends list of rooms
-        socket.on("rooms") { [weak self] data, _ in
-            print("🏠 rooms received: \(data)")
-            guard let rooms = data.first as? [[String: Any]] else { return }
-            DispatchQueue.main.async {
-                self?.delegate?.didReceiveRooms(rooms)
-            }
-        }
+        
 
         // ─── 8. messages ─────────────────────────────────────────
         // Server returns old messages on getMessages emit
@@ -247,12 +247,31 @@ class SocketIOManager {
 
     /// Emit: joinRoom
     func joinRoom(participants: [String], type: String, groupId: String, roomId: String = "") {
-        var params: [String: Any] = [
-            "participants": participants,
-            "type":         type
-        ]
-        if !groupId.isEmpty { params["groupId"] = groupId }
-        if !roomId.isEmpty  { params["roomId"]  = roomId  }
+
+        var params: [String: Any] = [:]
+
+        if !roomId.isEmpty {
+
+            params["roomId"] = roomId
+            params = [
+                "participants": participants,
+                "type": type
+            ]
+
+            if !groupId.isEmpty {
+                params["groupId"] = groupId
+            }
+        } else {
+            params = [
+                "participants": participants,
+                "type": type
+            ]
+
+            if !groupId.isEmpty {
+                params["groupId"] = groupId
+            }
+            
+        }
 
         print("🚀 emit joinRoom: \(params)")
         socket.emit("joinRoom", params)

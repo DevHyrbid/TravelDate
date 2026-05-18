@@ -58,14 +58,14 @@ final class InviteVc: BaseClassVc {
         let titleLabel = UILabel()
         titleLabel.text      = "Invite Friends"
         titleLabel.textColor = .white
-        titleLabel.font      = .systemFont(ofSize: 20, weight: .bold)
+        titleLabel.setFont(.bold, size:20.0)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Subtitle label
         let subLabel = UILabel()
         subLabel.text      = "Build your travel crew"
         subLabel.textColor = .appGrayText
-        subLabel.font      = .systemFont(ofSize: 13)
+        subLabel.setFont(.regular, size: 13.0)
         subLabel.translatesAutoresizingMaskIntoConstraints = false
 
         customHeaderView.addSubview(titleLabel)
@@ -128,7 +128,7 @@ final class InviteVc: BaseClassVc {
             attributes: [.foregroundColor: UIColor.appPlaceholder]
         )
         searchField.textColor = .white
-        searchField.font      = .systemFont(ofSize: 14)
+        searchField.setFont(.medium, size: 14.0)
         searchField.translatesAutoresizingMaskIntoConstraints = false
         searchContainer.addSubview(searchField)
 
@@ -190,12 +190,12 @@ final class InviteVc: BaseClassVc {
         let titleLbl = UILabel()
         titleLbl.text      = "Share Invite Link"
         titleLbl.textColor = .white
-        titleLbl.font      = .systemFont(ofSize: 15, weight: .semibold)
+        titleLbl.setFont(.semiBold, size: 15.0)
 
         let subLbl = UILabel()
         subLbl.text      = "Anyone with this link can join your group"
         subLbl.textColor = .appGrayText
-        subLbl.font      = .systemFont(ofSize: 12)
+        subLbl.setFont(.regular, size: 12.0)
 
         let textStack = UIStackView(arrangedSubviews: [titleLbl, subLbl])
         textStack.axis    = .vertical
@@ -217,7 +217,7 @@ final class InviteVc: BaseClassVc {
         // Link row
         linkLabel.text      = inviteLink
         linkLabel.textColor = .appGrayText
-        linkLabel.font      = .systemFont(ofSize: 12)
+        linkLabel.setFont(.regular, size: 12.0)
         linkLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let copyBtn = UIButton(type: .system)
@@ -226,7 +226,7 @@ final class InviteVc: BaseClassVc {
         copyBtn.tintColor        = .white
         copyBtn.backgroundColor  = .appOrange
         copyBtn.layer.cornerRadius = 10
-        copyBtn.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
+        copyBtn.titleLabel?.setFont(.semiBold, size: 12.0)
         copyBtn.translatesAutoresizingMaskIntoConstraints = false
         copyBtn.widthAnchor.constraint(equalToConstant: 84).isActive  = true
         copyBtn.heightAnchor.constraint(equalToConstant: 36).isActive = true
@@ -271,13 +271,13 @@ final class InviteVc: BaseClassVc {
         let titleLbl = UILabel()
         titleLbl.text      = "Suggested Friends"
         titleLbl.textColor = .white
-        titleLbl.font      = .systemFont(ofSize: 16, weight: .semibold)
+        titleLbl.setFont(.semiBold, size: 16.0)
         titleLbl.translatesAutoresizingMaskIntoConstraints = false
 
         let countLbl = UILabel()
         countLbl.text      = "\(users?.count) friends"
         countLbl.textColor = .appGrayText
-        countLbl.font      = .systemFont(ofSize: 13)
+        countLbl.setFont(.regular, size: 16.0)
         countLbl.translatesAutoresizingMaskIntoConstraints = false
 
         header.addSubview(titleLbl)
@@ -325,7 +325,7 @@ final class InviteVc: BaseClassVc {
         let btn = UIButton(type: .system)
         btn.setTitle("Skip", for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        btn.titleLabel?.setFont(.semiBold, size: 16.0)
         btn.translatesAutoresizingMaskIntoConstraints = false
         btn.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
         view.addSubview(btn)
@@ -447,12 +447,12 @@ final class FriendCell: UITableViewCell {
 
         // Name
         nameLabel.textColor = .white
-        nameLabel.font      = .systemFont(ofSize: 15, weight: .semibold)
+        nameLabel.setFont(.semiBold, size: 15.0)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Username
         usernameLabel.textColor = .appGrayText
-        usernameLabel.font      = .systemFont(ofSize: 13)
+        usernameLabel.setFont(.regular, size: 12.0)
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let textStack = UIStackView(arrangedSubviews: [nameLabel, usernameLabel])
@@ -468,7 +468,7 @@ final class FriendCell: UITableViewCell {
         inviteButton.layer.borderWidth  = 1.5
         inviteButton.layer.borderColor  = UIColor.appOrange.cgColor
         inviteButton.layer.cornerRadius = 20
-        inviteButton.titleLabel?.font   = .systemFont(ofSize: 13, weight: .semibold)
+        inviteButton.titleLabel?.setFont(.medium, size: 13.0)
         inviteButton.imageEdgeInsets    = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 0)
         inviteButton.translatesAutoresizingMaskIntoConstraints = false
         inviteButton.addTarget(self, action: #selector(inviteTapped), for: .touchUpInside)

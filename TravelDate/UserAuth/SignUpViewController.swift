@@ -15,7 +15,7 @@ extension Color {
 
 class CustomTextField: UIView {
 
-    private let textField = UITextField()
+     let textField = UITextField()
     private let iconView = UIImageView()
     private let eyeButton = UIButton()
 
@@ -131,7 +131,7 @@ class CustomButton: UIButton {
 
 
 
-
+var tuple: (title: String, lat: Double, lng: Double)?
 //
 //  LoginVc.swift
 //  TravelDate
@@ -175,7 +175,7 @@ class SignUpViewController: BaseClassVc {
     private let emailField = CustomTextField(placeholder: "Enter email", icon: "envelope")
     private let passwordField = CustomTextField(placeholder: "Enter your password", icon: "lock", isSecure: true)
 
-    private let locationField = CustomTextField(placeholder: "Enter your password", icon: "lock", isSecure: true)
+    private let locationField = CustomTextField(placeholder: "Enter your Location", icon: "location", isSecure: false)
 
     private lazy var nameTitle = makeFieldTitle("Full Name")
     private lazy var emailTitle = makeFieldTitle("Email")
@@ -198,18 +198,41 @@ class SignUpViewController: BaseClassVc {
         label.textAlignment = .center
         return label
     }()
+    
+    var locationView: LocationSearchView!
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-       
-            
-            let tap = UITapGestureRecognizer(target: self, action: #selector(handleLoginTap))
-            signupLabel.addGestureRecognizer(tap)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleLoginTap))
+        signupLabel.addGestureRecognizer(tap)
         
         loginButton.addTarget(self, action: #selector(handleSignupTap), for: .touchUpInside)
         googleButton.addTarget(self, action: #selector(handleGoogleTap), for: .touchUpInside)
-        
+        setuplocationVw()
+    }
+    
+    func setuplocationVw() {
+        locationView = LocationSearchView()
+        locationView.isHidden = true
+        locationView.attach(to: locationField.textField)
+        locationView.onLocationSelected = { [weak self] address, coordinate in
+            tuple = (address, Double(coordinate.latitude), Double(coordinate.longitude))
+            self?.locationField.textField.text = address
+            self?.locationView.isHidden = true
+        }
+
+        view.addSubview(locationView)
+
+        locationView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            locationView.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 8),
+            locationView.leadingAnchor.constraint(equalTo: locationField.leadingAnchor),
+            locationView.trailingAnchor.constraint(equalTo: locationField.trailingAnchor),
+            locationView.heightAnchor.constraint(equalToConstant: 250)
+        ])
     }
     
     @objc private func handleLoginTap() {
@@ -226,6 +249,10 @@ class SignUpViewController: BaseClassVc {
         request.password = passwordField.text ?? ""
         request.deviceToken = Constants.device_Config.deviceToken
         request.deviceType = Constants.device_Config.deviceType
+        request.latitude = "\(String(describing: tuple?.lat ?? 0.0))"
+        request.longitude = "\(String(describing:tuple?.lng ?? 0.0))"
+        request.location_string = "\(String(describing:tuple?.title ?? ""))"
+        
         request.signUp { loginUser, errMsg, errCode in
             if errCode == 200 {
                 LocalNotificationManager.shared.scheduleNotification(
@@ -234,6 +261,8 @@ class SignUpViewController: BaseClassVc {
                     body: "You're all set! Let's find your perfect travel group.",
                     timeInterval: 4 // small delay to avoid instant spam
                 )
+                
+                UserDefaults.standard.set(self.locationField.text, forKey: "user_loc")
                 self.pushVC(TripsTabBarController.self, from: .Home)
             } else {
                 self.showAlert(errMsg)
@@ -291,8 +320,8 @@ class SignUpViewController: BaseClassVc {
             titleBox, loginLabel,
             nameTitle, nameField,
             emailTitle, emailField,
-            passwordTitle, passwordField,
             locationTitle, locationField,
+            passwordTitle, passwordField,
             loginButton, googleButton,
             signupLabel
         ].forEach {
@@ -336,23 +365,25 @@ class SignUpViewController: BaseClassVc {
             emailField.trailingAnchor.constraint(equalTo: nameField.trailingAnchor),
             emailField.heightAnchor.constraint(equalToConstant: 50),
 
-            passwordTitle.topAnchor.constraint(equalTo: emailField.bottomAnchor, constant: 16),
-            passwordTitle.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+            locationTitle.topAnchor.constraint(equalTo: emailField.bottomAnchor, constant: 16),
+            locationTitle.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+
+            locationField.topAnchor.constraint(equalTo: locationTitle.bottomAnchor, constant: 6), // ✅ fix here
+            locationField.leadingAnchor.constraint(equalTo: locationTitle.leadingAnchor),
+            locationField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
+            locationField.heightAnchor.constraint(equalToConstant: 50),
+            
+            passwordTitle.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 16),
+            passwordTitle.leadingAnchor.constraint(equalTo: locationField.leadingAnchor),
 
             passwordField.topAnchor.constraint(equalTo: passwordTitle.bottomAnchor, constant: 6),
-            passwordField.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+            passwordField.leadingAnchor.constraint(equalTo: passwordTitle.leadingAnchor),
             passwordField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             passwordField.heightAnchor.constraint(equalToConstant: 50),
 
-            locationTitle.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 16),
-            locationTitle.leadingAnchor.constraint(equalTo: passwordField.leadingAnchor),
-
-            locationField.topAnchor.constraint(equalTo: locationTitle.bottomAnchor, constant: 6), // ✅ fix here
-            locationField.leadingAnchor.constraint(equalTo: passwordField.leadingAnchor),
-            locationField.trailingAnchor.constraint(equalTo: passwordField.trailingAnchor),
-            locationField.heightAnchor.constraint(equalToConstant: 50),
             
-            loginButton.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 24),
+            
+            loginButton.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 24),
             loginButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             loginButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             loginButton.heightAnchor.constraint(equalToConstant: 50),
@@ -367,16 +398,7 @@ class SignUpViewController: BaseClassVc {
         ])
     }
 
-    private func addGradient() {
-        let gradient = CAGradientLayer()
-        gradient.colors = [
-            UIColor.black.cgColor,
-            UIColor(red: 0.2, green: 0.1, blue: 0.1, alpha: 1).cgColor
-        ]
-        gradient.locations = [0, 1]
-        gradient.frame = view.bounds
-        view.layer.insertSublayer(gradient, at: 0)
-    }
+    
 
    
 }

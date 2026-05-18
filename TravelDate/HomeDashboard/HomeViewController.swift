@@ -41,16 +41,33 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     @IBOutlet weak var btnList:UIButton!
     
+    @IBOutlet weak var tblVw:UITableView!
     var timer: Timer?
     var targetDate: Date?
     var data: GroupsData? = nil
-    
+    var pastData: GroupsData? = nil
+    var selected : Group? = nil
+    let membersView = MembersProgressView()
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
+
         
+        membersView.translatesAutoresizingMaskIntoConstraints = false
+        vwMembers.addSubview(membersView)
+
         
+        NSLayoutConstraint.activate([
+            membersView.leadingAnchor.constraint(equalTo: vwMembers.leadingAnchor),
+            membersView.trailingAnchor.constraint(equalTo: vwMembers.trailingAnchor),
+            membersView.topAnchor.constraint(equalTo: vwMembers.topAnchor),
+            membersView.bottomAnchor.constraint(equalTo: vwMembers.bottomAnchor),
+        ])
+
+        
+        tblVw.register(PastTableViewCell.self)
+       
     }
     
     
@@ -61,22 +78,18 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 title: trip.groupTitle ?? "",
                 image: UIImage(systemName:"arrow.right")
             ) { _ in
+                
                 self.didSelectTrip(trip)
             }
         }
 
-        return UIMenu(title: "Past Trips", children: actions)
+        return UIMenu(title: "Trips", children: actions)
     }
     
     
     func didSelectTrip(_ res: Group) {
         
-
-        // update your card data
-//        updateUI(with: trip)
-        
-        
-        
+        self.selected  = res
         self.setupCountdown(startDateString: res.startDate ?? "")
         
         self.lblDate.text = self.formatDateRange(
@@ -88,6 +101,20 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         if let url = URL(string: res.coverImage ?? "") {
             self.loadImage(self.imgTrips, url: url)
         }
+       
+        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
+
+        membersView.onAvatarStackTapped = {
+            print("Avatar stack tapped — show members list")
+        }
+        membersView.onProgressTapped = {
+            print("Progress bar tapped — show progress details")
+        }
+        membersView.onContainerTapped = {
+            print("Container tapped — open group detail")
+        }
+        
+        
         
     }
     
@@ -104,18 +131,30 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         
         tripsTabBarController?.showTabBar()
         setupUi()
+        
+        if let font = UIFont(name: "Poppins-Regular", size: 16) {
+            print("✅ Font loaded: \(font.fontName)")
+        } else {
+            print("❌ Font not loaded")
+        }
     }
    
-    
     func setupUi(){
         view.backgroundColor = .black
         navigationController?.setNavigationBarHidden(true, animated: false)
         lblGreating.text = getGreeting()
-        lblName.setFont(.bold, size: 21.0)
-        lblGreating.setFont(.regular, size: 18.0)
+        lblName.setFont(.semiBold, size: 17.0)
+        lblDate.setFont(.regular, size: 12.0)
+        lblLocation.setFont(.regular, size: 12.0)
+        lblHours.setFont(.bold, size: 16.0)
+        lblMin.setFont(.bold, size: 16.0)
+        lblSec.setFont(.bold, size: 16.0)
+        lblDay.setFont(.bold, size: 16.0)
+        lblGreating.setFont(.regular, size: 14.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
         getGroups()
+        getPastGroups()
     }
     
     func setupCountdown(startDateString: String) {
@@ -161,16 +200,30 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     }
     
     
+    func getPastGroups() {
+        request.getGroups(3) { model,msg, code in
+            if code == 200 {
+                DispatchQueue.main.async { [self] in
+                    if let data  = model?.data {
+                        self.pastData = data
+                        self.tblVw.reloadData()
+                    }
+                   
+                }
+            }
+        }
+    }
+    
     func getGroups() {
-        request.getGroups { model,msg, code in
+        request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
                     if let res = model?.data?.groups?.first {
                         self.btnList.menu = makeTripMenu(trips: (model?.data?.groups!)!)
                         self.btnList.showsMenuAsPrimaryAction = true
                         self.data = model?.data ?? nil
+                        self.selected = res
                         self.setupCountdown(startDateString: res.startDate ?? "")
-                        
                         self.lblDate.text = self.formatDateRange(
                             start: res.startDate ?? "",
                             end: res.endDate ?? ""
@@ -180,6 +233,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         if let url = URL(string: res.coverImage ?? "") {
                             self.loadImage(self.imgTrips, url: url)
                         }
+                        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
@@ -234,6 +288,9 @@ extension HomeViewController {
         case 103:
             break
             
+        case 104:
+            self.btnOpenGroupChat()
+            break
         case 105:
             self.createGroupTapped()
             break
@@ -245,13 +302,40 @@ extension HomeViewController {
     @IBAction func btnOpenGroup(_ sender:UIButton) {
         
         self.pushVC(MyGroupViewController.self, from: .Home,hideTabBar: true) { vc in
-            vc.data = self.data
-            
-            
+            vc.res = self.selected
         }
         
     }
     
+    func btnOpenGroupChat() {
+        
+        
+        
+        let selectedUser = self.selected
+        
+        let chatVc = ChatMessageVc()
+        chatVc.roomId      = selectedUser?.roomId ?? ""
+        chatVc.roomTitle   = selectedUser?.groupTitle ?? "Chat"
+        chatVc.groupId     = selectedUser?.id ?? ""
+        chatVc.roomType    = "group"
+        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
+        
+        // ✅ Correct way - compactMap use karo
+        chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
+        // ✅ Full log before push
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("🚀 Opening ChatMessageVc")
+        print("📌 roomId      : \(chatVc.roomId)")
+        print("📌 roomTitle   : \(chatVc.roomTitle)")
+        print("📌 groupId     : \(chatVc.groupId)")
+        print("📌 roomType    : \(chatVc.roomType)")
+        print("📌 memberCount : \(chatVc.memberCount)")
+        print("📌 participants: \(chatVc.participants)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        
+        navigationController?.pushViewController(chatVc, animated: true)
+        
+    }
     
     @IBAction func btnNotification(_ sender:UIButton) {
         self.pushVC(NotificationVc.self, from: .Home,hideTabBar: true)
@@ -262,5 +346,29 @@ extension HomeViewController {
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
-   
+}
+
+extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return  pastData?.groups?.count ?? 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell : PastTableViewCell = tblVw.dequeue(PastTableViewCell.self, for: indexPath)
+        let model = pastData?.groups?[indexPath.row]
+        cell.lblDate.text = self.formatDateRange(
+            start: model?.startDate ?? "",
+            end: model?.endDate ?? ""
+        )
+        cell.lblTitle.text = model?.groupTitle ?? ""
+        loadImage(cell.imgVw, url: URL(string: model?.coverImage ?? "")!)
+        cell.imgVw.layer.cornerRadius =  12
+        cell.imgVw.clipsToBounds = true
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 125
+    }
+    
 }
