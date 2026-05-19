@@ -27,6 +27,10 @@ class NewMatchVc: BaseClassVc {
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUi()
+    }
+    
+    func setupUi(){
         lblNoData.setFont(.medium, size: 20.0)
         lblNewMatch.setFont(.medium, size: 18.0)
         lblMatchCount.setFont(.regular, size: 16.0)
@@ -36,17 +40,51 @@ class NewMatchVc: BaseClassVc {
         btnSave.layer.cornerRadius = 20
         registerNib()
         selectTab(.new) // default selected
-        getGroups()
+        getGroups(1)
+        tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        tblVw.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
+        tblVw.alwaysBounceVertical = true
     }
     
-    func getGroups() {
-        request.getGroups(2) { [weak self] res, errMsg, errCode in
-            guard let self = self else { return }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
 
+        let contentHeight = tblVw.contentSize.height
+        let tableHeight = tblVw.frame.height
+
+        if contentHeight < tableHeight {
+            let extraSpace = 100
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: CGFloat(extraSpace), right: 0)
+        } else {
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        }
+    }
+    
+    func groupSaveAPi() {
+        
+    }
+    
+    
+    func getGroups(_ req:Int) {
+        var reqType = req
+        if reqType == 1 {
+            reqType = 2
+        } else   if reqType == 2 {
+            reqType = 4
+        }
+        request.getGroups(reqType) { [weak self] res, errMsg, errCode in
+            guard let self = self else { return }
+            
             if errCode == 200 {
                 DispatchQueue.main.async {
                     if let res = res?.data?.groups {
                         self.data = res
+                        if res.count == 0 {
+                            self.lblNoData.isHidden = false
+                        } else {
+                            self.lblNoData.isHidden = true
+                        }
                         self.tblVw.reloadData()
                     }
                 }
@@ -55,12 +93,9 @@ class NewMatchVc: BaseClassVc {
     }
     
     
-    
-    
-    // MARK: - Methods
-    func registerNib(){
-        tblVw.register(NewMatchCellTableViewCell.self)
-        
+    func registerNib() {
+        tblVw.register(NewMatchCell.self, forCellReuseIdentifier: "NewMatchCell")
+        tblVw.register(SavedGroupCell.self, forCellReuseIdentifier: "SavedGroupCell")
     }
     
     func setupButtons() {
@@ -84,8 +119,10 @@ class NewMatchVc: BaseClassVc {
         switch tab {
         case .new:
             (btnNew as? GlassButton)?.setSelectedStyle()
+            getGroups(1)
         case .saved:
             (btnSave as? GlassButton)?.setSelectedStyle()
+            getGroups(2)
         case .active:
             (btnActive as? GlassButton)?.setSelectedStyle()
         }
@@ -106,66 +143,80 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        let cell: NewMatchCellTableViewCell = tableView.dequeue(NewMatchCellTableViewCell.self, for: indexPath)
+        let model = data?[indexPath.row]
 
         switch selectedTab {
         case .new:
-            let model = data?[indexPath.row]
-            cell.lblTitle.text = model?.groupTitle ?? ""
-            cell.lblLocation.text = model?.destination ?? ""
-            if let url = URL(string: model?.coverImage ?? "" ){
-                self.loadImage(cell.imgVw, url: url)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCell", for: indexPath) as! NewMatchCell
+            if let model { cell.configure(with: model) }
+            if let url = URL(string: model?.coverImage ?? "") {
+                loadImage(cell.imageView_, url: url)
             }
-            cell.lblTime.text = self.formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? "")
-            cell.membersView.configure(members: model?.members ?? [], totalCount: (model?.maxGroupSize ?? 0), completedCount: model?.members?.count ?? 0)
+            cell.timeLabel.text = formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? "")
+            cell.onStartChat = { /* push chat VC */ }
+            cell.onSaveGroup = { [weak self] in
+                guard let self = self else { return }
+                guard let groupId = model?._id else { return }
 
-            cell.membersView.onAvatarStackTapped = {
-                print("Avatar stack tapped — show members list")
-            }
-            cell.membersView.onProgressTapped = {
-                print("Progress bar tapped — show progress details")
-            }
-            cell.membersView.onContainerTapped = {
-                print("Container tapped — open group detail")
-            }
+                request.saveGroupAPi(groupId) { errMsg, errCode in
+                    
+                    DispatchQueue.main.async {
 
-            cell.savedVw.isHidden = true
+                        if errCode == 200 {
+
+                            self.showAlert(message: "Group saved successfully")
+
+                        } else {
+
+                            self.showAlert(message: errMsg)
+                        }
+                    }
+                }
+            }
+            return cell
+
         case .saved:
-//            cell.configureForSaved()
-            cell.savedVw.isHidden = false
-        case .active:
-//            cell.configureForActive()
-            cell.savedVw.isHidden = true
-        }
+            let cell = tableView.dequeueReusableCell(withIdentifier: "SavedGroupCell", for: indexPath) as! SavedGroupCell
+            if let model { cell.configure(with: model) }
+            if let url = URL(string: model?.coverImage ?? "") {
+                loadImage(cell.heroImage, url: url)
+            }
+            cell.setTimeText(formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? ""))
+            cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) }
+            cell.onBookmark = { [weak self] in
+                guard let self = self else { return }
+                guard let groupId = model?._id else { return }
 
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        switch selectedTab {
-        case .new:
-           break
-        case .saved:
-            self.pushVC(MySavedGroupVc.self, from: .Home)
-            break
+                request.saveGroupAPi(groupId) { errMsg, errCode in
+                    
+                    DispatchQueue.main.async {
+
+                        if errCode == 200 {
+
+                            self.showAlert(message: "Group Removed successfully")
+                            self.getGroups(2)
+                        } else {
+
+                            self.showAlert(message: errMsg)
+                        }
+                    }
+                }
+            }
+            return cell
+
         case .active:
-            break
+            // Return your ActiveCell here when ready
+            return UITableViewCell()
         }
     }
-    
-    
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch selectedTab {
-        case .new:
-            return 550
-        case .saved:
-            return 600
-        case .active:
-            return 750
+        case .new:    return 600
+        case .saved:  return 560
+        case .active: return 750
         }
     }
-    
     
 }
 

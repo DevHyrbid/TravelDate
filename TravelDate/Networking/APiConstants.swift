@@ -18,6 +18,8 @@ class APiConstant : NSObject {
     static let checkEmail = baseUrl + "auth/check-email"
     static let createGroup = baseUrl + "group"
     static let myGroup = baseUrl + "group/my-groups?limit=100&page=1&type="
+    static let savedGroup = baseUrl + "group/saved?limit=100&page=1"
+    static let saveGroup = baseUrl + "group/save/"
     static let users = baseUrl + "users/all-users?limit=100&page="
     static let allGroups = baseUrl + "group?limit=100&page=1"
     static let socialLogin = baseUrl + "users/social-login"
@@ -29,7 +31,7 @@ class APiConstant : NSObject {
     static let profile = baseUrl + "users/profile"
     static let joinGroup = baseUrl + "group/join/"
     static let inviteUser = baseUrl + "group/invite"
-    static let swipe = baseUrl + "group/swipe"
+    static let swipe = baseUrl + "group/swipe/"
     static let matchedGroup = baseUrl + "group/my-matches?limit=100&page=1"
     
     

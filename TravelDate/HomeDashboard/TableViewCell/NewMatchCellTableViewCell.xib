@@ -11,7 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="778" id="KGk-i7-Jjw" customClass="NewMatchCellTableViewCell" customModule="TravelDate" customModuleProvider="target">
+        <tableViewCell contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="778" id="KGk-i7-Jjw" customClass="NewMatchCellTableViewCell" customModule="TravelDate" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="339" height="778"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
@@ -45,13 +45,13 @@
                                 <color key="textColor" name="ThemeOrange"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="IAF-gU-3nu">
-                                <rect key="frame" x="10" y="434" width="354" height="40"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="IAF-gU-3nu">
+                                <rect key="frame" x="10" y="434" width="299" height="40"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pjE-Vf-78F" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="202" height="40"/>
+                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pjE-Vf-78F" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="166" height="40"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Apr 15 - Apr 28 2026 " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qBo-Uq-mly">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Apr 15 - Apr 28 2026 " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qBo-Uq-mly">
                                                 <rect key="frame" x="50" y="0.0" width="152" height="40"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                 <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -69,7 +69,7 @@
                                         <constraints>
                                             <constraint firstItem="fnw-om-UdB" firstAttribute="centerY" secondItem="pjE-Vf-78F" secondAttribute="centerY" id="099-Gm-Il0"/>
                                             <constraint firstAttribute="bottom" secondItem="qBo-Uq-mly" secondAttribute="bottom" id="71x-dw-beO"/>
-                                            <constraint firstAttribute="trailing" secondItem="qBo-Uq-mly" secondAttribute="trailing" id="B3z-qv-951"/>
+                                            <constraint firstAttribute="trailing" secondItem="qBo-Uq-mly" secondAttribute="trailing" constant="3" id="B3z-qv-951"/>
                                             <constraint firstItem="qBo-Uq-mly" firstAttribute="top" secondItem="pjE-Vf-78F" secondAttribute="top" id="Gso-AY-1cQ"/>
                                             <constraint firstItem="fnw-om-UdB" firstAttribute="leading" secondItem="pjE-Vf-78F" secondAttribute="leading" constant="15" id="qPw-63-d3d"/>
                                             <constraint firstItem="qBo-Uq-mly" firstAttribute="leading" secondItem="fnw-om-UdB" secondAttribute="trailing" constant="10" id="qSu-qd-dsB"/>
@@ -80,10 +80,10 @@
                                             </userDefinedRuntimeAttribute>
                                         </userDefinedRuntimeAttributes>
                                     </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="axK-xF-NDi" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="212" y="0.0" width="142" height="40"/>
+                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="axK-xF-NDi" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                        <rect key="frame" x="171" y="0.0" width="128" height="40"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali , Indoneasia " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P1c-su-kZl">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Bali , Indoneasia " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P1c-su-kZl">
                                                 <rect key="frame" x="45" y="0.0" width="97" height="40"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                 <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -118,8 +118,11 @@
                                     <constraint firstAttribute="height" constant="40" id="PLf-gh-Xwa"/>
                                 </constraints>
                             </stackView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgGroupNew" translatesAutoresizingMaskIntoConstraints="NO" id="D2n-wD-6GQ">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D2n-wD-6GQ">
                                 <rect key="frame" x="10" y="494" width="304" height="57"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="57" id="E8m-b0-M9E"/>
+                                </constraints>
                             </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ahG-A5-TSr">
                                 <rect key="frame" x="10" y="494" width="304" height="57"/>
@@ -286,9 +289,16 @@
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgSave 1" translatesAutoresizingMaskIntoConstraints="NO" id="ZXo-Yp-ZCv">
                                         <rect key="frame" x="20" y="29.999999999999996" width="279" height="42.666666666666657"/>
                                     </imageView>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgGroupNew" translatesAutoresizingMaskIntoConstraints="NO" id="XAz-PJ-efK">
+                                    <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XAz-PJ-efK">
                                         <rect key="frame" x="10" y="641" width="299" height="57"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="57" id="eXp-DM-y3y"/>
+                                        </constraints>
                                     </imageView>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rxp-8D-KRU">
+                                        <rect key="frame" x="10" y="641" width="299" height="57"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </view>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cls-i7-nKV" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="149" y="708" width="150" height="50"/>
                                         <color key="backgroundColor" name="ThemeOrange"/>
@@ -314,13 +324,17 @@
                                     <constraint firstAttribute="bottom" secondItem="Sh1-9x-8qE" secondAttribute="bottom" id="8Ux-z9-Pij"/>
                                     <constraint firstItem="Cls-i7-nKV" firstAttribute="top" secondItem="XAz-PJ-efK" secondAttribute="bottom" constant="10" id="Er9-0x-LYP"/>
                                     <constraint firstItem="ZXo-Yp-ZCv" firstAttribute="leading" secondItem="l1l-fx-ewa" secondAttribute="leading" constant="20" id="Hgu-ab-2fc"/>
+                                    <constraint firstItem="rxp-8D-KRU" firstAttribute="top" secondItem="XAz-PJ-efK" secondAttribute="top" id="KYi-3a-LbT"/>
                                     <constraint firstItem="tXw-Vw-qDB" firstAttribute="top" secondItem="l1l-fx-ewa" secondAttribute="top" id="MGS-BH-6NC"/>
                                     <constraint firstAttribute="bottom" secondItem="Cls-i7-nKV" secondAttribute="bottom" constant="20" id="Owb-Wx-q7J"/>
                                     <constraint firstItem="Sh1-9x-8qE" firstAttribute="leading" secondItem="l1l-fx-ewa" secondAttribute="leading" id="P5z-yB-o0W"/>
                                     <constraint firstItem="ZXo-Yp-ZCv" firstAttribute="top" secondItem="l1l-fx-ewa" secondAttribute="top" constant="30" id="RjI-h0-0ay"/>
+                                    <constraint firstItem="rxp-8D-KRU" firstAttribute="trailing" secondItem="XAz-PJ-efK" secondAttribute="trailing" id="a2f-NY-1fO"/>
                                     <constraint firstAttribute="trailing" secondItem="ZXo-Yp-ZCv" secondAttribute="trailing" constant="20" id="bWJ-bI-hSE"/>
                                     <constraint firstAttribute="bottom" secondItem="tXw-Vw-qDB" secondAttribute="bottom" id="lF6-iU-Fy1"/>
                                     <constraint firstItem="tXw-Vw-qDB" firstAttribute="leading" secondItem="l1l-fx-ewa" secondAttribute="leading" id="oCD-C4-8hP"/>
+                                    <constraint firstItem="rxp-8D-KRU" firstAttribute="leading" secondItem="XAz-PJ-efK" secondAttribute="leading" id="pIo-2t-8UN"/>
+                                    <constraint firstItem="rxp-8D-KRU" firstAttribute="bottom" secondItem="XAz-PJ-efK" secondAttribute="bottom" id="pMv-yK-JDI"/>
                                     <constraint firstAttribute="trailing" secondItem="Sh1-9x-8qE" secondAttribute="trailing" id="pgH-wE-SO6"/>
                                     <constraint firstAttribute="trailing" secondItem="XAz-PJ-efK" secondAttribute="trailing" constant="10" id="qvH-yT-ahJ"/>
                                     <constraint firstItem="XAz-PJ-efK" firstAttribute="leading" secondItem="l1l-fx-ewa" secondAttribute="leading" constant="10" id="rrK-0V-qeT"/>
@@ -352,6 +366,7 @@
                             <constraint firstItem="ahG-A5-TSr" firstAttribute="leading" secondItem="D2n-wD-6GQ" secondAttribute="leading" id="KEN-vq-Zhv"/>
                             <constraint firstItem="8ew-fh-zU5" firstAttribute="leading" secondItem="w8T-B6-WrY" secondAttribute="leading" constant="10" id="L3u-mT-clP"/>
                             <constraint firstAttribute="bottom" secondItem="l1l-fx-ewa" secondAttribute="bottom" id="MDH-dW-cgd"/>
+                            <constraint firstAttribute="trailing" secondItem="IAF-gU-3nu" secondAttribute="trailing" constant="10" id="Nko-qL-8Ig"/>
                             <constraint firstItem="VHS-SA-dSh" firstAttribute="centerY" secondItem="8ew-fh-zU5" secondAttribute="centerY" id="Ous-Im-yHv"/>
                             <constraint firstItem="8ew-fh-zU5" firstAttribute="top" secondItem="Dfu-2e-Wbg" secondAttribute="bottom" constant="15" id="RzY-nL-Cll"/>
                             <constraint firstItem="IAF-gU-3nu" firstAttribute="top" secondItem="CWf-Cp-gW8" secondAttribute="bottom" constant="20" id="Sd8-i8-kQv"/>
@@ -386,6 +401,7 @@
                 <outlet property="btnStart" destination="jpe-B1-9qy" id="HJc-6q-ANx"/>
                 <outlet property="btnViewGroup" destination="Cls-i7-nKV" id="ZQ6-ra-1Rg"/>
                 <outlet property="imgVw" destination="Dfu-2e-Wbg" id="H2S-am-hOi"/>
+                <outlet property="imgVwSave" destination="tXw-Vw-qDB" id="cbF-IY-3D9"/>
                 <outlet property="lblLocation" destination="P1c-su-kZl" id="2Ly-UA-P3m"/>
                 <outlet property="lblLocationSave" destination="asR-LV-iL0" id="yQ6-9P-QLI"/>
                 <outlet property="lblMatched" destination="8ew-fh-zU5" id="Gpr-Tv-L2H"/>
@@ -394,6 +410,7 @@
                 <outlet property="lblTimeSave" destination="xYt-32-sQ2" id="lx9-kC-Ual"/>
                 <outlet property="lblTitle" destination="CWf-Cp-gW8" id="fcX-hK-Izd"/>
                 <outlet property="matchVw" destination="ahG-A5-TSr" id="2ig-Ch-kaj"/>
+                <outlet property="matchVwSave" destination="rxp-8D-KRU" id="rcv-da-kl0"/>
                 <outlet property="nwVw" destination="w8T-B6-WrY" id="GPw-K4-3wt"/>
                 <outlet property="savedVw" destination="l1l-fx-ewa" id="BDd-BC-fOW"/>
             </connections>
@@ -403,7 +420,6 @@
     <resources>
         <image name="imgCalendar" width="16" height="16"/>
         <image name="imgFrame2" width="354" height="234"/>
-        <image name="imgGroupNew" width="314" height="57"/>
         <image name="imgLocation" width="10.666666984558105" height="16"/>
         <image name="imgPhoto" width="472" height="378.66665649414062"/>
         <image name="imgSave 1" width="429.33334350585938" height="42.666667938232422"/>

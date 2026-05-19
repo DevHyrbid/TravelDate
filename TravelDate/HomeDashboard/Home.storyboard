@@ -265,7 +265,7 @@
                                                                 </constraints>
                                                             </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Time Until Trip" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G7n-t7-xGS">
-                                                                <rect key="frame" x="41" y="20" width="90" height="16.333333333333329"/>
+                                                                <rect key="frame" x="41" y="19.666666666666742" width="95" height="17"/>
                                                                 <fontDescription key="fontDescription" name="Inter24pt-SemiBold" family="Inter 24pt" pointSize="14"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
@@ -1261,7 +1261,7 @@
                                         </connections>
                                     </button>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="stA-JQ-lnz">
-                                        <rect key="frame" x="-6" y="240" width="405" height="592"/>
+                                        <rect key="frame" x="10" y="240" width="373" height="592"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <outlet property="dataSource" destination="gWb-qF-ck9" id="qPa-G9-0hy"/>
@@ -1340,13 +1340,13 @@
                                     <constraint firstItem="Kxx-4E-HWD" firstAttribute="leading" secondItem="Mjt-RO-nHu" secondAttribute="leading" id="QbC-Zm-gSw"/>
                                     <constraint firstItem="TzI-We-Njw" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="20" id="YGl-KQ-phd"/>
                                     <constraint firstItem="7DB-t0-isr" firstAttribute="centerY" secondItem="stA-JQ-lnz" secondAttribute="centerY" id="bd0-h9-RgB"/>
-                                    <constraint firstAttribute="trailing" secondItem="stA-JQ-lnz" secondAttribute="trailing" constant="-6" id="bfI-fy-SwN"/>
+                                    <constraint firstAttribute="trailing" secondItem="stA-JQ-lnz" secondAttribute="trailing" constant="10" id="bfI-fy-SwN"/>
                                     <constraint firstAttribute="bottom" secondItem="stA-JQ-lnz" secondAttribute="bottom" constant="20" id="c0d-49-TfX"/>
                                     <constraint firstItem="C9d-LL-Blp" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" id="jQK-En-MHQ"/>
                                     <constraint firstItem="la0-09-x1t" firstAttribute="top" secondItem="Mjt-RO-nHu" secondAttribute="top" id="lOe-h0-lhu"/>
                                     <constraint firstItem="Mjt-RO-nHu" firstAttribute="top" secondItem="3zk-1H-xkL" secondAttribute="top" constant="85" id="mud-Rg-7bD"/>
                                     <constraint firstItem="Mjt-RO-nHu" firstAttribute="leading" secondItem="la0-09-x1t" secondAttribute="trailing" constant="10" id="x2v-Dv-U4b"/>
-                                    <constraint firstItem="stA-JQ-lnz" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="-6" id="y9O-ml-aMi"/>
+                                    <constraint firstItem="stA-JQ-lnz" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="10" id="y9O-ml-aMi"/>
                                 </constraints>
                             </view>
                         </subviews>

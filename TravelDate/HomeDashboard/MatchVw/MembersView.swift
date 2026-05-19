@@ -24,11 +24,10 @@ final class MembersProgressView: UIView {
     private var avatarImageViews: [UIImageView] = []
     private let moreLabel = UILabel()
 
-    private let progressTrack = UIView()
-    private let progressFill = UIView()
-    private let leftLabel = UILabel()
-    private let progressContainer = UIView()
-
+    let progressTrack = UIView()
+    let progressFill = UIView()
+    let leftLabel = UILabel()
+    let progressContainer = UIView()
     private var progressFillWidthConstraint: NSLayoutConstraint?
 
     // MARK: - State

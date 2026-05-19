@@ -688,6 +688,8 @@ class User : Mappable {
             url = APiConstant.matchedGroup
         } else if type == 3 { // Past
             url  = APiConstant.myGroup + "past"
+        } else if type == 4 { // Past
+            url  = APiConstant.savedGroup 
         }
         
         NetworkManger.sendRequestUrlSession(url: url , params: [:], method: "GET") { responseObject, suces in
@@ -731,6 +733,22 @@ class User : Mappable {
     func  swipeAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, suces in
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  saveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.saveGroup)" + "\(id ?? "")", params: self.toJSON(), method: "POST") { responseObject, suces in
             
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
@@ -798,7 +816,7 @@ class Group: Mappable {
         roomId <- map["roomId"]
         createdAt <- map["createdAt"]
         creator <- map["creator"]
-        _id           <- map["_id"]
+        _id           <- map["id"]
         id           <- map["id"]
         groupTitle    <- map["groupTitle"]
         destination   <- map["destination"]
