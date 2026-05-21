@@ -33,7 +33,7 @@ class APiConstant : NSObject {
     static let inviteUser = baseUrl + "group/invite"
     static let swipe = baseUrl + "group/swipe/"
     static let matchedGroup = baseUrl + "group/my-matches?limit=100&page=1"
-    
+    static let roomChats = baseUrl + "chat/rooms"
     
 }
 

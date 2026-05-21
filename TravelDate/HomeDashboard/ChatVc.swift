@@ -2,334 +2,402 @@
 //  ChatVc.swift
 //  TravelDate
 //
-
+//  Refactored to senior-level MVC architecture
+//  - Single API load in viewDidLoad
+//  - Enum-based state management
+//  - Clean segment switching (no extra reloads)
+//  - Proper memory management with [weak self]
+//
 import UIKit
 
-class ChatVc: BaseClassVc {
-    
+// MARK: - Segment Enum
+
+enum ChatSegment {
+    case groups
+    case chats
+}
+
+final class ChatVc: BaseClassVc {
+
+    // MARK: - IBOutlets
+
     @IBOutlet weak var tblVw: UITableView!
-    @IBOutlet weak var btnSegment: UISegmentedControl!
     @IBOutlet weak var lblNoData: UILabel!
     @IBOutlet weak var lblTitle: UILabel!
-    @IBOutlet weak var lblTitleActive: UILabel!
-    private var segmentSetupDone = false
-    var data: GroupsData? = nil
-    
-    // MARK: - ViewLifeCycle
+    @IBOutlet weak var segmentView: ChatSegmentView!
+
+    // MARK: - Variables
+
+    private var groupsData: [Group] = []
+    private var chatData: [ChatRoomModel] = []
+
+    private var selectedSegment: ChatSegment = .groups
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        registerNib()
-        addGradient()
-        lblTitle.setFont(.medium, size: 18.0)
-        // Normal state font
-        let normalAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont(name: "Poppins-SemiBold", size: 14)!,
-            .foregroundColor: UIColor.gray
-        ]
-        
-        // Selected state font
-        let selectedAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont(name: "Poppins-SemiBold", size: 14)!,
-            .foregroundColor: UIColor.white
-        ]
-        
-        btnSegment.setTitleTextAttributes(normalAttributes, for: .normal)
-        btnSegment.setTitleTextAttributes(selectedAttributes, for: .selected)
-        
+
+        setupUI()
+        setupTableView()
+        setupSegmentCallbacks()
+
+        fetchAllData()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        tripsTabBarController?.showTabBar()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        setupSegmentUI()
+
+        let contentHeight = tblVw.contentSize.height
+        let tableHeight = tblVw.frame.height
+
+        if contentHeight < tableHeight {
+            let extraSpace = 100
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: CGFloat(extraSpace), right: 0)
+        } else {
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        }
     }
-    
-    func registerNib() {
+}
+
+// MARK: - Setup
+
+private extension ChatVc {
+
+    func setupUI() {
+
+        lblTitle.setFont(.medium, size: 18.0)
+
+        addGradient()
+    }
+
+    func setupTableView() {
+
+        tblVw.delegate = self
+        tblVw.dataSource = self
+
         tblVw.register(ChatTableViewCell.self)
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        tripsTabBarController?.showTabBar()
-        getGroups()
-    }
-    
-    func getGroups() {
-        request.getGroups(0) { model,msg, code in
-            if code == 200 {
-                DispatchQueue.main.async { [self] in
-                    self.data = model?.data ?? nil
-                    self.tblVw.reloadData()
-                    if self.data?.groups?.count == 0 {
-                        self.lblNoData.isHidden = false
-                    } else {
-                        self.lblNoData.isHidden = true
-                    }
-                }
-            } else {
-                DispatchQueue.main.async { [self] in
-                    showAlert(msg)
-                }
-            }
+
+    func setupSegmentCallbacks() {
+
+        segmentView.onSegmentChanged = { [weak self] index in
+
+            guard let self else { return }
+
+            self.selectedSegment = index == 0 ? .groups : .chats
+
+            print("Current Segment:", self.selectedSegment)
+
+            self.refreshTableView()
         }
-    }
-    
-    
-
-    func setupSegmentUI() {
-
-        guard !segmentSetupDone else { return }
-        segmentSetupDone = true
-
-        let inset: CGFloat = 4
-
-        // Outer container
-        btnSegment.backgroundColor = UIColor.white.withAlphaComponent(0.06)
-        btnSegment.layer.cornerRadius = 25.5
-        btnSegment.layer.cornerCurve = .continuous
-        btnSegment.clipsToBounds = true
-
-        // Remove default UI
-        btnSegment.setBackgroundImage(UIImage(), for: .normal, barMetrics: .default)
-        btnSegment.setBackgroundImage(UIImage(), for: .selected, barMetrics: .default)
-        btnSegment.setBackgroundImage(UIImage(), for: .highlighted, barMetrics: .default)
-
-        btnSegment.setDividerImage(
-            UIImage(),
-            forLeftSegmentState: .normal,
-            rightSegmentState: .normal,
-            barMetrics: .default
-        )
-
-        // Selected pill image
-        let selectedSize = CGSize(
-            width: (btnSegment.frame.width / CGFloat(btnSegment.numberOfSegments)) - (inset * 2),
-            height: btnSegment.frame.height - (inset * 2)
-        )
-
-        let renderer = UIGraphicsImageRenderer(size: selectedSize)
-
-        let selectedImage = renderer.image { context in
-
-            let rect = CGRect(origin: .zero, size: selectedSize)
-
-            let path = UIBezierPath(
-                roundedRect: rect,
-                cornerRadius: selectedSize.height / 2
-            )
-
-            UIColor.themeOrange.setFill()
-            path.fill()
-        }
-
-        let stretchable = selectedImage.resizableImage(
-            withCapInsets: UIEdgeInsets(
-                top: 0,
-                left: selectedSize.height / 2,
-                bottom: 0,
-                right: selectedSize.height / 2
-            ),
-            resizingMode: .stretch
-        )
-
-        btnSegment.setBackgroundImage(
-            stretchable,
-            for: .selected,
-            barMetrics: .default
-        )
-
-        // Text styles
-        btnSegment.setTitleTextAttributes([
-            .foregroundColor: UIColor.white.withAlphaComponent(0.5),
-            .font: UIFont(name: "Poppins-Medium", size: 15.0)
-        ], for: .normal)
-
-        btnSegment.setTitleTextAttributes([
-            .foregroundColor: UIColor.white,
-            .font: UIFont(name: "Poppins-SemiBold", size: 15.0)
-        ], for: .selected)
-
-        btnSegment.selectedSegmentIndex = 0
-
-        // IMPORTANT FIX
-        DispatchQueue.main.async {
-
-            for view in self.btnSegment.subviews {
-
-                view.layer.cornerRadius = (self.btnSegment.frame.height - (inset * 2)) / 2
-                view.layer.cornerCurve = .continuous
-                view.clipsToBounds = true
-            }
-        }
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        handleScroll(scrollView)
     }
 }
 
-// MARK: - TableViewDelegate
+// MARK: - API Calls
+
+private extension ChatVc {
+
+    func fetchAllData() {
+
+        fetchGroups()
+
+        fetchChats()
+    }
+
+    func fetchGroups() {
+
+        request.getGroups(0) { [weak self] model, msg, code in
+
+            guard let self else { return }
+
+            DispatchQueue.main.async {
+
+                if code == 200 {
+
+                    self.groupsData = model?.data?.groups ?? []
+
+                    print("Groups Count:", self.groupsData.count)
+
+                    if self.selectedSegment == .groups {
+
+                        self.refreshTableView()
+                    }
+
+                } else {
+
+                    self.showAlert(msg)
+                }
+            }
+        }
+    }
+
+    func fetchChats() {
+
+        request.getChatRooms { [weak self] response, msg, errCode in
+
+            guard let self else { return }
+
+            DispatchQueue.main.async {
+
+                if errCode == 200 {
+
+                    self.chatData = response ?? []
+
+                    print("Chats Count:", self.chatData.count)
+
+                    if self.selectedSegment == .chats {
+
+                        self.refreshTableView()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Helpers
+
+private extension ChatVc {
+
+    func refreshTableView() {
+
+        print("Reloading Table")
+
+        tblVw.reloadData()
+
+        updateNoDataLabel()
+    }
+
+    func updateNoDataLabel() {
+
+        let isEmpty: Bool
+
+        switch selectedSegment {
+
+        case .groups:
+            isEmpty = groupsData.isEmpty
+
+        case .chats:
+            isEmpty = chatData.isEmpty
+        }
+
+        lblNoData.isHidden = !isEmpty
+    }
+
+    func currentCount() -> Int {
+
+        switch selectedSegment {
+
+        case .groups:
+            return groupsData.count
+
+        case .chats:
+            return chatData.count
+        }
+    }
+}
+
+// MARK: - Actions
+
+extension ChatVc {
+
+    @IBAction func btnBack(_ sender: UIButton) {
+
+        backTapped()
+    }
+}
+
+// MARK: - UITableViewDelegate/DataSource
+
 extension ChatVc: UITableViewDelegate, UITableViewDataSource {
-    
-    func numberOfSections(in tableView: UITableView) -> Int { 1 }
-    
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+
+        return 1
+    }
+
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        self.data?.groups?.count ?? 0
+
+        return currentCount()
     }
-    
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell: ChatTableViewCell = tableView.dequeue(
-            ChatTableViewCell.self, for: indexPath)
-        let model = self.data?.groups?[indexPath.row]
-        cell.lblTitle.text =  model?.groupTitle ?? ""
-        cell.lblDesc.text = "\(model?.creator?.name ?? "") · Thu"
-        if let url = URL(string: model?.coverImage ?? "") {
-            loadImage(cell.imgVw, url: url)
-        } else {
-            cell.imgVw.image = UIImage(named: "User")
-        }
-        
-        cell.imgVw.contentMode = .scaleAspectFill
-        cell.imgVw.layer.cornerRadius = cell.imgVw.frame.height / 2
-        cell.imgVw.clipsToBounds = true
-        cell.lblTime.text = timeAgo(from: model?.createdAt ?? "")
-        
-        return cell
-    }
-    
+
     func tableView(_ tableView: UITableView,
                    heightForRowAt indexPath: IndexPath) -> CGFloat {
-       90
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedUser = self.data?.groups?[indexPath.row]
 
-        let chatVc = ChatMessageVc()
-        chatVc.roomId      = selectedUser?.roomId ?? ""
-        chatVc.roomTitle   = selectedUser?.groupTitle ?? "Chat"
-        chatVc.groupId     = selectedUser?.id ?? ""
-        chatVc.roomType    = "group"
-        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
-
-        // ✅ Correct way - compactMap use karo
-        chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
-        // ✅ Full log before push
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🚀 Opening ChatMessageVc")
-        print("📌 roomId      : \(chatVc.roomId)")
-        print("📌 roomTitle   : \(chatVc.roomTitle)")
-        print("📌 groupId     : \(chatVc.groupId)")
-        print("📌 roomType    : \(chatVc.roomType)")
-        print("📌 memberCount : \(chatVc.memberCount)")
-        print("📌 participants: \(chatVc.participants)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
-        navigationController?.pushViewController(chatVc, animated: true)
+        return 90
     }
-    
-    // MARK: - Swipe Actions
+
     func tableView(_ tableView: UITableView,
-                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
-    -> UISwipeActionsConfiguration? {
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        let group = self.data?.groups?[indexPath.row]
+        let cell: ChatTableViewCell = tableView.dequeue(ChatTableViewCell.self,
+                                                        for: indexPath)
 
-        // DELETE ACTION
-        let deleteAction = UIContextualAction(style: .destructive,
-                                              title: "Delete") { _, _, completion in
+        switch selectedSegment {
 
-            print("Delete tapped for group id: \(group?.id ?? "")")
+        case .groups:
 
-            // API Call Here
-            
-            self.request.deleteGroupAPi(group?.id ?? "") { msg, code in
-                DispatchQueue.main.async {
-                    if code == 200 {
-                        self.data?.groups?.remove(at: indexPath.row)
-                        tableView.deleteRows(at: [indexPath], with: .automatic)
-                    }
-                }
-               
-            }
-            
+            let model = groupsData[indexPath.row]
 
-            completion(true)
+            cell.lblTitle.text = model.groupTitle ?? ""
+
+            cell.lblDesc.text = model.creator?.name ?? ""
+
+            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
+
+            loadAvatarImage(into: cell.imgVw,
+                            urlString: model.coverImage)
+
+        case .chats:
+
+            let model = chatData[indexPath.row]
+
+            let senderName =
+            model.lastMessage?.sender?.name ??
+            model.participants?.first?.name ??
+            "Unknown"
+
+            cell.lblTitle.text = senderName
+
+            cell.lblDesc.text =
+            model.lastMessage?.content ?? "No messages yet"
+
+            cell.lblTime.text =
+            timeAgo(from: model.lastMessage?.createdAt ??
+                    model.createdAt ?? "")
+
+            let avatar =
+            model.participants?.first?.profileImage
+
+            loadAvatarImage(into: cell.imgVw,
+                            urlString: avatar)
         }
 
-        deleteAction.backgroundColor = .systemRed
+        return cell
+    }
 
-        // REPORT ACTION
-        let reportAction = UIContextualAction(style: .normal,
-                                              title: "Report") { _, _, completion in
+    func tableView(_ tableView: UITableView,
+                   didSelectRowAt indexPath: IndexPath) {
 
-            print("Report tapped for group id: \(group?.id ?? "")")
+        switch selectedSegment {
 
-            // API Call Here
-            /*
-            request.reportGroup(groupId: group?.id ?? "") { msg, code in
-                self.showAlert("Reported Successfully")
-            }
-            */
+        case .groups:
 
-            completion(true)
+            let group = groupsData[indexPath.row]
+
+            let vc = ChatMessageVc()
+
+            vc.roomId = group.roomId ?? ""
+
+            vc.roomTitle = group.groupTitle ?? ""
+
+            vc.groupId = group.id ?? ""
+
+            vc.roomType = "group"
+
+            navigationController?.pushViewController(vc,
+                                                     animated: true)
+
+        case .chats:
+
+            let chat = chatData[indexPath.row]
+
+            let vc = ChatMessageVc()
+
+            vc.roomId = chat.id ?? ""
+
+            vc.roomTitle =
+            chat.lastMessage?.sender?.name ?? "Chat"
+
+            vc.roomType = "direct"
+
+            navigationController?.pushViewController(vc,
+                                                     animated: true)
         }
-
-        reportAction.backgroundColor = .systemOrange
-
-        let configuration = UISwipeActionsConfiguration(actions: [
-            deleteAction
-//            reportAction
-        ])
-
-        configuration.performsFirstActionWithFullSwipe = false
-
-        return configuration
     }
 }
 
-extension ChatVc {
-    @IBAction func btnBack(_ sender: UIButton) {
-        super.backTapped()
+// MARK: - Image Loader
+
+private extension ChatVc {
+
+    func loadAvatarImage(into imageView: UIImageView,
+                         urlString: String?) {
+
+        imageView.contentMode = .scaleAspectFill
+
+        imageView.layer.cornerRadius = imageView.frame.height / 2
+
+        imageView.clipsToBounds = true
+
+        if let urlString,
+           let url = URL(string: urlString) {
+
+            loadImage(imageView, url: url)
+
+        } else {
+
+            imageView.image = UIImage(named: "User")
+        }
     }
 }
 
-extension ChatVc {
-   
+// MARK: - Time Ago
+
+private extension ChatVc {
 
     func timeAgo(from isoString: String) -> String {
+
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
 
         guard let date = formatter.date(from: isoString) else {
-            return "Invalid date"
+
+            return "-"
         }
 
-        let now = Date()
-        let seconds = Int(now.timeIntervalSince(date))
+        let seconds =
+        Int(Date().timeIntervalSince(date))
 
-        if seconds < 60 {
-            return "just now"
-        } else if seconds < 3600 {
-            return "\(seconds / 60) min ago"
-        } else if seconds < 86400 {
-            return "\(seconds / 3600) hr ago"
-        } else if seconds < 604800 {
-            return "\(seconds / 86400) day ago"
-        } else {
-            let weeks = seconds / 604800
-            return "\(weeks) week ago"
+        switch seconds {
+
+        case ..<60:
+            return "Just now"
+
+        case ..<3600:
+            return "\(seconds / 60)m ago"
+
+        case ..<86400:
+            return "\(seconds / 3600)h ago"
+
+        case ..<604800:
+            return "\(seconds / 86400)d ago"
+
+        default:
+            return "\(seconds / 604800)w ago"
         }
     }
 }
-
 import UIKit
 
 class ChatSegmentView: UIView {
 
     private let containerView = UIView()
+    private var selectedIndex = 0
 
+    var onSegmentChanged: ((_ index: Int) -> Void)?
     private let blurView = UIVisualEffectView(
         effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
     )
@@ -341,7 +409,7 @@ class ChatSegmentView: UIView {
 
     private let glowLayer = CAGradientLayer()
 
-    private var selectedIndex = 0
+    
 
     // MARK: - Init
 
@@ -491,6 +559,8 @@ class ChatSegmentView: UIView {
 
         selectedIndex = 0
 
+        onSegmentChanged?(0)
+
         UIView.animate(
             withDuration: 0.28,
             delay: 0,
@@ -511,6 +581,8 @@ class ChatSegmentView: UIView {
     @objc private func selectMatch() {
 
         selectedIndex = 1
+
+        onSegmentChanged?(1)
 
         UIView.animate(
             withDuration: 0.28,

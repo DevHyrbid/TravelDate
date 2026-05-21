@@ -31,6 +31,7 @@ class MyGroupViewController: BaseClassVc {
     var res : Group? = nil
     var timer: Timer?
     var targetDate: Date?
+    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -137,11 +138,15 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
             cell.lblLocation.text = UserDefaults.standard.value(forKey: "user_loc") as? String ?? "No Location"
             cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
             cell.btnEdit.backgroundColor = .clear
+            cell.btnEdit.addTarget(self, action: #selector(editUser(_:)), for: .touchUpInside)
+            cell.btnEdit.tag = indexPath.row
         } else {
+            cell.btnEdit.tag = indexPath.row
             cell.lblLocation.text = "No Location"
             cell.lblName.text = model?.name ?? ""
             cell.btnEdit.setTitle("Message", for: .normal)
             cell.btnEdit.backgroundColor = .themeOrange
+            cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
         
         if let url = URL(string: model?.profileImage ?? "") {
@@ -156,7 +161,38 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         
     }
     
-    @objc func editUser() {
+    @objc func editUser(_ sender:UIButton) {
+        self.pushVC(EditProfileVc.self, from: .Settings)
+    }
+    
+    
+    @objc func openChat(_ sender:UIButton) {
+        
+        
+        
+        let selectedUser = self.res
+        
+        let chatVc = ChatMessageVc()
+        chatVc.roomId      = selectedUser?.roomId ?? ""
+        chatVc.roomTitle   = selectedUser?.members?[sender.tag].name ?? ""
+        chatVc.groupId     = selectedUser?.id ?? ""
+        chatVc.roomType    = "individual"
+        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
+        
+        // ✅ Correct way - compactMap use karo
+        chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
+        // ✅ Full log before push
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("🚀 Opening ChatMessageVc")
+        print("📌 roomId      : \(chatVc.roomId)")
+        print("📌 roomTitle   : \(chatVc.roomTitle)")
+        print("📌 groupId     : \(chatVc.groupId)")
+        print("📌 roomType    : \(chatVc.roomType)")
+        print("📌 memberCount : \(chatVc.memberCount)")
+        print("📌 participants: \(chatVc.participants)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        
+        navigationController?.pushViewController(chatVc, animated: true)
         
     }
     

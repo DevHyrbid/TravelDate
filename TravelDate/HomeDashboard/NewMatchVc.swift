@@ -182,7 +182,9 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
                 loadImage(cell.heroImage, url: url)
             }
             cell.setTimeText(formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? ""))
-            cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) }
+            cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) { vc in
+                vc.data = model 
+            } }
             cell.onBookmark = { [weak self] in
                 guard let self = self else { return }
                 guard let groupId = model?._id else { return }

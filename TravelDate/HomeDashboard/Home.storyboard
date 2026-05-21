@@ -814,13 +814,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dbS-C5-haz">
-                                <rect key="frame" x="0.0" y="0.0" width="384" height="852"/>
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WyK-sz-qnu">
-                                        <rect key="frame" x="0.0" y="0.0" width="384" height="1022.3333333333334"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="1022.3333333333334"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgChat 1" translatesAutoresizingMaskIntoConstraints="NO" id="jvG-7M-gYB">
-                                                <rect key="frame" x="320" y="34.666666666666664" width="44" height="43.999999999999993"/>
+                                                <rect key="frame" x="329" y="34.666666666666664" width="44" height="43.999999999999993"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Group" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q8w-fg-HAg">
                                                 <rect key="frame" x="44.999999999999993" y="44" width="79.333333333333314" height="20.333333333333329"/>
@@ -835,10 +835,10 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2rP-sU-nq0" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                <rect key="frame" x="15" y="114.33333333333331" width="354" height="530"/>
+                                                <rect key="frame" x="15" y="114.33333333333331" width="363" height="530"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgGroup0" translatesAutoresizingMaskIntoConstraints="NO" id="XQ9-db-c3k">
-                                                        <rect key="frame" x="0.0" y="0.0" width="354" height="240"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="363" height="240"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="240" id="JaF-Us-I3p"/>
                                                         </constraints>
@@ -850,13 +850,13 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="gPy-Xc-VsM">
-                                                        <rect key="frame" x="15" y="290.33333333333337" width="329" height="40"/>
+                                                        <rect key="frame" x="15" y="290.33333333333337" width="338" height="40"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="0.0" width="188" height="40"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="197" height="40"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Apr 15 - Apr 28 2026" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
-                                                                        <rect key="frame" x="36" y="0.0" width="152" height="40"/>
+                                                                        <rect key="frame" x="36" y="0.0" width="161" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
@@ -885,7 +885,7 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                                <rect key="frame" x="203" y="0.0" width="126" height="40"/>
+                                                                <rect key="frame" x="212" y="0.0" width="126" height="40"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali , Indonesia" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
                                                                         <rect key="frame" x="36" y="0.0" width="90" height="40"/>
@@ -926,7 +926,7 @@
                                                         </constraints>
                                                     </stackView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCk-6Q-k96" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="15" y="350.33333333333337" width="324" height="138"/>
+                                                        <rect key="frame" x="15" y="350.33333333333337" width="333" height="138"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgTime" translatesAutoresizingMaskIntoConstraints="NO" id="Ec9-BP-nJw">
                                                                 <rect key="frame" x="10" y="15" width="16" height="16"/>
@@ -942,7 +942,7 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="zFN-rY-e5g">
-                                                                <rect key="frame" x="23" y="49.999999999999943" width="286" height="68"/>
+                                                                <rect key="frame" x="32" y="49.999999999999943" width="286" height="68"/>
                                                                 <subviews>
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2h-n0-rUV" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="68"/>
@@ -1143,7 +1143,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="3Cq-AJ-GaC">
-                                                <rect key="frame" x="5" y="702.33333333333337" width="374" height="300"/>
+                                                <rect key="frame" x="5" y="702.33333333333337" width="383" height="300"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="300" id="AP3-XL-pBu"/>
@@ -1583,6 +1583,12 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="imgGroup" destination="S01-Fj-sMK" id="nVa-Ew-ORD"/>
+                        <outlet property="lblCount" destination="w9E-xn-WbJ" id="DIV-qx-1jA"/>
+                        <outlet property="lblDate" destination="xh1-gt-rr7" id="FZo-Bz-XlV"/>
+                        <outlet property="lblLocation" destination="DKI-l5-9tz" id="Vsc-Um-wcY"/>
+                        <outlet property="lblName" destination="Wxb-dp-RMH" id="twc-Er-Coj"/>
+                        <outlet property="lblTitle" destination="1b8-wx-SFt" id="ihp-UR-l9G"/>
                         <outlet property="tblVw" destination="OB9-lp-ZlH" id="6zo-0s-Npd"/>
                         <outlet property="tblVwHeight" destination="w5r-OP-5vr" id="ecT-mK-M2h"/>
                     </connections>
@@ -1961,9 +1967,9 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="btnSegment" destination="dfC-Gb-9H8" id="jdo-xG-hdt"/>
                         <outlet property="lblNoData" destination="SoP-9N-HNf" id="f5n-Od-ONw"/>
                         <outlet property="lblTitle" destination="nyS-c5-XAh" id="gim-cj-yOG"/>
+                        <outlet property="segmentView" destination="NFv-A2-a6q" id="spj-sn-Cle"/>
                         <outlet property="tblVw" destination="fft-Ci-azY" id="aKY-on-Hpt"/>
                     </connections>
                 </viewController>

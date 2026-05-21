@@ -762,6 +762,38 @@ class User : Mappable {
         
     }
     
+    func  getChatRooms(callBack:((_ chat:[ChatRoomModel]?,_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.roomChats , params: [:], method: "GET") { responseObject, success in
+            
+            if let code = responseObject["code"] as? Int, code == 200 {
+                
+                print("API RESPONSE:", responseObject)
+                
+                if let dataArray = responseObject["data"] as? [[String: Any]] {
+                    
+                    let data = Mapper<ChatRoomModel>().mapArray(JSONObject: dataArray)
+                    
+                    print("PARSED API FOR :::::", data ?? [])
+                    
+                    callBack(data, "Success", 200)
+                    
+                } else {
+                    
+                    callBack(nil, "Data parsing failed", 404)
+                }
+                
+            } else {
+                
+                let message = responseObject["message"] as? String ?? "Error"
+                callBack(nil, message, 404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
+        }
+        
+    }
+    
 }
 
 class GroupsResponse: Mappable {
@@ -915,3 +947,104 @@ class Location: Mappable {
     }
 }
 
+
+
+import ObjectMapper
+
+// MARK: - ChatRoomModel
+class ChatRoomModel: Mappable {
+
+    var id: String?
+    var type: String?
+    var groupName: String?
+    var lastMessageId: String?
+    var createdAt: String?
+    var updatedAt: String?
+    var groupId: String?
+    var participants: [ParticipantModel]?
+    var lastMessage: LastMessageModel?
+    var unreadCount: Int?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        id              <- map["id"]
+        type            <- map["type"]
+        groupName       <- map["groupName"]
+        lastMessageId   <- map["lastMessageId"]
+        createdAt       <- map["createdAt"]
+        updatedAt       <- map["updatedAt"]
+        groupId         <- map["groupId"]
+        participants    <- map["participants"]
+        lastMessage     <- map["lastMessage"]
+        unreadCount     <- map["unreadCount"]
+    }
+}
+
+// MARK: - ParticipantModel
+class ParticipantModel: Mappable {
+
+    var id: String?
+    var name: String?
+    var profileImage: String?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        id              <- map["id"]
+        name            <- map["name"]
+        profileImage    <- map["profile_image"]
+    }
+}
+
+// MARK: - LastMessageModel
+class LastMessageModel: Mappable {
+
+    var id: String?
+    var roomId: String?
+    var senderId: String?
+    var content: String?
+    var contentType: String?
+    var clientId: String?
+    var createdAt: String?
+    var updatedAt: String?
+    var sender: SenderModel?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        id              <- map["id"]
+        roomId          <- map["roomId"]
+        senderId        <- map["senderId"]
+        content         <- map["content"]
+        contentType     <- map["contentType"]
+        clientId        <- map["clientId"]
+        createdAt       <- map["createdAt"]
+        updatedAt       <- map["updatedAt"]
+        sender          <- map["sender"]
+    }
+}
+
+// MARK: - SenderModel
+class SenderModel: Mappable {
+
+    var id: String?
+    var name: String?
+    var profileImage: String?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        id              <- map["id"]
+        name            <- map["name"]
+        profileImage    <- map["profile_image"]
+    }
+}
