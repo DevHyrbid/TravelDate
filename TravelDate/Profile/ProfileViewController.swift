@@ -19,7 +19,8 @@ class ProfileViewController: BaseClassVc {
     
     // MARK: - Arr
     var arr = [String]()
-    
+    var selectedTravelStyle: TravelStyle = .partygoers
+    var selectedTravelStyles: [TravelStyle] = []
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,10 +95,15 @@ extension ProfileViewController {
         
     }
     
-    @IBAction func btnAddStyles(_ sender:UIButton){
-        let picker = TravelStylePickerView()
+    @IBAction func btnAddStyles(_ sender: UIButton) {
+
+        let picker = TravelStylePickerView(
+            selectedStyles: selectedTravelStyles
+        )
+
         picker.delegate = self
-        picker.present(in: self)
+
+        picker.present()
     }
     
     func openAboutEdit() {
@@ -121,20 +127,27 @@ extension ProfileViewController {
 }
 
 extension ProfileViewController: TravelStylePickerDelegate {
-    
-    func travelStylePicker(_ picker: TravelStylePickerView, didSelect style: TravelStyle) {
-        print("Selected:", style.title)
-        if !arr.contains(style.title) {
-            arr.append(style.title)
+    func travelStylePicker(_ picker: TravelStylePickerView, didSelect style: [TravelStyle]) {
+       
+        selectedTravelStyles = style
+
+        arr.removeAll()
+
+        for item in style {
+
+            arr.append(item.title)
         }
+
         request.travelStyles = arr
+
         request.editProfileAPi { msg, errCode in
-            
+
+            print(msg)
         }
+
         self.collectionVw.reloadData()
     }
 }
-
 extension ProfileViewController : CollectionDelegate
 {
     

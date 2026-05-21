@@ -730,18 +730,18 @@ class User : Mappable {
     }
     
     
-    func  swipeAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+    func  swipeAPi(callBack:(( _ type:Int?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, suces in
             
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
-                callBack(responseObject["message"] as? String ?? "",200)
+                callBack((responseObject["data"] as? [String:Any] ?? [:])["isMatch"] as? Int ?? 0 ,["message"] as? String ?? "",200)
             } else {
-                callBack(responseObject["message"] as? String ?? "",404)
+                callBack(nil,responseObject["message"] as? String ?? "",404)
             }
         } faliure: { errMsg, errCode in
-            callBack(errMsg, errCode)
+            callBack(nil,errMsg, errCode)
         }
         
     }

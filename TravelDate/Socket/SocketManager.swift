@@ -1,22 +1,34 @@
-
-
-
 //
 //  SocketIOManager.swift
 //  TravelDate
-//
-//  Created by Dev CodingZone on 01/05/26.
 //
 
 import Foundation
 import SocketIO
 
-// MARK: - Socket Event Delegates
+// MARK: - Chat Room Type
+
+enum ChatRoomType: String {
+    case group      = "group"
+    case individual = "individual"
+}
+
+// MARK: - Active Room State
+
+struct ActiveRoom {
+    let roomId:       String
+    let type:         ChatRoomType
+    let groupId:      String
+    let participants: [String]
+}
+
+// MARK: - Delegate Protocol
 
 protocol ChatSocketDelegate: AnyObject {
-    func didReceiveNewMessage(_ message: MessageModel)
+    func socketConnected()
     func didJoinRoom(roomId: String)
     func didReceiveMessages(_ messages: [MessageModel])
+    func didReceiveNewMessage(_ message: MessageModel)
     func didReceiveTyping(senderId: String, isTyping: Bool)
     func didReceiveMessagesRead(roomId: String)
     func didReceiveUserOnline(userId: String)
@@ -24,271 +36,316 @@ protocol ChatSocketDelegate: AnyObject {
     func didReceiveChatDeleted(roomId: String)
     func didReceiveMessagesDeleted(messageIds: [String])
     func didLeaveGroupChat(roomId: String)
-    func didReceiveRooms(_ rooms: [[String: Any]])
-    func socketConnected()
 }
 
-// Optional defaults so VC doesn't have to implement all
+// MARK: - Optional Defaults
+
 extension ChatSocketDelegate {
-    func didReceiveTyping(senderId: String, isTyping: Bool) {}
-    func didReceiveMessagesRead(roomId: String) {}
-    func didReceiveUserOnline(userId: String) {}
-    func didReceiveUserOffline(userId: String) {}
-    func didReceiveChatDeleted(roomId: String) {}
-    func didReceiveMessagesDeleted(messageIds: [String]) {}
-    func didLeaveGroupChat(roomId: String) {}
-    func didReceiveRooms(_ rooms: [[String: Any]]) {}
+    func didReceiveTyping(senderId: String, isTyping: Bool)  {}
+    func didReceiveMessagesRead(roomId: String)              {}
+    func didReceiveUserOnline(userId: String)                {}
+    func didReceiveUserOffline(userId: String)               {}
+    func didReceiveChatDeleted(roomId: String)               {}
+    func didReceiveMessagesDeleted(messageIds: [String])     {}
+    func didLeaveGroupChat(roomId: String)                   {}
 }
 
 // MARK: - SocketIOManager
 
-class SocketIOManager {
-    var currentGroupId: String = ""  // 👈 ADD
+final class SocketIOManager {
 
+    // MARK: - Singleton
     static let shared = SocketIOManager()
 
-    private var manager: SocketManager!
-    var socket: SocketIOClient!
-    private var isListening = false
+    // MARK: - Private Properties
+    private var manager:           SocketManager!
+    private(set) var socket:       SocketIOClient!
+    private var hasSetupListeners  = false
+    private(set) var activeRoom:   ActiveRoom?
 
-    weak var delegate: ChatSocketDelegate?
+    // NSHashTable = weak refs, auto-removes deallocated delegates
+    private let delegates = NSHashTable<AnyObject>.weakObjects()
 
+    // MARK: - Init
     private init() {
-       
-        let url = URL(string: APiConstant.base)!
+        buildSocket()
+    }
+
+    // MARK: - Build Socket
+    private func buildSocket() {
+        guard let url = URL(string: APiConstant.base) else {
+            print("🔴 Invalid socket URL")
+            return
+        }
         let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""
 
         manager = SocketManager(
             socketURL: url,
             config: [
-                .log(true),
+                .log(false),
                 .compress,
                 .reconnects(true),
                 .reconnectAttempts(-1),
-                .extraHeaders([
-                    "Authorization": "Bearer \(token)"
-                ])
+                .extraHeaders(["Authorization": "Bearer \(token)"])
             ]
         )
-
         socket = manager.defaultSocket
+    }
+
+    // MARK: - Delegate Management
+
+    func addDelegate(_ delegate: ChatSocketDelegate) {
+        delegates.add(delegate as AnyObject)
+    }
+
+    func removeDelegate(_ delegate: ChatSocketDelegate) {
+        delegates.remove(delegate as AnyObject)
+    }
+
+    private func notifyAll(_ block: (ChatSocketDelegate) -> Void) {
+        delegates.allObjects
+            .compactMap { $0 as? ChatSocketDelegate }
+            .forEach(block)
     }
 
     // MARK: - Connect / Disconnect
 
     func connect() {
-        guard socket.status != .connected else {
-            print("⚡ Socket already connected")
-            
-            socket.disconnect()
-                socket.connect()
-                
-            return
+        switch socket.status {
+        case .connected:
+            print("⚡ Already connected — notifying delegates")
+            DispatchQueue.main.async { [weak self] in
+                self?.notifyAll { $0.socketConnected() }
+            }
+        case .connecting:
+            print("⏳ Socket is connecting…")
+        default:
+            print("🔌 Connecting socket…")
+            socket.connect()
         }
-        socket.connect()
     }
 
     func disconnect() {
+        activeRoom = nil
         socket.disconnect()
-        isListening = false
     }
 
-    // MARK: - Setup All Listeners
+    // MARK: - Setup Listeners (call ONCE from AppDelegate)
 
     func setupListeners() {
-        guard !isListening else { return }
-        isListening = true
+        guard !hasSetupListeners else { return }
+        hasSetupListeners = true
 
-        // ─── Connection ───────────────────────────────────────────
-        socket.on(clientEvent: .connect) { _, _ in
+        // ── Connection Events ──────────────────────────────────────
+
+        socket.on(clientEvent: .connect) { [weak self] _, _ in
             print("✅ Socket connected")
-            self.delegate?.socketConnected()
+            DispatchQueue.main.async {
+                self?.notifyAll { $0.socketConnected() }
+            }
         }
 
-        socket.on(clientEvent: .disconnect) { data, _ in
-            print("❌ Socket disconnected — \(data)")
+        socket.on(clientEvent: .disconnect) { _, _ in
+            print("❌ Socket disconnected")
         }
 
         socket.on(clientEvent: .error) { data, _ in
-            print("🔴 Socket error — \(data)")
+            print("🔴 Socket error: \(data)")
         }
 
-        // ─── 1. newMessage ────────────────────────────────────────
-        // Server sends when someone sends a message in the room
+        socket.on(clientEvent: .reconnect) { [weak self] _, _ in
+            print("🔄 Reconnected — rejoining active room")
+            self?.rejoinActiveRoomIfNeeded()
+        }
+
+        // ── newMessage ─────────────────────────────────────────────
         socket.on("newMessage") { [weak self] data, _ in
-            print("📩 newMessage received: \(data)")
-            guard let dict = data.first as? [String: Any] else { return }
+            guard let self,
+                  let dict = data.first as? [String: Any] else { return }
+
             let msg = MessageModel(dict: dict)
+
+            // ✅ Filter: ignore messages not for active room
+//            guard let activeRoomId = self.activeRoom?.roomId,
+//                  msg.roomId == activeRoomId else {
+//                print("🚫 Ignored newMessage — wrong room: \(msg.roomId ?? "nil")")
+//                return
+//            }
+
+            print("📩 newMessage: \(msg.content ?? "")")
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveNewMessage(msg)
+                self.notifyAll { $0.didReceiveNewMessage(msg) }
             }
         }
 
-        // ─── 2. joinedRoom ────────────────────────────────────────
-        // Server confirms room join and returns roomId
+        // ── joinedRoom ─────────────────────────────────────────────
         socket.on("joinedRoom") { [weak self] data, _ in
-            print("🏠 joinedRoom received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let roomId = dict["roomId"] as? String else { return }
+            print("🏠 joinedRoom: \(roomId)")
             DispatchQueue.main.async {
-                self?.delegate?.didJoinRoom(roomId: roomId)
+                self?.notifyAll { $0.didJoinRoom(roomId: roomId) }
             }
         }
 
-        // ─── 3. typing ───────────────────────────────────────────
-        // Server broadcasts typing status to room members
+        // ── rooms (fallback after joinRoom) ────────────────────────
+        socket.on("rooms") { [weak self] data, _ in
+            guard let roomsArr  = data.first as? [[String: Any]],
+                  let firstRoom = roomsArr.first,
+                  let roomId    = firstRoom["id"] as? String else { return }
+            print("🏠 rooms → roomId: \(roomId)")
+            DispatchQueue.main.async {
+                self?.notifyAll { $0.didJoinRoom(roomId: roomId) }
+            }
+        }
+
+        // ── messages (history) ─────────────────────────────────────
+        socket.on("messages") { [weak self] data, _ in
+            guard let self,
+                  let dict   = data.first as? [String: Any],
+                  let msgArr = dict["messages"] as? [[String: Any]] else { return }
+
+            let all      = msgArr.map { MessageModel(dict: $0) }
+            let filtered = all.filter { $0.roomId == self.activeRoom?.roomId }
+
+            print("💬 messages received: \(all.count), filtered: \(filtered.count)")
+            DispatchQueue.main.async {
+                self.notifyAll { $0.didReceiveMessages(filtered) }
+            }
+        }
+
+        // ── typing ─────────────────────────────────────────────────
         socket.on("typing") { [weak self] data, _ in
-            print("⌨️ typing received: \(data)")
-            guard let dict       = data.first as? [String: Any],
-                  let senderId   = dict["senderId"] as? String,
-                  let isTyping   = dict["isTyping"] as? Bool else { return }
+            guard let dict     = data.first as? [String: Any],
+                  let senderId = dict["senderId"] as? String,
+                  let isTyping = dict["isTyping"] as? Bool else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveTyping(senderId: senderId, isTyping: isTyping)
+                self?.notifyAll { $0.didReceiveTyping(senderId: senderId, isTyping: isTyping) }
             }
         }
 
-        // ─── 4. messagesRead ─────────────────────────────────────
-        // Server notifies when messages are read
+        // ── messagesRead ───────────────────────────────────────────
         socket.on("messagesRead") { [weak self] data, _ in
-            print("👁 messagesRead received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let roomId = dict["roomId"] as? String else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveMessagesRead(roomId: roomId)
+                self?.notifyAll { $0.didReceiveMessagesRead(roomId: roomId) }
             }
         }
 
-        // ─── 5. chatDeleted ──────────────────────────────────────
-        // Server notifies when a chat/room is deleted
+        // ── chatDeleted ────────────────────────────────────────────
         socket.on("chatDeleted") { [weak self] data, _ in
-            print("🗑 chatDeleted received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let roomId = dict["roomId"] as? String else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveChatDeleted(roomId: roomId)
+                self?.notifyAll { $0.didReceiveChatDeleted(roomId: roomId) }
             }
         }
 
-        // ─── 6. messagesDeleted ──────────────────────────────────
-        // Server notifies when specific messages are deleted
+        // ── messagesDeleted ────────────────────────────────────────
         socket.on("messagesDeleted") { [weak self] data, _ in
-            print("🗑 messagesDeleted received: \(data)")
             guard let dict       = data.first as? [String: Any],
                   let messageIds = dict["messageIds"] as? [String] else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveMessagesDeleted(messageIds: messageIds)
+                self?.notifyAll { $0.didReceiveMessagesDeleted(messageIds: messageIds) }
             }
         }
 
-        // ─── 7. rooms ────────────────────────────────────────────
-        // Server sends list of rooms
-        
-
-        // ─── 8. messages ─────────────────────────────────────────
-        // Server returns old messages on getMessages emit
-        socket.on("messages") { [weak self] data, _ in
-            print("💬 messages received: \(data)")
-            guard let dict   = data.first as? [String: Any],
-                  let msgArr = dict["messages"] as? [[String: Any]] else { return }  // ✅ dict["messages"]
-            let messages = msgArr.map { MessageModel(dict: $0) }
-            DispatchQueue.main.async {
-                self?.delegate?.didReceiveMessages(messages)
-            }
-        }
-
-        // ─── 9. userOnline ───────────────────────────────────────
+        // ── userOnline ─────────────────────────────────────────────
         socket.on("userOnline") { [weak self] data, _ in
-            print("🟢 userOnline received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let userId = dict["userId"] as? String else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveUserOnline(userId: userId)
+                self?.notifyAll { $0.didReceiveUserOnline(userId: userId) }
             }
         }
 
-        // ─── 10. userOffline ─────────────────────────────────────
+        // ── userOffline ────────────────────────────────────────────
         socket.on("userOffline") { [weak self] data, _ in
-            print("🔴 userOffline received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let userId = dict["userId"] as? String else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didReceiveUserOffline(userId: userId)
+                self?.notifyAll { $0.didReceiveUserOffline(userId: userId) }
             }
         }
 
-        // ─── 11. leaveGroupChat ──────────────────────────────────
+        // ── leaveGroupChat ─────────────────────────────────────────
         socket.on("leaveGroupChat") { [weak self] data, _ in
-            print("🚪 leaveGroupChat received: \(data)")
             guard let dict   = data.first as? [String: Any],
                   let roomId = dict["roomId"] as? String else { return }
             DispatchQueue.main.async {
-                self?.delegate?.didLeaveGroupChat(roomId: roomId)
-            }
-        }
-        
-        
-        // SocketIOManager mein rooms listener update karo
-        socket.on("rooms") { [weak self] data, _ in
-            print("🏠 rooms received: \(data)")
-            guard let roomsArr = data.first as? [[String: Any]] else { return }
-            
-            // Pehla room le lo — joinRoom ke baad server sirf usi room ka data bhejta hai
-            if let firstRoom = roomsArr.first,
-               let roomId = firstRoom["id"] as? String {
-                print("✅ roomId from rooms: \(roomId)")
-                DispatchQueue.main.async {
-                    self?.delegate?.didJoinRoom(roomId: roomId)
-                }
+                self?.notifyAll { $0.didLeaveGroupChat(roomId: roomId) }
             }
         }
     }
 
-    // MARK: - Emit Events
+    // MARK: - Room Management
 
-    /// Emit: joinRoom
-    func joinRoom(participants: [String], type: String, groupId: String, roomId: String = "") {
-
-        var params: [String: Any] = [:]
-
-        if !roomId.isEmpty {
-
-            params["roomId"] = roomId
-            params = [
-                "participants": participants,
-                "type": type
-            ]
-
-            if !groupId.isEmpty {
-                params["groupId"] = groupId
-            }
-        } else {
-            params = [
-                "participants": participants,
-                "type": type
-            ]
-
-            if !groupId.isEmpty {
-                params["groupId"] = groupId
-            }
-            
+    func joinRoom(
+        roomId:       String,
+        type:         ChatRoomType,
+        groupId:      String      = "",
+        participants: [String]    = []
+    ) {
+        // Leave previous room if different
+        if let prev = activeRoom, prev.roomId != roomId {
+            leaveCurrentRoom()
         }
+
+        // ✅ Set active room BEFORE emit so filter works instantly
+        activeRoom = ActiveRoom(
+            roomId:       roomId,
+            type:         type,
+            groupId:      groupId,
+            participants: participants
+        )
+
+        // Build params cleanly
+        var params: [String: Any] = ["type": type.rawValue]
+
+        if !participants.isEmpty { params["participants"] = participants }
+        if !groupId.isEmpty      { params["groupId"]      = groupId     }
+        if !roomId.isEmpty       { params["roomId"]        = roomId     }
 
         print("🚀 emit joinRoom: \(params)")
         socket.emit("joinRoom", params)
     }
 
-    /// Emit: sendMessage (text)
+    func leaveCurrentRoom() {
+        guard let room = activeRoom else { return }
+        print("🚪 Leaving room: \(room.roomId)")
+        if room.type == .group {
+            socket.emit("leaveGroupChat", ["roomId": room.roomId])
+        }
+        activeRoom = nil
+    }
+
+    private func rejoinActiveRoomIfNeeded() {
+        guard let room = activeRoom else { return }
+        joinRoom(
+            roomId:       room.roomId,
+            type:         room.type,
+            groupId:      room.groupId,
+            participants: room.participants
+        )
+    }
+
+    // MARK: - Emit Helpers
+
     func sendTextMessage(roomId: String, content: String) {
-        let params: [String: Any] = [
-            "roomId":      roomId,
-            "content":     content,
+        
+        var params: [String: Any] = [
+            "content": content,
             "contentType": "text"
         ]
-        print("🚀 emit sendMessage (text): \(params)")
+
+        if !roomId.isEmpty {
+            params["roomId"] = roomId
+        }
+        print("🚀 emit sendMessage: \(params)")
         socket.emit("sendMessage", params)
     }
 
-    /// Emit: sendMessage (image)
     func sendImageMessage(roomId: String, imageUrl: String) {
         let params: [String: Any] = [
             "roomId":      roomId,
@@ -296,31 +353,19 @@ class SocketIOManager {
             "contentType": "image",
             "imageUrl":    imageUrl
         ]
-        print("🚀 emit sendMessage (image): \(params)")
         socket.emit("sendMessage", params)
     }
 
-    /// Emit: typing
     func sendTyping(roomId: String, isTyping: Bool) {
-        let params: [String: Any] = [
-            "roomId":   roomId,
-            "isTyping": isTyping
-        ]
-        print("🚀 emit typing: \(params)")
-        socket.emit("typing", params)
+        socket.emit("typing", ["roomId": roomId, "isTyping": isTyping])
     }
 
-    /// Emit: getMessages (fetch old messages)
     func getMessages(roomId: String) {
-        let params: [String: Any] = ["roomId": roomId]
-        print("🚀 emit getMessages: \(params)")
-        socket.emit("getMessages", params)
+        print("🚀 emit getMessages: \(roomId)")
+        socket.emit("getMessages", ["roomId": roomId])
     }
 
-    /// Emit: leaveGroupChat
     func leaveGroupChat(roomId: String) {
-//        let params: [String: Any] = ["roomId": roomId]
-//        print("🚀 emit leaveGroupChat: \(params)")
-//        socket.emit("leaveGroupChat", params)
+        socket.emit("leaveGroupChat", ["roomId": roomId])
     }
 }

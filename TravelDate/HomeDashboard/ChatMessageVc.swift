@@ -1,58 +1,49 @@
-
 //
 //  ChatMessageVc.swift
 //  TravelDate
 //
-//  Created by Dev CodingZone on 16/04/26.
-//
 
 import UIKit
-import SocketIO
 
 // MARK: - MessageModel
 
 struct MessageModel {
-    var id: String?
-    var roomId: String?
-    var senderId: String?
-    var senderName: String?
-    var senderImage: String?   // 👈 ADD
-    var content: String?
+    var id:          String?
+    var roomId:      String?
+    var senderId:    String?
+    var senderName:  String?
+    var senderImage: String?
+    var content:     String?
     var contentType: String?
-    var imageUrl: String?
-    var createdAt: String?
-    var isSeen: Bool?
+    var imageUrl:    String?
+    var createdAt:   String?
+    var isSeen:      Bool?
 
     init(dict: [String: Any]) {
-        self.id          = dict["id"] as? String        // ✅ "id" not "_id"
-        self.roomId      = dict["roomId"] as? String
-        self.senderId    = dict["senderId"] as? String
-        self.content     = dict["content"] as? String
-        self.contentType = dict["contentType"] as? String
-        self.imageUrl    = dict["imageUrl"] as? String
-        self.createdAt   = dict["createdAt"] as? String
-        self.isSeen      = dict["isSeen"] as? Bool
+        id          = dict["id"]          as? String
+        roomId      = dict["roomId"]      as? String
+        senderId    = dict["senderId"]    as? String
+        content     = dict["content"]     as? String
+        contentType = dict["contentType"] as? String
+        imageUrl    = dict["imageUrl"]    as? String
+        createdAt   = dict["createdAt"]   as? String
+        isSeen      = dict["isSeen"]      as? Bool
 
-        // 👇 Nested sender object se naam aur image lo
         if let sender = dict["sender"] as? [String: Any] {
-            self.senderName  = sender["name"] as? String
-            self.senderImage = sender["profile_image"] as? String
+            senderName  = sender["name"]          as? String
+            senderImage = sender["profile_image"] as? String
         } else {
-            self.senderName  = dict["senderName"] as? String
+            senderName = dict["senderName"] as? String
         }
     }
 }
 
-//
-//  ChatMessageVc.swift
-//  TravelDate
-//
+// MARK: - ChatMessageVc
 
-import UIKit
+final class ChatMessageVc: BaseClassVc {
 
-class ChatMessageVc: BaseClassVc {
+    // MARK: - UI Components
 
-    // MARK: - UI
     private let navBar          = UIView()
     private let backButton      = UIButton(type: .system)
     private let avatarImageView = UIImageView()
@@ -60,32 +51,33 @@ class ChatMessageVc: BaseClassVc {
     private let subtitleLabel   = UILabel()
     private let moreButton      = UIButton(type: .system)
     private let onlineDot       = UIView()
-
     private let tableView       = UITableView()
     private let typingLabel     = UILabel()
-
     private let inputContainer  = UIView()
     private let textField       = UITextField()
     private let emojiButton     = UIButton(type: .system)
     private let attachButton    = UIButton(type: .system)
     private let sendButton      = UIButton(type: .system)
 
-    // MARK: - Data
-    var roomId:       String   = ""
-    var roomTitle:    String   = "Chat"
-    var groupId:      String   = ""
-    var roomType:     String   = "group"
-    var memberCount:  Int      = 0
-    var participants: [String] = []
+    // MARK: - Input from ChatVc
 
-    private var messages: [MessageModel] = []
-    private let currentUserId = User.curentUser?.id ?? ""
+    var roomId:       String       = ""
+    var roomTitle:    String       = "Chat"
+    var groupId:      String       = ""
+    var roomType:     ChatRoomType = .group
+    var memberCount:  Int          = 0
+    var participants: [String]     = []
+
+    // MARK: - Private State
+
+    private var messages:      [MessageModel] = []
+    private let currentUserId: String         = User.curentUser?.id ?? ""
+    private var typingTimer:   Timer?
+    private let socket = SocketIOManager.shared
 
     // MARK: - Keyboard
-    private var inputContainerBottomConstraint: NSLayoutConstraint!
 
-    // MARK: - Typing debounce
-    private var typingTimer: Timer?
+    private var inputContainerBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Lifecycle
 
@@ -100,133 +92,145 @@ class ChatMessageVc: BaseClassVc {
         setupInputBar()
         setupKeyboardObservers()
 
-        SocketIOManager.shared.delegate = self
-        SocketIOManager.shared.connect()
-        SocketIOManager.shared.setupListeners()
-//        joinRoom()
+        setupSocket()   // ← single entry point
     }
-    
-    func socketConnected() {
 
-        print("🚀 Now joining room")
-
-        joinRoom()
-    }
-    
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tripsTabBarController?.hideTabBar()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        if !roomId.isEmpty {
-            SocketIOManager.shared.leaveGroupChat(roomId: roomId)
-        }
-        SocketIOManager.shared.delegate = nil
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        // ✅ Clean exit — leave room + remove delegate
+        socket.leaveCurrentRoom()
+        socket.removeDelegate(self)
+        typingTimer?.invalidate()
+        typingTimer = nil
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-        typingTimer?.invalidate()
     }
 
-    private func joinRoom() {
-        SocketIOManager.shared.currentGroupId = groupId  // 👈 ADD
-        
-        
-            SocketIOManager.shared.joinRoom(
-                participants: participants,
-                type:         roomType,
-                groupId:      groupId,roomId:roomId
-            )
-        
-            SocketIOManager.shared.getMessages(roomId: roomId)
-        }
-    
+    // MARK: - Socket Setup
+
+    private func setupSocket() {
+        socket.addDelegate(self)      // ✅ multi-delegate safe
+        socket.setupListeners()       // ✅ guarded — runs once globally
+        socket.connect()              // ✅ joinRoom fires inside socketConnected()
+    }
+
+    private func joinCurrentRoom() {
+        socket.joinRoom(
+            roomId:       roomId,
+            type:         roomType,
+            groupId:      groupId,
+            participants: participants
+        )
+    }
 }
 
 // MARK: - ChatSocketDelegate
 
 extension ChatMessageVc: ChatSocketDelegate {
 
-    func didReceiveNewMessage(_ message: MessageModel) {
-        messages.append(message)
-
-        let indexPath = IndexPath(row: messages.count - 1, section: 0)
-
-        tableView.performBatchUpdates({
-            tableView.insertRows(at: [indexPath], with: .none)
-        })
-
-        scrollToBottom()
+    func socketConnected() {
+        print("✅ Socket connected — joining room")
+        joinCurrentRoom()
     }
+
     func didJoinRoom(roomId: String) {
-        self.roomId = roomId
-        print("✅ Joined room: \(roomId)")
-        
-        SocketIOManager.shared.getMessages(roomId: roomId)
+        print("🏠 Joined room: \(roomId)")
+        // Update roomId if server assigned one (individual chat flow)
+        if self.roomId.isEmpty { self.roomId = roomId }
+        socket.getMessages(roomId: roomId)
     }
 
     func didReceiveMessages(_ messages: [MessageModel]) {
-        self.messages = messages
-        tableView.reloadData()
-        scrollToBottom(animated: false)
+        // ✅ Already filtered by roomId in SocketIOManager
+        self.messages = messages.sorted { ($0.createdAt ?? "") < ($1.createdAt ?? "") }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.tableView.reloadData()
+            self.scrollToBottom(animated: false)
+        }
+    }
+
+    func didReceiveNewMessage(_ message: MessageModel) {
+        // ✅ Already filtered — safe direct append
+        messages.append(message)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
+            self.tableView.performBatchUpdates({
+                self.tableView.insertRows(at: [indexPath], with: .none)
+            })
+            self.scrollToBottom()
+        }
     }
 
     func didReceiveTyping(senderId: String, isTyping: Bool) {
         guard senderId != currentUserId else { return }
-        typingLabel.isHidden = !isTyping
-        if isTyping { scrollToBottom() }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.typingLabel.isHidden = !isTyping
+            if isTyping { self.scrollToBottom() }
+        }
     }
 
     func didReceiveMessagesRead(roomId: String) {
-        tableView.reloadData()
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
 
     func didReceiveUserOnline(userId: String) {
-        onlineDot.isHidden      = false
-        subtitleLabel.text      = "Online"
-        subtitleLabel.textColor = UIColor(red: 0.18, green: 0.80, blue: 0.44, alpha: 1)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.onlineDot.isHidden = false
+            self.subtitleLabel.text      = "Online"
+            self.subtitleLabel.textColor = UIColor(red: 0.18, green: 0.80, blue: 0.44, alpha: 1)
+        }
     }
 
     func didReceiveUserOffline(userId: String) {
-        onlineDot.isHidden      = true
-        subtitleLabel.text      = memberCount > 0 ? "📍 \(memberCount) travelers" : "Offline"
-        subtitleLabel.textColor = .lightGray
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.onlineDot.isHidden = true
+            self.subtitleLabel.text      = self.memberCount > 0
+                ? "📍 \(self.memberCount) travelers"
+                : "Offline"
+            self.subtitleLabel.textColor = .lightGray
+        }
     }
 
     func didReceiveChatDeleted(roomId: String) {
-        let alert = UIAlertController(title: "Chat Deleted",
-                                      message: "This chat has been deleted.",
-                                      preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-            self?.navigationController?.popViewController(animated: true)
-        })
-        present(alert, animated: true)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let alert = UIAlertController(
+                title:          "Chat Deleted",
+                message:        "This chat has been deleted.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                self?.navigationController?.popViewController(animated: true)
+            })
+            self.present(alert, animated: true)
+        }
     }
 
     func didReceiveMessagesDeleted(messageIds: [String]) {
         messages.removeAll { messageIds.contains($0.id ?? "") }
-        tableView.reloadData()
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
 
     func didLeaveGroupChat(roomId: String) {
-        navigationController?.popViewController(animated: true)
-    }
-
-    func didReceiveRooms(_ rooms: [[String: Any]]) {
-
-        print("🏠 rooms received:", rooms)
-
-        guard let room = rooms.first,
-              let roomId = room["id"] as? String
-        else { return }
-
-        self.roomId = roomId
-
-        print("✅ ROOM ID:", roomId)
+        DispatchQueue.main.async { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
     }
 }
 
@@ -269,9 +273,8 @@ extension ChatMessageVc {
         moreButton.tintColor = .white
         moreButton.translatesAutoresizingMaskIntoConstraints = false
 
-        [backButton, avatarImageView, onlineDot, titleLabel, subtitleLabel, moreButton].forEach {
-            navBar.addSubview($0)
-        }
+        [backButton, avatarImageView, onlineDot,
+         titleLabel, subtitleLabel, moreButton].forEach { navBar.addSubview($0) }
 
         NSLayoutConstraint.activate([
             navBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -310,15 +313,15 @@ extension ChatMessageVc {
 extension ChatMessageVc: UITableViewDelegate, UITableViewDataSource {
 
     func setupTableView() {
-        tableView.backgroundColor     = UIColor(white: 0.07, alpha: 1)
-        tableView.separatorStyle      = .none
+        tableView.backgroundColor    = UIColor(white: 0.07, alpha: 1)
+        tableView.separatorStyle     = .none
         tableView.keyboardDismissMode = .interactive
+        tableView.rowHeight           = UITableView.automaticDimension
+        tableView.estimatedRowHeight  = 80
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(ChatBubbleCell.self, forCellReuseIdentifier: "ChatBubbleCell")
         tableView.delegate   = self
         tableView.dataSource = self
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 80
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
@@ -328,32 +331,34 @@ extension ChatMessageVc: UITableViewDelegate, UITableViewDataSource {
         ])
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView,
+                   numberOfRowsInSection section: Int) -> Int {
         messages.count
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ChatBubbleCell", for: indexPath) as! ChatBubbleCell
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "ChatBubbleCell", for: indexPath
+        ) as! ChatBubbleCell
         cell.configure(msg: messages[indexPath.row], currentUserId: currentUserId)
         return cell
     }
 
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+    func tableView(_ tableView: UITableView,
+                   heightForRowAt indexPath: IndexPath) -> CGFloat {
+        UITableView.automaticDimension
     }
+
     private func scrollToBottom(animated: Bool = true) {
         guard messages.count > 0 else { return }
-
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
             let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
-
-            if self.tableView.numberOfRows(inSection: 0) > indexPath.row {
-                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: animated)
-            }
+            guard self.tableView.numberOfRows(inSection: 0) > indexPath.row else { return }
+            self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: animated)
         }
     }
-    
-    
 }
 
 // MARK: - Typing Label
@@ -385,7 +390,8 @@ extension ChatMessageVc: UITextFieldDelegate {
         view.addSubview(inputContainer)
 
         inputContainerBottomConstraint = inputContainer.bottomAnchor.constraint(
-            equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            equalTo: view.safeAreaLayoutGuide.bottomAnchor
+        )
 
         NSLayoutConstraint.activate([
             inputContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -394,7 +400,6 @@ extension ChatMessageVc: UITextFieldDelegate {
             inputContainer.heightAnchor.constraint(equalToConstant: 64),
 
             typingLabel.bottomAnchor.constraint(equalTo: inputContainer.topAnchor, constant: -4),
-
             tableView.bottomAnchor.constraint(equalTo: typingLabel.topAnchor, constant: -4),
         ])
 
@@ -403,8 +408,8 @@ extension ChatMessageVc: UITextFieldDelegate {
         fieldBg.layer.cornerRadius = 22
         fieldBg.translatesAutoresizingMaskIntoConstraints = false
 
-        textField.placeholder     = "Type a message..."
-        textField.textColor       = .white
+        textField.placeholder   = "Type a message..."
+        textField.textColor     = .white
         textField.setFont(.regular, size: 15.0)
         textField.backgroundColor = .clear
         textField.delegate        = self
@@ -461,46 +466,46 @@ extension ChatMessageVc: UITextFieldDelegate {
     }
 
     @objc private func sendTapped() {
+        let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !text.isEmpty else { return }
 
-        guard let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !text.isEmpty,
-              !roomId.isEmpty else {
-            print("❌ roomId missing")
+        let activeRoomId = self.roomId
+        
+        print(activeRoomId,"room")
+        guard !activeRoomId.isEmpty else {
+            print("❌ sendTapped — roomId is empty")
             return
         }
 
-        SocketIOManager.shared.sendTextMessage(
-            roomId: roomId,
-            content: text
-        )
-
+        socket.sendTextMessage(roomId: activeRoomId, content: text)
         textField.text = nil
+        socket.sendTyping(roomId: activeRoomId, isTyping: false)
+        typingTimer?.invalidate()
     }
 
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        sendTapped(); return true
+        sendTapped()
+        return true
     }
 
     @objc private func textFieldDidChange() {
-        guard !roomId.isEmpty else { return }
-        SocketIOManager.shared.sendTyping(roomId: roomId, isTyping: true)
+        let activeRoomId = socket.activeRoom?.roomId ?? roomId
+        guard !activeRoomId.isEmpty else { return }
+
+        socket.sendTyping(roomId: activeRoomId, isTyping: true)
+
         typingTimer?.invalidate()
         typingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
-            self?.stopTyping()
+            guard let self else { return }
+            self.socket.sendTyping(roomId: activeRoomId, isTyping: false)
+            self.typingTimer = nil
         }
     }
 
-    private func stopTyping() {
-        typingTimer?.invalidate()
-        typingTimer = nil
-        guard !roomId.isEmpty else { return }
-        SocketIOManager.shared.sendTyping(roomId: roomId, isTyping: false)
-    }
-
     @objc private func attachTapped() {
-        let picker = UIImagePickerController()
-        picker.delegate   = self
-        picker.sourceType = .photoLibrary
+        let picker         = UIImagePickerController()
+        picker.delegate    = self
+        picker.sourceType  = .photoLibrary
         present(picker, animated: true)
     }
 }
@@ -509,29 +514,35 @@ extension ChatMessageVc: UITextFieldDelegate {
 
 extension ChatMessageVc: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
-    func imagePickerController(_ picker: UIImagePickerController,
-                               didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+    func imagePickerController(
+        _ picker: UIImagePickerController,
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+    ) {
         picker.dismiss(animated: true)
         guard let image = info[.originalImage] as? UIImage else { return }
         uploadImage(image)
     }
 
     private func uploadImage(_ image: UIImage) {
-        // TODO: Upload to your server then call:
-        // SocketIOManager.shared.sendImageMessage(roomId: roomId, imageUrl: uploadedUrl)
-        print("📸 Upload image and emit sendMessage with imageUrl")
+        // TODO: Upload to server then:
+        // socket.sendImageMessage(roomId: socket.activeRoom?.roomId ?? roomId, imageUrl: uploadedUrl)
+        print("📸 Upload image here then emit sendMessage with imageUrl")
     }
 }
 
-// MARK: - Keyboard
+// MARK: - Keyboard Handling
 
 extension ChatMessageVc {
 
     func setupKeyboardObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)),
-            name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)),
-            name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification, object: nil
+        )
     }
 
     @objc private func keyboardWillShow(_ notification: Notification) {
@@ -539,14 +550,17 @@ extension ChatMessageVc {
               let kFrame = info[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
               let dur    = info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
         else { return }
+
         inputContainerBottomConstraint.constant = -(kFrame.height - view.safeAreaInsets.bottom)
         UIView.animate(withDuration: dur) { self.view.layoutIfNeeded() }
         scrollToBottom()
     }
 
     @objc private func keyboardWillHide(_ notification: Notification) {
-        guard let dur = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
-        else { return }
+        guard let dur = notification.userInfo?[
+            UIResponder.keyboardAnimationDurationUserInfoKey
+        ] as? Double else { return }
+
         inputContainerBottomConstraint.constant = 0
         UIView.animate(withDuration: dur) { self.view.layoutIfNeeded() }
     }

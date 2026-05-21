@@ -317,7 +317,7 @@ extension HomeViewController {
         chatVc.roomId      = selectedUser?.roomId ?? ""
         chatVc.roomTitle   = selectedUser?.groupTitle ?? "Chat"
         chatVc.groupId     = selectedUser?.id ?? ""
-        chatVc.roomType    = "group"
+        chatVc.roomType    = .group
         chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
         
         // ✅ Correct way - compactMap use karo

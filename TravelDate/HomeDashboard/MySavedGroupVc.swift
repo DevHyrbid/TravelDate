@@ -36,6 +36,26 @@ class MySavedGroupVc: BaseClassVc {
         handleScroll(scrollView)
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        let contentHeight = tblVw.contentSize.height
+        let tableHeight = tblVw.frame.height
+
+        if contentHeight < tableHeight {
+            let extraSpace = 100
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: CGFloat(extraSpace), right: 0)
+        } else {
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tripsTabBarController?.hideTabBar()
+    }
+    
+    
     func setupData() {
         lblLocation.text = data?.destination ?? ""
         lblDate.text = self.formatDateRange(

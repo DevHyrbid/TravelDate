@@ -9,6 +9,7 @@ import UIKit
 
 // MARK: - TravelStyle Model
 enum TravelStyle: Int, CaseIterable {
+
     case partygoers
     case adventureTravelers
     case culturalTravelers
@@ -16,276 +17,545 @@ enum TravelStyle: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .partygoers:          return "Partygoers"
-        case .adventureTravelers:  return "Adventure travelers"
-        case .culturalTravelers:   return "Cultural travelers"
-        case .leisureTravelers:    return "Leisure travelers"
+        case .partygoers:
+            return "Partygoers"
+
+        case .adventureTravelers:
+            return "Adventure travelers"
+
+        case .culturalTravelers:
+            return "Cultural travelers"
+
+        case .leisureTravelers:
+            return "Leisure travelers"
         }
     }
 
     var icon: String {
         switch self {
-        case .partygoers:          return ""
-        case .adventureTravelers:  return ""
-        case .culturalTravelers:   return ""
-        case .leisureTravelers:    return ""
+        case .partygoers:
+            return ""
+
+        case .adventureTravelers:
+            return ""
+
+        case .culturalTravelers:
+            return ""
+
+        case .leisureTravelers:
+            return ""
         }
     }
 }
 
 // MARK: - Delegate
 protocol TravelStylePickerDelegate: AnyObject {
-    func travelStylePicker(_ picker: TravelStylePickerView, didSelect style: TravelStyle)
+
+    func travelStylePicker(_ picker: TravelStylePickerView,
+                           didSelect style: [TravelStyle])
 }
 
 // MARK: - TravelStylePickerView
 final class TravelStylePickerView: UIView {
 
     // MARK: - Public
+
     weak var delegate: TravelStylePickerDelegate?
-    private(set) var selectedStyle: TravelStyle = .partygoers
+
+    private(set) var selectedStyles: [TravelStyle]
 
     // MARK: - UI
-    private let dimView        = UIView()
-    private let sheetView      = UIView()
-    private let titleLabel     = UILabel()
-    private let subtitleLabel  = UILabel()
-    private let stackView      = UIStackView()
-    private let confirmButton  = UIButton(type: .system)
-    private let dragHandle     = UIView()
+
+    private let dimView = UIView()
+    private let sheetView = UIView()
+
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+
+    private let stackView = UIStackView()
+
+    private let confirmButton = UIButton(type: .system)
+
+    private let dragHandle = UIView()
 
     private var styleRows: [TravelStyleRow] = []
+
     private var sheetBottomConstraint: NSLayoutConstraint!
 
     // MARK: - Init
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+
+    init(selectedStyles: [TravelStyle] = []) {
+
+        self.selectedStyles = selectedStyles
+        
+        super.init(frame: .zero)
+
         setupDimView()
         setupSheet()
     }
-    required init?(coder: NSCoder) { fatalError() }
+
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
 
     // MARK: - Setup Dim
+
     private func setupDimView() {
+
         dimView.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         dimView.translatesAutoresizingMaskIntoConstraints = false
+
         addSubview(dimView)
+
         NSLayoutConstraint.activate([
+
             dimView.topAnchor.constraint(equalTo: topAnchor),
             dimView.leadingAnchor.constraint(equalTo: leadingAnchor),
             dimView.trailingAnchor.constraint(equalTo: trailingAnchor),
             dimView.bottomAnchor.constraint(equalTo: bottomAnchor)
+
         ])
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissTapped))
+
+        let tap = UITapGestureRecognizer(target: self,
+                                         action: #selector(dismissTapped))
+
         dimView.addGestureRecognizer(tap)
     }
 
     // MARK: - Setup Sheet
+
     private func setupSheet() {
-        sheetView.backgroundColor    = UIColor(hex: "#161616")
+
+        sheetView.backgroundColor = UIColor(hex: "#161616")
+
         sheetView.layer.cornerRadius = 28
-        sheetView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+
+        sheetView.layer.maskedCorners = [
+            .layerMinXMinYCorner,
+            .layerMaxXMinYCorner
+        ]
+
         sheetView.translatesAutoresizingMaskIntoConstraints = false
+
         addSubview(sheetView)
-        sheetView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 100)
-        sheetBottomConstraint = sheetView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 600)
+
+        sheetView.topAnchor.constraint(
+            greaterThanOrEqualTo: topAnchor,
+            constant: 100
+        ).isActive = true
+
+        sheetBottomConstraint = sheetView.bottomAnchor.constraint(
+            equalTo: bottomAnchor,
+            constant: 600
+        )
+
         NSLayoutConstraint.activate([
+
             sheetView.leadingAnchor.constraint(equalTo: leadingAnchor),
             sheetView.trailingAnchor.constraint(equalTo: trailingAnchor),
             sheetBottomConstraint
+
         ])
 
         setupSheetContent()
 
-        // Swipe down to dismiss
-        let swipe = UISwipeGestureRecognizer(target: self, action: #selector(dismissTapped))
+        let swipe = UISwipeGestureRecognizer(target: self,
+                                             action: #selector(dismissTapped))
+
         swipe.direction = .down
+
         sheetView.addGestureRecognizer(swipe)
     }
 
     private func setupSheetContent() {
-        // Drag handle
-        dragHandle.backgroundColor    = UIColor(hex: "#3A3A3A")
+
+        // MARK: Drag Handle
+
+        dragHandle.backgroundColor = UIColor(hex: "#3A3A3A")
+
         dragHandle.layer.cornerRadius = 3
+
         dragHandle.translatesAutoresizingMaskIntoConstraints = false
+
         sheetView.addSubview(dragHandle)
 
-        // Title
-        titleLabel.text      = "Travel Style"
+        // MARK: Title
+
+        titleLabel.text = "Travel Style"
+
         titleLabel.textColor = .white
+
         titleLabel.setFont(.bold, size: 18.0)
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Subtitle
-        subtitleLabel.text          = "How do you like to travel?"
-        subtitleLabel.textColor     = .appGrayText
+        // MARK: Subtitle
+
+        subtitleLabel.text = "How do you like to travel?"
+
+        subtitleLabel.textColor = .appGrayText
+
         subtitleLabel.setFont(.regular, size: 13.0)
+
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         sheetView.addSubview(titleLabel)
         sheetView.addSubview(subtitleLabel)
 
-        // Style rows stack
-        stackView.axis         = .vertical
-        stackView.spacing      = 10
+        // MARK: Stack
+
+        stackView.axis = .vertical
+
+        stackView.spacing = 10
+
         stackView.translatesAutoresizingMaskIntoConstraints = false
+
         sheetView.addSubview(stackView)
 
+        // MARK: Rows
+
         for style in TravelStyle.allCases {
-            let row = TravelStyleRow(style: style, isSelected: style == selectedStyle)
-            row.onTap = { [weak self] in self?.selectStyle(style) }
+
+            let row = TravelStyleRow(
+                style: style,
+                isSelected: selectedStyles.contains(style)
+            )
+
+            row.onTap = { [weak self] in
+                self?.selectStyle(style)
+            }
+
             styleRows.append(row)
+
             stackView.addArrangedSubview(row)
         }
 
-        
-        // Confirm button
+        // MARK: Confirm Button
+
         confirmButton.setTitle("Confirm", for: .normal)
+
         confirmButton.setTitleColor(.white, for: .normal)
+
         confirmButton.titleLabel?.setFont(.semiBold, size: 16.0)
-        confirmButton.backgroundColor  = .appOrange
+
+        confirmButton.backgroundColor = .appOrange
+
         confirmButton.layer.cornerRadius = 28
+
         confirmButton.translatesAutoresizingMaskIntoConstraints = false
-        confirmButton.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+
+        confirmButton.addTarget(
+            self,
+            action: #selector(confirmTapped),
+            for: .touchUpInside
+        )
+
         sheetView.addSubview(confirmButton)
 
         NSLayoutConstraint.activate([
-            dragHandle.topAnchor.constraint(equalTo: sheetView.topAnchor, constant: 12),
-            dragHandle.centerXAnchor.constraint(equalTo: sheetView.centerXAnchor),
+
+            dragHandle.topAnchor.constraint(
+                equalTo: sheetView.topAnchor,
+                constant: 12
+            ),
+
+            dragHandle.centerXAnchor.constraint(
+                equalTo: sheetView.centerXAnchor
+            ),
+
             dragHandle.widthAnchor.constraint(equalToConstant: 40),
+
             dragHandle.heightAnchor.constraint(equalToConstant: 5),
 
-            titleLabel.topAnchor.constraint(equalTo: dragHandle.bottomAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 20),
+            // MARK: Title
 
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            titleLabel.topAnchor.constraint(
+                equalTo: dragHandle.bottomAnchor,
+                constant: 20
+            ),
 
-            stackView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
-            stackView.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 20),
-            stackView.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -20),
+            titleLabel.leadingAnchor.constraint(
+                equalTo: sheetView.leadingAnchor,
+                constant: 20
+            ),
 
-            confirmButton.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 24),
-            confirmButton.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 20),
-            confirmButton.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -20),
+            // MARK: Subtitle
+
+            subtitleLabel.topAnchor.constraint(
+                equalTo: titleLabel.bottomAnchor,
+                constant: 4
+            ),
+
+            subtitleLabel.leadingAnchor.constraint(
+                equalTo: titleLabel.leadingAnchor
+            ),
+
+            // MARK: Stack
+
+            stackView.topAnchor.constraint(
+                equalTo: subtitleLabel.bottomAnchor,
+                constant: 20
+            ),
+
+            stackView.leadingAnchor.constraint(
+                equalTo: sheetView.leadingAnchor,
+                constant: 20
+            ),
+
+            stackView.trailingAnchor.constraint(
+                equalTo: sheetView.trailingAnchor,
+                constant: -20
+            ),
+
+            // MARK: Button
+
+            confirmButton.topAnchor.constraint(
+                equalTo: stackView.bottomAnchor,
+                constant: 24
+            ),
+
+            confirmButton.leadingAnchor.constraint(
+                equalTo: sheetView.leadingAnchor,
+                constant: 20
+            ),
+
+            confirmButton.trailingAnchor.constraint(
+                equalTo: sheetView.trailingAnchor,
+                constant: -20
+            ),
+
             confirmButton.heightAnchor.constraint(equalToConstant: 56),
-            confirmButton.bottomAnchor.constraint(equalTo: sheetView.bottomAnchor, constant: -36)
+
+            confirmButton.bottomAnchor.constraint(
+                equalTo: sheetView.bottomAnchor,
+                constant: -36
+            )
         ])
     }
 
     // MARK: - Select Style
+
     private func selectStyle(_ style: TravelStyle) {
-        selectedStyle = style
+
+        if selectedStyles.contains(style) {
+
+            selectedStyles.removeAll { $0 == style }
+
+        } else {
+
+            selectedStyles.append(style)
+        }
+
         for row in styleRows {
-            row.setSelected(row.style == style)
+
+            row.setSelected(
+                selectedStyles.contains(row.style)
+            )
         }
     }
+    
 
-    // MARK: - Present / Dismiss
-    func present(in viewController: UIViewController) {
+    // MARK: - Present
+
+    func present() {
+
         guard let window = UIApplication.shared
             .connectedScenes
             .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
             .first else { return }
 
         frame = window.bounds
+
         window.addSubview(self)
 
-        // Animate in
         dimView.alpha = 0
+
         layoutIfNeeded()
 
         sheetBottomConstraint.constant = 0
-        UIView.animate(withDuration: 0.38, delay: 0, usingSpringWithDamping: 0.82, initialSpringVelocity: 0.5) {
+
+        UIView.animate(
+            withDuration: 0.38,
+            delay: 0,
+            usingSpringWithDamping: 0.82,
+            initialSpringVelocity: 0.5
+        ) {
+
             self.dimView.alpha = 1
+
             self.layoutIfNeeded()
         }
     }
 
-    @objc func dismissTapped() {
+    // MARK: - Dismiss
+
+    @objc
+    private func dismissTapped() {
+
         sheetBottomConstraint.constant = 600
-        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseIn, animations: {
+
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0,
+            options: .curveEaseIn
+        ) {
+
             self.dimView.alpha = 0
+
             self.layoutIfNeeded()
-        }, completion: { _ in
+
+        } completion: { _ in
+
             self.removeFromSuperview()
-        })
+        }
     }
 
-    @objc private func confirmTapped() {
-        delegate?.travelStylePicker(self, didSelect: selectedStyle)
+    // MARK: - Confirm
+
+    @objc
+    private func confirmTapped() {
+
+        delegate?.travelStylePicker(
+            self,
+            didSelect: selectedStyles
+        )
+
         dismissTapped()
     }
 }
 
 // MARK: - TravelStyleRow
+
 final class TravelStyleRow: UIView {
 
     let style: TravelStyle
+
     var onTap: (() -> Void)?
 
-    private let titleLabel  = UILabel()
-    private let radioView   = UIImageView()
+    private let titleLabel = UILabel()
 
-    init(style: TravelStyle, isSelected: Bool) {
+    private let radioView = UIImageView()
+
+    // MARK: - Init
+
+    init(style: TravelStyle,
+         isSelected: Bool) {
+
         self.style = style
+
         super.init(frame: .zero)
+
         setupRow()
+
         setSelected(isSelected)
     }
 
-    required init?(coder: NSCoder) { fatalError() }
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
+
+    // MARK: - Setup
 
     private func setupRow() {
+
         backgroundColor = UIColor(hex: "#1A1A1A")
+
         layer.cornerRadius = 16
+
         translatesAutoresizingMaskIntoConstraints = false
+
         heightAnchor.constraint(equalToConstant: 58).isActive = true
 
-        // Title
+        // MARK: Title
+
         titleLabel.text = style.title
+
         titleLabel.setFont(.medium, size: 14.0)
+
         titleLabel.textAlignment = .left
+
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Radio
+        // MARK: Radio
+
         radioView.contentMode = .scaleAspectFit
+
         radioView.translatesAutoresizingMaskIntoConstraints = false
+
         radioView.widthAnchor.constraint(equalToConstant: 22).isActive = true
+
         radioView.heightAnchor.constraint(equalToConstant: 22).isActive = true
 
         addSubview(titleLabel)
+
         addSubview(radioView)
 
         NSLayoutConstraint.activate([
-            // Title - FIXED LEFT
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            // Radio - FIXED RIGHT
-            radioView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            radioView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            titleLabel.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: 16
+            ),
 
-            // Prevent overlap
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: radioView.leadingAnchor, constant: -12)
+            titleLabel.centerYAnchor.constraint(
+                equalTo: centerYAnchor
+            ),
+
+            radioView.trailingAnchor.constraint(
+                equalTo: trailingAnchor,
+                constant: -16
+            ),
+
+            radioView.centerYAnchor.constraint(
+                equalTo: centerYAnchor
+            ),
+
+            titleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: radioView.leadingAnchor,
+                constant: -12
+            )
         ])
 
-        let tap = UITapGestureRecognizer(target: self, action: #selector(tapped))
+        let tap = UITapGestureRecognizer(
+            target: self,
+            action: #selector(tapped)
+        )
+
         addGestureRecognizer(tap)
+
         isUserInteractionEnabled = true
     }
 
+    // MARK: - Selection
+
     func setSelected(_ selected: Bool) {
+
         layer.borderWidth = selected ? 1.5 : 1
-        layer.borderColor = selected ? UIColor.appOrange.cgColor : UIColor.appBorder.cgColor
 
-        titleLabel.textColor = selected ? .appOrange : .appGrayText
+        layer.borderColor = selected
+        ? UIColor.appOrange.cgColor
+        : UIColor.appBorder.cgColor
 
-        radioView.image = UIImage(systemName: selected ? "largecircle.fill.circle" : "circle")
-        radioView.tintColor = selected ? .appOrange : .appGrayText
+        titleLabel.textColor = selected
+        ? .appOrange
+        : .appGrayText
+
+        radioView.image = UIImage(
+            systemName: selected
+            ? "largecircle.fill.circle"
+            : "circle"
+        )
+
+        radioView.tintColor = selected
+        ? .appOrange
+        : .appGrayText
     }
 
-    @objc private func tapped() {
+    // MARK: - Tap
+
+    @objc
+    private func tapped() {
+
         onTap?()
     }
 }

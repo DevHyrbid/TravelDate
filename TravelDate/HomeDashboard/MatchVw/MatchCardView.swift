@@ -245,6 +245,7 @@ final class MatchCardView: UIView {
         frontView.addSubview(filterButton)
         filterButton.insertSubview(filterBlur, at: 0)
         let fIcon = iconView("rectangle.on.rectangle")
+        
         filterButton.addSubview(fIcon)
         NSLayoutConstraint.activate([
             filterButton.topAnchor.constraint(equalTo: frontView.topAnchor, constant: 18),

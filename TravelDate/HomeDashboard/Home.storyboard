@@ -1610,12 +1610,24 @@
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tgF-1K-Asq">
                                         <rect key="frame" x="0.0" y="0.0" width="393" height="140"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgMatchCopy" translatesAutoresizingMaskIntoConstraints="NO" id="duZ-Xg-6cY">
+                                                <rect key="frame" x="169" y="67.666666666666671" width="55" height="55"/>
+                                                <color key="tintColor" name="ThemeOrange"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="55" id="IwI-kp-7pN"/>
+                                                    <constraint firstAttribute="width" constant="55" id="auz-HR-snu"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
                                         <color key="backgroundColor" name="ThemeBG"/>
                                         <constraints>
+                                            <constraint firstItem="duZ-Xg-6cY" firstAttribute="centerX" secondItem="tgF-1K-Asq" secondAttribute="centerX" id="5ba-Is-fvv"/>
                                             <constraint firstAttribute="height" constant="140" id="PEH-uv-oyZ"/>
+                                            <constraint firstItem="duZ-Xg-6cY" firstAttribute="centerY" secondItem="tgF-1K-Asq" secondAttribute="centerY" constant="25" id="zhZ-3Y-Dg5"/>
                                         </constraints>
                                     </view>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match Your Way" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Dr-ts-aic">
+                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Match Your Way" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Dr-ts-aic">
                                         <rect key="frame" x="25" y="80" width="131" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1910,7 +1922,7 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <segmentedControl hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="dfC-Gb-9H8">
+                                    <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="dfC-Gb-9H8">
                                         <rect key="frame" x="20" y="210.33333333333334" width="353" height="51.000000000000028"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="GwM-JR-RnI"/>
@@ -1921,7 +1933,7 @@
                                         </segments>
                                         <color key="selectedSegmentTintColor" name="ThemeOrange"/>
                                     </segmentedControl>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NFv-A2-a6q" customClass="ChatSegmentView" customModule="TravelDate" customModuleProvider="target">
+                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NFv-A2-a6q" customClass="ChatSegmentView" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="20" y="215.33333333333334" width="353" height="50.000000000000028"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
@@ -1967,9 +1979,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="btnSegment" destination="dfC-Gb-9H8" id="Vxp-wK-jOj"/>
                         <outlet property="lblNoData" destination="SoP-9N-HNf" id="f5n-Od-ONw"/>
                         <outlet property="lblTitle" destination="nyS-c5-XAh" id="gim-cj-yOG"/>
-                        <outlet property="segmentView" destination="NFv-A2-a6q" id="spj-sn-Cle"/>
                         <outlet property="tblVw" destination="fft-Ci-azY" id="aKY-on-Hpt"/>
                     </connections>
                 </viewController>
@@ -2082,6 +2094,7 @@
         <image name="imgGroup0" width="354" height="234"/>
         <image name="imgLike" width="65" height="65"/>
         <image name="imgLocation" width="10.666666984558105" height="16"/>
+        <image name="imgMatchCopy" width="28" height="21.333333969116211"/>
         <image name="imgNew" width="111" height="116"/>
         <image name="imgNotification" width="44" height="44"/>
         <image name="imgPhotos" width="424.33334350585938" height="37.333332061767578"/>

@@ -226,6 +226,8 @@ class SwipeViewController: BaseClassVc {
     private func handleJoin(group: Group) {
         guard let groupId = group._id else { return }
         print("Joining group: \(groupId)")
+//        performSwipe(isRight: true)
+        
     }
 
     // MARK: - Static UI
@@ -300,25 +302,27 @@ extension SwipeViewController {
         request.groupId = group.id ?? ""
         request.action  = isRight ? "right" : "left"
 
-        request.swipeAPi { [weak self] msg, errCode in
+        request.swipeAPi { [weak self] match, msg, errCode in
             guard let self else { return }
             print("Swipe API:", msg)
             DispatchQueue.main.async {
                 if errCode == 200 {
                     // Uncomment and use real model data:
                     // guard data.isMatch == 1 else { return }
-                    let result = MatchResult(
-                        groupId:             group.id ?? "",
-                        swipeId:             "",
-                        groupTitle:          group.groupTitle ?? "",
-                        matchedStyles:       [],
-                        message:             "It's a Match!",
-                        myGroupImage:        nil,
-                        matchedGroupImage:   nil,
-                        myGroupImageURL:     nil,
-                        matchedGroupImageURL: group.coverImage
-                    )
-                    MatchBottomSheetVC.show(on: self, result: result, delegate: self)
+                    if match == 1  {
+                        let result = MatchResult(
+                            groupId:             group.id ?? "",
+                            swipeId:             "",
+                            groupTitle:          group.groupTitle ?? "",
+                            matchedStyles:       [],
+                            message:             "It's a Match!",
+                            myGroupImage:        User.curentUser?.profileImage ?? "",
+                            matchedGroupImage:   nil,
+                            myGroupImageURL:     nil,
+                            matchedGroupImageURL: group.coverImage
+                        )
+                        MatchBottomSheetVC.show(on: self, result: result, delegate: self)
+                    }
                 }
             }
         }
@@ -337,6 +341,7 @@ extension SwipeViewController {
 extension SwipeViewController: MatchBottomSheetDelegate {
     func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
         print("Open chat for group: \(groupId)")
+        
     }
     func matchSheetDidTapKeepSwiping() {
         print("Keep swiping")

@@ -7,7 +7,7 @@ struct MatchResult {
     let groupTitle: String
     let matchedStyles: [String]
     let message: String
-    var myGroupImage: UIImage?
+    var myGroupImage: String?
     var matchedGroupImage: UIImage?
     var myGroupImageURL: String?
     var matchedGroupImageURL: String?
@@ -320,7 +320,13 @@ final class MatchBottomSheetVC: UIViewController {
             : result.message
 
         // Images already available
-        if let img = result.myGroupImage      { leftImageView.image  = img }
+//        if let img = result.myGroupImage      { leftImageView.image  = img }
+        
+//        if result.myGroupImage == nil, let urlStr = result.myGroupImageURL {
+//            loadImage(urlStr: urlStr) { [weak self] image in
+//                self?.leftImageView.image = image  // already on main thread
+//            }
+//        }
         if let img = result.matchedGroupImage { rightImageView.image = img }
 
         // Load from URL if needed — dispatch back to main thread explicitly

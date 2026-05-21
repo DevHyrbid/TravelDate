@@ -2,602 +2,406 @@
 //  ChatVc.swift
 //  TravelDate
 //
-//  Refactored to senior-level MVC architecture
-//  - Single API load in viewDidLoad
-//  - Enum-based state management
-//  - Clean segment switching (no extra reloads)
-//  - Proper memory management with [weak self]
-//
+
 import UIKit
 
 // MARK: - Segment Enum
 
-enum ChatSegment {
-    case groups
-    case chats
+enum ChatSegment: Int, CaseIterable {
+    case groups = 0
+    case chats  = 1
+
+    var title: String {
+        switch self {
+        case .groups: return "Groups"
+        case .chats:  return "Chats"
+        }
+    }
 }
+
+// MARK: - ChatVc
 
 final class ChatVc: BaseClassVc {
 
     // MARK: - IBOutlets
+    @IBOutlet private weak var tblVw:       UITableView!
+    @IBOutlet private weak var btnSegment:  UISegmentedControl!
+    @IBOutlet private weak var lblNoData:   UILabel!
+    @IBOutlet private weak var lblTitle:    UILabel!
 
-    @IBOutlet weak var tblVw: UITableView!
-    @IBOutlet weak var lblNoData: UILabel!
-    @IBOutlet weak var lblTitle: UILabel!
-    @IBOutlet weak var segmentView: ChatSegmentView!
+    // MARK: - Data
+    private var groupsData: [Group]         = []
+    private var chatData:   [ChatRoomModel] = []
 
-    // MARK: - Variables
+    // MARK: - State
+    private var selectedSegment: ChatSegment = .groups {
+        didSet {
+            guard selectedSegment != oldValue else { return }
+            refreshTableView()
+        }
+    }
 
-    private var groupsData: [Group] = []
-    private var chatData: [ChatRoomModel] = []
-
-    private var selectedSegment: ChatSegment = .groups
+    // MARK: - Computed
+    private var currentRowCount: Int {
+        switch selectedSegment {
+        case .groups: return groupsData.count
+        case .chats:  return chatData.count
+        }
+    }
 
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupUI()
-        setupTableView()
-        setupSegmentCallbacks()
-
-        fetchAllData()
+        configureUI()
+        registerNibs()
+        fetchAllData()        // ← API called ONCE here
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
         tripsTabBarController?.showTabBar()
+        // ✅ NO API or socket calls here
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
-        let contentHeight = tblVw.contentSize.height
-        let tableHeight = tblVw.frame.height
-
-        if contentHeight < tableHeight {
-            let extraSpace = 100
-            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: CGFloat(extraSpace), right: 0)
-        } else {
-            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        }
+        setupSegmentUI()
     }
-}
 
-// MARK: - Setup
+    // MARK: - UI Setup
 
-private extension ChatVc {
-
-    func setupUI() {
-
+    private func configureUI() {
         lblTitle.setFont(.medium, size: 18.0)
-
         addGradient()
+        configureSegmentControl()
     }
 
-    func setupTableView() {
+    private func configureSegmentControl() {
+        btnSegment.setTitleTextAttributes([
+            .font:            UIFont(name: "Poppins-SemiBold", size: 14)!,
+            .foregroundColor: UIColor.gray
+        ], for: .normal)
 
-        tblVw.delegate = self
-        tblVw.dataSource = self
+        btnSegment.setTitleTextAttributes([
+            .font:            UIFont(name: "Poppins-SemiBold", size: 14)!,
+            .foregroundColor: UIColor.white
+        ], for: .selected)
 
+        btnSegment.addTarget(self,
+                             action: #selector(segmentChanged(_:)),
+                             for: .valueChanged)
+    }
+
+    private func registerNibs() {
         tblVw.register(ChatTableViewCell.self)
+        tblVw.delegate   = self
+        tblVw.dataSource = self
     }
 
-    func setupSegmentCallbacks() {
+    // MARK: - Segment Action
 
-        segmentView.onSegmentChanged = { [weak self] index in
-
-            guard let self else { return }
-
-            self.selectedSegment = index == 0 ? .groups : .chats
-
-            print("Current Segment:", self.selectedSegment)
-
-            self.refreshTableView()
-        }
+    @objc private func segmentChanged(_ sender: UISegmentedControl) {
+        selectedSegment = ChatSegment(rawValue: sender.selectedSegmentIndex) ?? .groups
+        // ✅ NO socket calls — just reload table
     }
-}
 
-// MARK: - API Calls
+    // MARK: - Data Fetch (ONCE)
 
-private extension ChatVc {
-
-    func fetchAllData() {
-
+    private func fetchAllData() {
         fetchGroups()
-
         fetchChats()
     }
 
-    func fetchGroups() {
-
+    private func fetchGroups() {
         request.getGroups(0) { [weak self] model, msg, code in
-
             guard let self else { return }
-
             DispatchQueue.main.async {
-
                 if code == 200 {
-
                     self.groupsData = model?.data?.groups ?? []
-
-                    print("Groups Count:", self.groupsData.count)
-
                     if self.selectedSegment == .groups {
-
                         self.refreshTableView()
                     }
-
                 } else {
-
                     self.showAlert(msg)
                 }
             }
         }
     }
 
-    func fetchChats() {
-
+    private func fetchChats() {
         request.getChatRooms { [weak self] response, msg, errCode in
-
             guard let self else { return }
-
             DispatchQueue.main.async {
-
                 if errCode == 200 {
-
                     self.chatData = response ?? []
-
-                    print("Chats Count:", self.chatData.count)
-
                     if self.selectedSegment == .chats {
-
                         self.refreshTableView()
                     }
                 }
             }
         }
     }
-}
 
-// MARK: - Helpers
+    // MARK: - Table Refresh
 
-private extension ChatVc {
-
-    func refreshTableView() {
-
-        print("Reloading Table")
-
+    private func refreshTableView() {
         tblVw.reloadData()
-
-        updateNoDataLabel()
+        lblNoData.isHidden = currentRowCount > 0
     }
 
-    func updateNoDataLabel() {
+    // MARK: - Scroll
 
-        let isEmpty: Bool
-
-        switch selectedSegment {
-
-        case .groups:
-            isEmpty = groupsData.isEmpty
-
-        case .chats:
-            isEmpty = chatData.isEmpty
-        }
-
-        lblNoData.isHidden = !isEmpty
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        handleScroll(scrollView)
     }
 
-    func currentCount() -> Int {
+    // MARK: - IBActions
 
-        switch selectedSegment {
-
-        case .groups:
-            return groupsData.count
-
-        case .chats:
-            return chatData.count
-        }
-    }
-}
-
-// MARK: - Actions
-
-extension ChatVc {
-
-    @IBAction func btnBack(_ sender: UIButton) {
-
+    @IBAction private func btnBack(_ sender: UIButton) {
         backTapped()
     }
 }
 
-// MARK: - UITableViewDelegate/DataSource
+// MARK: - UITableViewDataSource & Delegate
 
-extension ChatVc: UITableViewDelegate, UITableViewDataSource {
+extension ChatVc: UITableViewDataSource, UITableViewDelegate {
 
-    func numberOfSections(in tableView: UITableView) -> Int {
-
-        return 1
-    }
+    func numberOfSections(in tableView: UITableView) -> Int { 1 }
 
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-
-        return currentCount()
-    }
-
-    func tableView(_ tableView: UITableView,
-                   heightForRowAt indexPath: IndexPath) -> CGFloat {
-
-        return 90
+        currentRowCount
     }
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        let cell: ChatTableViewCell = tableView.dequeue(ChatTableViewCell.self,
-                                                        for: indexPath)
-
+        let cell: ChatTableViewCell = tableView.dequeue(ChatTableViewCell.self, for: indexPath)
         switch selectedSegment {
-
-        case .groups:
-
-            let model = groupsData[indexPath.row]
-
-            cell.lblTitle.text = model.groupTitle ?? ""
-
-            cell.lblDesc.text = model.creator?.name ?? ""
-
-            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
-
-            loadAvatarImage(into: cell.imgVw,
-                            urlString: model.coverImage)
-
-        case .chats:
-
-            let model = chatData[indexPath.row]
-
-            let senderName =
-            model.lastMessage?.sender?.name ??
-            model.participants?.first?.name ??
-            "Unknown"
-
-            cell.lblTitle.text = senderName
-
-            cell.lblDesc.text =
-            model.lastMessage?.content ?? "No messages yet"
-
-            cell.lblTime.text =
-            timeAgo(from: model.lastMessage?.createdAt ??
-                    model.createdAt ?? "")
-
-            let avatar =
-            model.participants?.first?.profileImage
-
-            loadAvatarImage(into: cell.imgVw,
-                            urlString: avatar)
+        case .groups: configureGroupCell(cell, at: indexPath)
+        case .chats:  configureChatCell(cell, at: indexPath)
         }
-
         return cell
     }
 
     func tableView(_ tableView: UITableView,
+                   heightForRowAt indexPath: IndexPath) -> CGFloat { 90 }
+
+    func tableView(_ tableView: UITableView,
                    didSelectRowAt indexPath: IndexPath) {
-
+        tableView.deselectRow(at: indexPath, animated: true)
         switch selectedSegment {
-
-        case .groups:
-
-            let group = groupsData[indexPath.row]
-
-            let vc = ChatMessageVc()
-
-            vc.roomId = group.roomId ?? ""
-
-            vc.roomTitle = group.groupTitle ?? ""
-
-            vc.groupId = group.id ?? ""
-
-            vc.roomType = "group"
-
-            navigationController?.pushViewController(vc,
-                                                     animated: true)
-
-        case .chats:
-
-            let chat = chatData[indexPath.row]
-
-            let vc = ChatMessageVc()
-
-            vc.roomId = chat.id ?? ""
-
-            vc.roomTitle =
-            chat.lastMessage?.sender?.name ?? "Chat"
-
-            vc.roomType = "direct"
-
-            navigationController?.pushViewController(vc,
-                                                     animated: true)
+        case .groups: openGroupChat(at: indexPath)
+        case .chats:  openDirectChat(at: indexPath)
         }
+    }
+
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+        guard selectedSegment == .groups else { return nil }
+        return makeGroupSwipeActions(at: indexPath)
     }
 }
 
-// MARK: - Image Loader
+// MARK: - Cell Configuration
 
 private extension ChatVc {
 
-    func loadAvatarImage(into imageView: UIImageView,
-                         urlString: String?) {
+    func configureGroupCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
+        let model = groupsData[indexPath.row]
+        cell.lblTitle.text = model.groupTitle ?? ""
+        cell.lblDesc.text  = "\(model.creator?.name ?? "") · Thu"
+        cell.lblTime.text  = timeAgo(from: model.createdAt ?? "")
+        loadAvatarImage(into: cell.imgVw, urlString: model.coverImage)
+    }
 
-        imageView.contentMode = .scaleAspectFill
+    func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
+        let model = chatData[indexPath.row]
 
+        let senderName = model.lastMessage?.sender?.name
+            ?? model.participants?.first?.name
+            ?? "Unknown"
+
+        cell.lblTitle.text = senderName
+        cell.lblDesc.text  = model.lastMessage?.content ?? "No messages yet"
+        cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? model.createdAt ?? "")
+        loadAvatarImage(into: cell.imgVw, urlString: model.participants?.first?.profileImage)
+    }
+
+    func loadAvatarImage(into imageView: UIImageView, urlString: String?) {
+        imageView.contentMode        = .scaleAspectFill
         imageView.layer.cornerRadius = imageView.frame.height / 2
+        imageView.clipsToBounds      = true
 
-        imageView.clipsToBounds = true
-
-        if let urlString,
-           let url = URL(string: urlString) {
-
+        if let str = urlString, let url = URL(string: str) {
             loadImage(imageView, url: url)
-
         } else {
-
             imageView.image = UIImage(named: "User")
         }
     }
 }
 
-// MARK: - Time Ago
+// MARK: - Navigation
+
+private extension ChatVc {
+
+    func openGroupChat(at indexPath: IndexPath) {
+        let group  = groupsData[indexPath.row]
+        let chatVc = ChatMessageVc()
+
+        chatVc.roomId       = group.roomId       ?? ""
+        chatVc.roomTitle    = group.groupTitle   ?? "Chat"
+        chatVc.groupId      = group.id           ?? ""
+        chatVc.roomType     = .group
+        chatVc.memberCount  = group.maxGroupSize ?? 0
+        chatVc.participants = group.members?.compactMap { $0.id } ?? []
+
+        #if DEBUG
+        print("🚀 Group Chat → roomId: \(chatVc.roomId) groupId: \(chatVc.groupId)")
+        #endif
+
+        navigationController?.pushViewController(chatVc, animated: true)
+    }
+
+    func openDirectChat(at indexPath: IndexPath) {
+        let chat   = chatData[indexPath.row]
+        let chatVc = ChatMessageVc()
+
+        chatVc.roomId    = chat.id ?? ""
+        chatVc.roomTitle = chat.lastMessage?.sender?.name
+            ?? chat.participants?.first?.name
+            ?? "Chat"
+        chatVc.roomType     = .individual
+        chatVc.participants = chat.participants?.compactMap { $0.id } ?? []
+
+        #if DEBUG
+        print("🚀 Direct Chat → roomId: \(chatVc.roomId)")
+        #endif
+
+        navigationController?.pushViewController(chatVc, animated: true)
+    }
+}
+
+// MARK: - Swipe Actions
+
+private extension ChatVc {
+
+    func makeGroupSwipeActions(at indexPath: IndexPath) -> UISwipeActionsConfiguration {
+        let group = groupsData[indexPath.row]
+
+        let deleteAction = UIContextualAction(
+            style: .destructive,
+            title: "Delete"
+        ) { [weak self] _, _, completion in
+            guard let self else { completion(false); return }
+
+            self.request.deleteGroupAPi(group.id ?? "") { [weak self] _, code in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    if code == 200 {
+                        self.groupsData.remove(at: indexPath.row)
+                        self.tblVw.deleteRows(at: [indexPath], with: .automatic)
+                        self.lblNoData.isHidden = self.currentRowCount > 0
+                    }
+                }
+            }
+            completion(true)
+        }
+
+        let config = UISwipeActionsConfiguration(actions: [deleteAction])
+        config.performsFirstActionWithFullSwipe = false
+        return config
+    }
+}
+
+// MARK: - Segment UI
+
+private extension ChatVc {
+
+    func setupSegmentUI() {
+        guard btnSegment.tag == 0 else { return }
+        btnSegment.tag = 1
+
+        let inset: CGFloat = 4
+
+        btnSegment.backgroundColor    = UIColor.white.withAlphaComponent(0.06)
+        btnSegment.layer.cornerRadius = 25.5
+        btnSegment.layer.cornerCurve  = .continuous
+        btnSegment.clipsToBounds      = true
+
+        btnSegment.setBackgroundImage(UIImage(), for: .normal,      barMetrics: .default)
+        btnSegment.setBackgroundImage(UIImage(), for: .selected,    barMetrics: .default)
+        btnSegment.setBackgroundImage(UIImage(), for: .highlighted, barMetrics: .default)
+        btnSegment.setDividerImage(
+            UIImage(),
+            forLeftSegmentState: .normal,
+            rightSegmentState:   .normal,
+            barMetrics:          .default
+        )
+
+        let pillSize = CGSize(
+            width:  (btnSegment.frame.width / CGFloat(btnSegment.numberOfSegments)) - (inset * 2),
+            height: btnSegment.frame.height - (inset * 2)
+        )
+
+        let pillImage = UIGraphicsImageRenderer(size: pillSize).image { _ in
+            UIColor.themeOrange.setFill()
+            UIBezierPath(
+                roundedRect:  CGRect(origin: .zero, size: pillSize),
+                cornerRadius: pillSize.height / 2
+            ).fill()
+        }
+
+        let stretchable = pillImage.resizableImage(
+            withCapInsets: UIEdgeInsets(
+                top: 0, left: pillSize.height / 2,
+                bottom: 0, right: pillSize.height / 2
+            ),
+            resizingMode: .stretch
+        )
+        btnSegment.setBackgroundImage(stretchable, for: .selected, barMetrics: .default)
+
+        btnSegment.setTitleTextAttributes([
+            .foregroundColor: UIColor.white.withAlphaComponent(0.5),
+            .font:            UIFont(name: "Poppins-Medium", size: 15.0)!
+        ], for: .normal)
+
+        btnSegment.setTitleTextAttributes([
+            .foregroundColor: UIColor.white,
+            .font:            UIFont(name: "Poppins-SemiBold", size: 15.0)!
+        ], for: .selected)
+
+        btnSegment.selectedSegmentIndex = 0
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            for subview in self.btnSegment.subviews {
+                subview.layer.cornerRadius = (self.btnSegment.frame.height - (inset * 2)) / 2
+                subview.layer.cornerCurve  = .continuous
+                subview.clipsToBounds      = true
+            }
+        }
+    }
+}
+
+// MARK: - Date Helper
 
 private extension ChatVc {
 
     func timeAgo(from isoString: String) -> String {
+        let formatter          = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: isoString) else { return "—" }
 
-        formatter.formatOptions = [
-            .withInternetDateTime,
-            .withFractionalSeconds
-        ]
-
-        guard let date = formatter.date(from: isoString) else {
-
-            return "-"
-        }
-
-        let seconds =
-        Int(Date().timeIntervalSince(date))
-
+        let seconds = Int(Date().timeIntervalSince(date))
         switch seconds {
-
-        case ..<60:
-            return "Just now"
-
-        case ..<3600:
-            return "\(seconds / 60)m ago"
-
-        case ..<86400:
-            return "\(seconds / 3600)h ago"
-
-        case ..<604800:
-            return "\(seconds / 86400)d ago"
-
-        default:
-            return "\(seconds / 604800)w ago"
+        case ..<60:     return "just now"
+        case ..<3600:   return "\(seconds / 60)m ago"
+        case ..<86400:  return "\(seconds / 3600)h ago"
+        case ..<604800: return "\(seconds / 86400)d ago"
+        default:        return "\(seconds / 604800)w ago"
         }
-    }
-}
-import UIKit
-
-class ChatSegmentView: UIView {
-
-    private let containerView = UIView()
-    private var selectedIndex = 0
-
-    var onSegmentChanged: ((_ index: Int) -> Void)?
-    private let blurView = UIVisualEffectView(
-        effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
-    )
-
-    private let selectorView = UIView()
-
-    private let myGroupBtn = UIButton(type: .system)
-    private let matchBtn = UIButton(type: .system)
-
-    private let glowLayer = CAGradientLayer()
-
-    
-
-    // MARK: - Init
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        commonInit()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        commonInit()
-    }
-
-    // MARK: - Setup
-
-    private func commonInit() {
-
-        backgroundColor = .clear
-
-        addSubview(containerView)
-
-        containerView.addSubview(blurView)
-        containerView.addSubview(selectorView)
-
-        containerView.addSubview(myGroupBtn)
-        containerView.addSubview(matchBtn)
-
-        // MARK: Container Glass Effect
-
-        containerView.backgroundColor = UIColor.white.withAlphaComponent(0.03)
-
-        containerView.layer.borderWidth = 1
-        containerView.layer.borderColor = UIColor.white.withAlphaComponent(0.10).cgColor
-
-        containerView.layer.shadowColor = UIColor.black.cgColor
-        containerView.layer.shadowOpacity = 0.35
-        containerView.layer.shadowRadius = 20
-        containerView.layer.shadowOffset = CGSize(width: 0, height: 10)
-
-        // MARK: Blur
-
-        blurView.clipsToBounds = true
-
-        // MARK: Orange Pill
-
-        selectorView.backgroundColor = .appOrange
-
-        selectorView.layer.shadowColor = UIColor.appOrange.cgColor
-        selectorView.layer.shadowOpacity = 0.35
-        selectorView.layer.shadowRadius = 14
-        selectorView.layer.shadowOffset = CGSize(width: 0, height: 6)
-
-        // MARK: Buttons
-
-        myGroupBtn.setTitle("My group", for: .normal)
-        matchBtn.setTitle("Match groups", for: .normal)
-
-        myGroupBtn.titleLabel?.font = UIFont(name: "Poppins-SemiBold", size: 16)
-        matchBtn.titleLabel?.font = UIFont(name: "Poppins-SemiBold", size: 16)
-
-        myGroupBtn.setTitleColor(.white, for: .normal)
-        matchBtn.setTitleColor(.white.withAlphaComponent(0.7), for: .normal)
-
-        myGroupBtn.backgroundColor = .clear
-        matchBtn.backgroundColor = .clear
-
-        myGroupBtn.addTarget(
-            self,
-            action: #selector(selectMyGroup),
-            for: .touchUpInside
-        )
-
-        matchBtn.addTarget(
-            self,
-            action: #selector(selectMatch),
-            for: .touchUpInside
-        )
-    }
-
-    // MARK: - Layout
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        let padding: CGFloat = 4
-
-        containerView.frame = bounds
-
-        containerView.layer.cornerRadius = bounds.height / 2
-        containerView.layer.cornerCurve = .continuous
-
-        blurView.frame = containerView.bounds
-        blurView.layer.cornerRadius = bounds.height / 2
-
-        let segmentWidth = bounds.width / 2
-
-        selectorView.frame = CGRect(
-            x: selectedIndex == 0
-                ? padding
-                : segmentWidth,
-            y: padding,
-            width: segmentWidth - padding,
-            height: bounds.height - (padding * 2)
-        )
-
-        selectorView.layer.cornerRadius = selectorView.frame.height / 2
-        selectorView.layer.cornerCurve = .continuous
-
-        myGroupBtn.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: segmentWidth,
-            height: bounds.height
-        )
-
-        matchBtn.frame = CGRect(
-            x: segmentWidth,
-            y: 0,
-            width: segmentWidth,
-            height: bounds.height
-        )
-
-        // MARK: Premium Top Highlight
-
-        glowLayer.removeFromSuperlayer()
-
-        glowLayer.frame = containerView.bounds
-
-        glowLayer.colors = [
-            UIColor.white.withAlphaComponent(0.18).cgColor,
-            UIColor.clear.cgColor
-        ]
-
-        glowLayer.locations = [0, 1]
-
-        glowLayer.startPoint = CGPoint(x: 0.5, y: 0)
-        glowLayer.endPoint = CGPoint(x: 0.5, y: 1)
-
-        glowLayer.cornerRadius = containerView.layer.cornerRadius
-
-        containerView.layer.insertSublayer(glowLayer, at: 0)
-    }
-
-    // MARK: - Actions
-
-    @objc private func selectMyGroup() {
-
-        selectedIndex = 0
-
-        onSegmentChanged?(0)
-
-        UIView.animate(
-            withDuration: 0.28,
-            delay: 0,
-            usingSpringWithDamping: 0.9,
-            initialSpringVelocity: 0.5
-        ) {
-            self.layoutSubviews()
-        }
-
-        myGroupBtn.setTitleColor(.white, for: .normal)
-
-        matchBtn.setTitleColor(
-            .white.withAlphaComponent(0.7),
-            for: .normal
-        )
-    }
-
-    @objc private func selectMatch() {
-
-        selectedIndex = 1
-
-        onSegmentChanged?(1)
-
-        UIView.animate(
-            withDuration: 0.28,
-            delay: 0,
-            usingSpringWithDamping: 0.9,
-            initialSpringVelocity: 0.5
-        ) {
-            self.layoutSubviews()
-        }
-
-        myGroupBtn.setTitleColor(
-            .white.withAlphaComponent(0.7),
-            for: .normal
-        )
-
-        matchBtn.setTitleColor(.white, for: .normal)
     }
 }

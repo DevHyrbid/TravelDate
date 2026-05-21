@@ -44,6 +44,29 @@ class MyGroupViewController: BaseClassVc {
         loadData()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tripsTabBarController?.hideTabBar()
+    }
+    
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        let contentHeight = tblVw.contentSize.height
+        let tableHeight = tblVw.frame.height
+
+        if contentHeight < tableHeight {
+            let extraSpace = 100
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: CGFloat(extraSpace), right: 0)
+        } else {
+            tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
+        }
+    }
+    
+    
+    
+    
     func loadData() {
         if let res = self.res {
             
@@ -175,9 +198,10 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         let chatVc = ChatMessageVc()
         chatVc.roomId      = selectedUser?.roomId ?? ""
         chatVc.roomTitle   = selectedUser?.members?[sender.tag].name ?? ""
-        chatVc.groupId     = selectedUser?.id ?? ""
-        chatVc.roomType    = "individual"
-        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
+        
+//        chatVc.groupId     = selectedUser?.id ?? ""
+        chatVc.roomType    = .individual//"individual"
+//        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
         
         // ✅ Correct way - compactMap use karo
         chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
