@@ -10,7 +10,10 @@ import MapKit
 class CreateGroupViewController: BaseClassVc {
 
     // MARK: - State
-    
+    private var minAge = 18
+    private var maxAge = 35
+    private let minAgeLabel = UILabel()
+    private let maxAgeLabel = UILabel()
     private var groupSize = 4
     private let styles = ["Partygoers", "Adventure travelers", "Cultural travelers", "Leisure travelers"]
     var selectedStyles: Set<Int> = []
@@ -59,6 +62,92 @@ class CreateGroupViewController: BaseClassVc {
         }
     }
 
+    private func makeAgeSection() -> UIView {
+        let wrapper = UIView()
+        let lbl = sectionLabel("Age Range")
+
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = 12
+        row.distribution = .fillEqually
+
+        row.addArrangedSubview(makeAgeCard(isMin: true))
+        row.addArrangedSubview(makeAgeCard(isMin: false))
+
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        row.translatesAutoresizingMaskIntoConstraints = false
+        wrapper.addSubview(lbl)
+        wrapper.addSubview(row)
+
+        NSLayoutConstraint.activate([
+            lbl.topAnchor.constraint(equalTo: wrapper.topAnchor),
+            lbl.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+
+            row.topAnchor.constraint(equalTo: lbl.bottomAnchor, constant: 8),
+            row.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+            row.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
+            row.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor),
+        ])
+        return wrapper
+    }
+
+    private func makeAgeCard(isMin: Bool) -> UIView {
+        let card = fieldBox()
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.heightAnchor.constraint(equalToConstant: 64).isActive = true
+
+        let minusBtn = makeRoundBtn(icon: "minus", orange: false)
+        minusBtn.tag = isMin ? 0 : 1
+        minusBtn.addTarget(self,
+            action: isMin ? #selector(decreaseMinAge) : #selector(decreaseMaxAge),
+            for: .touchUpInside)
+
+        let plusBtn = makeRoundBtn(icon: "plus", orange: true)
+        plusBtn.tag = isMin ? 0 : 1
+        plusBtn.addTarget(self,
+            action: isMin ? #selector(increaseMinAge) : #selector(increaseMaxAge),
+            for: .touchUpInside)
+
+        let personIcon = UIImageView(image: UIImage(systemName: "person.fill"))
+        personIcon.tintColor = .appOrange
+        personIcon.translatesAutoresizingMaskIntoConstraints = false
+        personIcon.widthAnchor.constraint(equalToConstant: 16).isActive = true
+        personIcon.heightAnchor.constraint(equalToConstant: 18).isActive = true
+
+        let valueLabel = isMin ? minAgeLabel : maxAgeLabel
+        valueLabel.text = isMin ? "\(minAge)" : "\(maxAge)"
+        valueLabel.textColor = .white
+        valueLabel.setFont(.medium, size: 14.0)
+
+        let subLabel = UILabel()
+        subLabel.text = isMin ? "Min age" : "Max age"
+        subLabel.textColor = .appGrayText
+        subLabel.setFont(.regular, size: 10.0)
+
+        let textStack = UIStackView(arrangedSubviews: [valueLabel, subLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 2
+
+        let center = UIStackView(arrangedSubviews: [personIcon, textStack])
+        center.axis = .horizontal
+        center.spacing = 6
+        center.alignment = .center
+
+        let row = UIStackView(arrangedSubviews: [minusBtn, center, plusBtn])
+        row.axis = .horizontal
+        row.distribution = .equalSpacing
+        row.alignment = .center
+        row.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(row)
+
+        NSLayoutConstraint.activate([
+            row.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            row.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            row.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+        ])
+        return card
+    }
+    
     // MARK: - Header
     private func setupHeader() {
         let backBtn = UIButton(type: .system)
@@ -159,7 +248,7 @@ class CreateGroupViewController: BaseClassVc {
         stack.addArrangedSubview(makeInputSection())
         stack.addArrangedSubview(makeSizeSection())
         stack.addArrangedSubview(makeStyleSection())
-
+        stack.addArrangedSubview(makeAgeSection())
         // Continue button
         let btn = makeContinueButton()
         view.addSubview(btn)
@@ -173,6 +262,35 @@ class CreateGroupViewController: BaseClassVc {
             btn.heightAnchor.constraint(equalToConstant: 56),
         ])
     }
+    
+    @objc private func decreaseMinAge() {
+        if minAge > 18 {
+            minAge -= 1
+            minAgeLabel.text = "\(minAge)"
+        }
+    }
+
+    @objc private func increaseMinAge() {
+        if minAge < maxAge - 1 {
+            minAge += 1
+            minAgeLabel.text = "\(minAge)"
+        }
+    }
+
+    @objc private func decreaseMaxAge() {
+        if maxAge > minAge + 1 {
+            maxAge -= 1
+            maxAgeLabel.text = "\(maxAge)"
+        }
+    }
+
+    @objc private func increaseMaxAge() {
+        if maxAge < 80 {
+            maxAge += 1
+            maxAgeLabel.text = "\(maxAge)"
+        }
+    }
+    
 
     // MARK: - Location View
     private func setupLocationView() {
@@ -760,19 +878,30 @@ class CreateGroupViewController: BaseClassVc {
         AppLoader.show()
         uploadImg(data) { [weak self] imageName in
             guard let self else { return }
-            self.request.coverImage   = imageName
-            self.request.groupTitle   = title
-            self.request.destination  = dest
-            self.request.startDate    = self.startDate
-            self.request.endDate      = self.endDate
-            self.request.maxGroupSize = self.groupSize
-            self.request.travelStyle  = self.styles
-            self.request.isActive     = true
-            self.request.latitude = "\(tuple?.lat ?? 0)"
-            self.request.longitude = "\(tuple?.lng ?? 0)"
-            self.request.location_string = tuple?.title ?? ""
+
+            self.request.coverImage = imageName
+            self.request.title = title
+            self.request.description = title
+
+            self.request.destination = dest
+
+            self.request.startDate = self.startDate
+            self.request.endDate = self.endDate
+
+            self.request.travelStyleSingle = self.styles.first ?? ""
+
+            self.request.maxMembers = self.groupSize
+
+            self.request.activityInterests = self.styles
+
+            self.request.minAge = self.minAge
+            self.request.maxAge = self.maxAge
+
+            self.request.preferredGender = "ANY"
+
             self.request.createGroupAPi { code, _, errCode in
                 AppLoader.hide()
+
                 DispatchQueue.main.async {
                     if errCode == 200 {
                         self.pushVC(InviteVc.self, from: .Home) {

@@ -399,7 +399,7 @@ final class MatchCardView: UIView {
 
         groupTitleLabel.text = group.groupTitle ?? "Travel Group"
 
-        let style = group.travelStyle ?? "Travelers"
+        let style = group.travelStyle?.joined(separator: ",") ?? "Travelers"
         let emoji = emojiForStyle(style)
         badgeEmoji.text  = emoji;  badgeTitle.text  = style
         backBadgeEmoji.text = emoji; backBadgeTitle.text = style

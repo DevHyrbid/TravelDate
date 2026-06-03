@@ -19,7 +19,7 @@ final class InviteVc: BaseClassVc {
     private let searchContainer  = UIView()
     private let searchField      = UITextField()
     private let tableView        = UITableView()
-    var joinCode = "ihxlca2e"
+    var joinCode = ""
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()

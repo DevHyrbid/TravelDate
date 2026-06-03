@@ -60,6 +60,8 @@ class User : Mappable {
     var endDate  : String?
     var maxGroupSize  : Int?
     var travelStyle : [String]?
+    var travelStyleSingle : String?
+    var activityInterests : [String]?
     var isActive : Bool?
     
     var code  : String?
@@ -119,9 +121,25 @@ class User : Mappable {
     var latitude :  String?
     var longitude : String?
     var location_string :  String?
+    var minAge : Int?
+    var maxAge : Int?
+    
+    
+    
+  
+    var maxMembers : Int?
+    var preferredGender : String?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        
+        
+    
+        maxMembers  <- map["maxMembers"]
+        preferredGender  <- map["preferredGender"]
+        
+        minAge <- map["minAge"]
+        maxAge <- map["maxAge"]
         action <- map["action"]
         latitude <- map["latitude"]
         longitude <- map["longitude"]
@@ -192,6 +210,7 @@ class User : Mappable {
         endDate <- map["endDate"]
         maxGroupSize <- map["maxGroupSize"]
         travelStyle <- map["travelStyle"]
+        travelStyleSingle <- map["travelStyle"]
         isActive <- map["isActive"]
         
         
@@ -252,7 +271,7 @@ class User : Mappable {
                 UserDefaults.standard.removeObject(forKey: "currentUser")
                 currentUserExists = false
             }  else {
-                print(newValue?.toJSON() as Any)
+                
                 UserDefaults.standard.set(newValue?.toJSON(), forKey:"currentUser")
                 currentUserExists = true
             }
@@ -612,7 +631,7 @@ class User : Mappable {
         print(self.toJSON(),"JSONofCreateGroup")
         NetworkManger.sendRequestUrlSession(url: APiConstant.createGroup, params: self.toJSON(), method: "POST") { responseObject, suces in
             print(responseObject)
-            if  responseObject["code"] as? Int == 201 {
+            if  responseObject["code"] as? Int == 200 {
                 print("USER",responseObject)
                 let data = responseObject["data"] as? [String:Any] ?? [:]
                 print("JOIN",data["id"] as? String ?? "")
@@ -662,6 +681,26 @@ class User : Mappable {
         
     }
     
+    
+    func getNotifications(callBack:((_ model:NotificationResponse?,_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.notification, params: [:], method: "GET") { responseObject, suces in
+            print(responseObject)
+            if  responseObject["code"] as? Int == 200 {
+                if let response = Mapper<NotificationResponse>().map(JSONObject: responseObject) {
+                    print(response.data?.notifications?.first?.message ?? "")
+                    callBack(response,responseObject["message"] as? String ?? "",200)
+                }
+               
+            } else {
+                callBack(nil,responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
+        }
+        
+    }
+    
     func getAllUsersAPi(callBack:((_ model:UsersResponse?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.users)" + "1", params: [:], method: "GET") { responseObject, suces in
@@ -677,17 +716,45 @@ class User : Mappable {
         }
         
     }
+    //
     
+    func getChatsInbox(_ type:Int?,callBack:(( _ res:ChatInboxModel?, _ errMsg:String,_ errCode:Int)->Void)!) {
+        var url = ""
+        if type == 0 { // CURRENT
+            url  = APiConstant.chatInbox + "filter=mygroup"
+        } else  if type == 1 {
+            url  = APiConstant.chatInbox + "filter=match"
+        }
+        
+        NetworkManger.sendRequestUrlSession(url: url , params: [:], method: "GET") { responseObject, suces in
+            print(responseObject)
+            
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                if let response = Mapper<ChatInboxModel>().map(JSON: responseObject) {
+                    
+                    callBack(response,responseObject["message"] as? String ?? "",200)
+                }
+                
+            } else {
+                callBack(nil,responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
+        }
+        
+    }
     func getGroups(_ type:Int?,callBack:(( _ res:GroupsResponse?, _ errMsg:String,_ errCode:Int)->Void)!) {
         var url = ""
         if type == 0 { // CURRENT
-            url  = APiConstant.myGroup + "current"
+            url  = APiConstant.myGroup// + "current"
         } else  if type == 1 {
             url  = APiConstant.allGroups
         } else if type == 2 {
             url = APiConstant.matchedGroup
         } else if type == 3 { // Past
-            url  = APiConstant.myGroup + "past"
+            url  = APiConstant.myGroup// + "past"
         } else if type == 4 { // Past
             url  = APiConstant.savedGroup 
         }
@@ -765,7 +832,7 @@ class User : Mappable {
     func  getChatRooms(callBack:((_ chat:[ChatRoomModel]?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.roomChats , params: [:], method: "GET") { responseObject, success in
-            
+            print(APiConstant.roomChats,"JHEREEEE",responseObject)
             if let code = responseObject["code"] as? Int, code == 200 {
                 
                 print("API RESPONSE:", responseObject)
@@ -797,7 +864,8 @@ class User : Mappable {
 }
 
 class GroupsResponse: Mappable {
-    var data: GroupsData?
+//    var data: GroupsData?
+    var dataGroup: [Group]?
     var success: Int?
     var message: String?
     var code: Int?
@@ -805,7 +873,8 @@ class GroupsResponse: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
-        data    <- map["data"]
+//        data    <- map["data"]
+        dataGroup <- map["data"]
         success <- map["success"]
         message <- map["message"]
         code    <- map["code"]
@@ -829,12 +898,14 @@ class Group: Mappable {
     var _id: String?
     var id: String?
     var groupTitle: String?
+    var title: String?
     var destination: String?
+    var description: String?
     var coverImage: String?
     var startDate: String?
     var endDate: String?
     var maxGroupSize: Int?
-    var travelStyle: String?
+    var travelStyle: [String]?
     var isActive: Bool?
     var joinCode: String?
     
@@ -842,9 +913,36 @@ class Group: Mappable {
     var userId: MemberGroup?
     var creator : MemberGroup?
     var createdAt : String?
+    
+    var id : String?
+        var title : String?
+        var description : String?
+        var destination : String?
+        var startDate : String?
+        var endDate : String?
+        var travelStyle : String?
+        var maxMembers : Int?
+        var coverImage : String?
+        var isActive : Bool?
+        var isPublic : Bool?
+        var createdAt : String?
+        var updatedAt : String?
+        var creatorId : String?
+        var joinCode : String?
+        var members : [Members]?
+        var preferences : Preferences?
+
+        
+
+           
+        
+
+    
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        description <- map["description"]
+        title <- map["title"]
         roomId <- map["roomId"]
         createdAt <- map["createdAt"]
         creator <- map["creator"]
@@ -862,6 +960,27 @@ class Group: Mappable {
         
         members       <- map["members"]
         userId        <- map["userId"]
+        
+        
+        
+        
+        id <- map["id"]
+        title <- map["title"]
+        description <- map["description"]
+        destination <- map["destination"]
+        startDate <- map["startDate"]
+        endDate <- map["endDate"]
+        travelStyle <- map["travelStyle"]
+        maxMembers <- map["maxMembers"]
+        coverImage <- map["coverImage"]
+        isActive <- map["isActive"]
+        isPublic <- map["isPublic"]
+        createdAt <- map["createdAt"]
+        updatedAt <- map["updatedAt"]
+        creatorId <- map["creatorId"]
+        joinCode <- map["joinCode"]
+        members <- map["members"]
+        preferences <- map["preferences"]
     }
 }
 
@@ -871,16 +990,153 @@ class MemberGroup: Mappable {
     var name: String?
     var email: String?
     var profileImage: String?
+    var title :  String?
+    var description : String?
+    var notificationOn : Int?
     
+    var profile_image :  String?
+    var social_type :  String?
+    var social_id :  String?
+    
+    
+    
+    var coverImage : String?
+    var groupTitle : String?
+    var destination : String?
+    var startDate : String?
+    var endDate  : String?
+    var maxGroupSize  : Int?
+    var travelStyle : [String]?
+    var isActive : Bool?
+    
+    var code  : String?
+  
+    
+    var dateOfBirth: String?
+    
+    
+    
+    var location: Location?
+    var locationString: String?
+    
+    var airport: String?
+    var shortBio: String?
+    
+    var loungeAccess: Bool?
+    var preferedLounge: String?
+    var whichLounge: String?
+    var travelFrequency: String?
+    
+    
+    var images: [String]?
+    
+    var isEmailVerified: Bool?
+    var isVisible: Bool?
+    
+    var userType: String?
+    var isDeleted: Bool?
+    var isCompleted: Bool?
+   
+    
+    var isPushNotification: Bool?
+    
+  
+    
+    var accountSource: String?
+    
+    var isFriendship: Bool?
+    var profileStatus: String?
+    
+    var isBlockByAdmin: Bool?
+    var isOnline: Bool?
+    var lastSeen: String?
+    
+    
+    var updatedAt: String?
+    
+    var isInvited: Bool?
+    
+    var  short_bio : String?
+    var travelStyles : [String]?
+    var is_push_notification : Int?
+    
+    var groupId : String?
+    var action : String?
+
+    var latitude :  String?
+    var longitude : String?
+    var location_string :  String?
+    var roomId : String?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        roomId <- map["roomId"]
         _id          <- map["id"]
         
         id          <- map["id"]
         name         <- map["name"]
         email        <- map["email"]
         profileImage <- map["profile_image"]
+        
+        
+        location          <- map["location"]
+        locationString    <- map["location_string"]
+        
+        airport           <- map["airport"]
+        shortBio          <- map["short_bio"]
+        
+        loungeAccess      <- map["loungeAccess"]
+        preferedLounge    <- map["preferedLounge"]
+        whichLounge       <- map["whichLounge"]
+        travelFrequency   <- map["travelFrequency"]
+        
+        profileImage      <- map["profile_image"]
+        images            <- map["images"]
+        
+        isEmailVerified   <- map["isEmailVerified"]
+        isVisible         <- map["is_visible"]
+        
+        userType          <- map["user_type"]
+        isDeleted         <- map["is_deleted"]
+        isCompleted       <- map["is_completed"]
+        
+       
+        
+        isPushNotification <- map["is_push_notification"]
+        
+        
+        accountSource     <- map["account_source"]
+        
+        isFriendship      <- map["is_friendship"]
+        profileStatus     <- map["profile_status"]
+        
+        isBlockByAdmin    <- map["isBlockByAdmin"]
+        isOnline          <- map["isOnline"]
+        lastSeen          <- map["lastSeen"]
+        
+        
+        code <- map["code"]
+        coverImage <- map["coverImage"]
+        groupTitle <- map["groupTitle"]
+        destination <- map["destination"]
+        startDate <- map["startDate"]
+        endDate <- map["endDate"]
+        maxGroupSize <- map["maxGroupSize"]
+        travelStyle <- map["travelStyles"]
+        isActive <- map["isActive"]
+        
+        
+        
+        
+        
+        
+        
+        profile_image  <- map["profile_image"]
+        social_type  <- map["social_type"]
+        social_id  <- map["social_id"]
+        
+        
+        
     }
 }
 
@@ -1047,4 +1303,214 @@ class SenderModel: Mappable {
         name            <- map["name"]
         profileImage    <- map["profile_image"]
     }
+}
+
+
+
+import ObjectMapper
+
+// MARK: - Root Response
+class NotificationResponse: Mappable {
+    
+    var data: NotificationData?
+    var message: String?
+    var success: Int?
+    var code: Int?
+    
+    required init?(map: Map) { }
+    
+    func mapping(map: Map) {
+        data        <- map["data"]
+        message     <- map["message"]
+        success     <- map["success"]
+        code        <- map["code"]
+    }
+}
+
+// MARK: - Data
+class NotificationData: Mappable {
+    
+    var notifications: [NotificationItem]?
+    var pagination: Pagination?
+    
+    required init?(map: Map) { }
+    
+    func mapping(map: Map) {
+        notifications   <- map["notifications"]
+        pagination      <- map["pagination"]
+    }
+}
+
+// MARK: - Notification Item
+class NotificationItem: Mappable {
+    
+    var id: String?
+    var groupId: String?
+    var recipientId: String?
+    var senderId: String?
+    
+    var title: String?
+    var message: String?
+    var type: String?
+    
+    var isDeleted: Int?
+    var isRead: Int?
+    
+    var createdAt: String?
+    var updatedAt: String?
+    
+    var sender: Sender?
+    var group: Group?
+    
+    required init?(map: Map) { }
+    
+    func mapping(map: Map) {
+        id              <- map["id"]
+        groupId         <- map["groupId"]
+        recipientId     <- map["recipientId"]
+        senderId        <- map["senderId"]
+        
+        title           <- map["title"]
+        message         <- map["message"]
+        type            <- map["type"]
+        
+        isDeleted       <- map["is_deleted"]
+        isRead          <- map["is_read"]
+        
+        createdAt       <- map["createdAt"]
+        updatedAt       <- map["updatedAt"]
+        
+        sender          <- map["sender"]
+        group           <- map["group"]
+    }
+}
+
+// MARK: - Sender
+class Sender: Mappable {
+    
+    var name: String?
+    var email: String?
+    var profileImage: String?
+    var isFriendship: Int?
+    
+    required init?(map: Map) { }
+    
+    func mapping(map: Map) {
+        name            <- map["name"]
+        email           <- map["email"]
+        profileImage    <- map["profile_image"]
+        isFriendship    <- map["is_friendship"]
+    }
+}
+struct Data : Mappable {
+    var group : Group?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        group <- map["group"]
+    }
+
+}
+
+
+
+struct DataArray : Mappable {
+    var chatId : String?
+    var type : String?
+    var name : String?
+    var image : String?
+    var createdAt : String?
+    var lastMessageAt : String?
+    var lastMessage : String?
+    var data : Data?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        chatId <- map["chatId"]
+        type <- map["type"]
+        name <- map["name"]
+        image <- map["image"]
+        createdAt <- map["createdAt"]
+        lastMessageAt <- map["lastMessageAt"]
+        lastMessage <- map["lastMessage"]
+        data <- map["data"]
+    }
+
+}
+
+struct ChatInboxModel : Mappable {
+    var success : Bool?
+    var code : Int?
+    var message : String?
+    var dataArray : [DataArray]?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        success <- map["success"]
+        code <- map["code"]
+        message <- map["message"]
+        dataArray <- map["data"]
+    }
+
+}
+
+struct Members : Mappable {
+    var id : String?
+    var groupId : String?
+    var userId : String?
+    var role : String?
+    var joinedAt : String?
+    var user : User?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        groupId <- map["groupId"]
+        userId <- map["userId"]
+        role <- map["role"]
+        joinedAt <- map["joinedAt"]
+        user <- map["user"]
+    }
+
+}
+
+
+struct Preferences : Mappable {
+    var id : String?
+    var groupId : String?
+    var minAge : Int?
+    var maxAge : Int?
+    var preferredGender : String?
+    var activityInterests : [String]?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        groupId <- map["groupId"]
+        minAge <- map["minAge"]
+        maxAge <- map["maxAge"]
+        preferredGender <- map["preferredGender"]
+        activityInterests <- map["activityInterests"]
+    }
+
 }

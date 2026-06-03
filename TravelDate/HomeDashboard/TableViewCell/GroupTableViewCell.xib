@@ -56,7 +56,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLocation" translatesAutoresizingMaskIntoConstraints="NO" id="Vfm-ov-maH">
-                                                <rect key="frame" x="85.666666666666671" y="12" width="16" height="16"/>
+                                                <rect key="frame" x="75.666666666666671" y="12" width="16" height="16"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="16" id="4wz-Ty-IM8"/>
                                                     <constraint firstAttribute="width" constant="16" id="v4m-zO-2mh"/>
@@ -69,7 +69,7 @@
                                             <constraint firstItem="Vfm-ov-maH" firstAttribute="centerY" secondItem="GZk-aE-djX" secondAttribute="centerY" id="Cmt-uj-TxV"/>
                                             <constraint firstItem="GZk-aE-djX" firstAttribute="centerY" secondItem="Hjf-tv-f7V" secondAttribute="centerY" id="K1o-70-j3Q"/>
                                             <constraint firstAttribute="height" constant="40" id="fkY-bQ-Bkb"/>
-                                            <constraint firstItem="Vfm-ov-maH" firstAttribute="leading" secondItem="GZk-aE-djX" secondAttribute="leading" constant="12" id="qij-Mk-3dA"/>
+                                            <constraint firstItem="Vfm-ov-maH" firstAttribute="leading" secondItem="GZk-aE-djX" secondAttribute="leading" constant="2" id="qij-Mk-3dA"/>
                                         </constraints>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
@@ -81,7 +81,7 @@
                                         <rect key="frame" x="0.0" y="45" width="247" height="30"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Art Lover and history lover " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I0s-MO-HCc">
-                                                <rect key="frame" x="51.333333333333329" y="0.0" width="144.66666666666669" height="30"/>
+                                                <rect key="frame" x="20" y="0.0" width="207" height="30"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="30" id="4bl-GR-ZBF"/>
@@ -95,7 +95,9 @@
                                         <constraints>
                                             <constraint firstItem="I0s-MO-HCc" firstAttribute="centerX" secondItem="Uw4-9a-nNY" secondAttribute="centerX" id="Bes-Lk-bc4"/>
                                             <constraint firstAttribute="height" constant="30" id="EMY-Ah-QAE"/>
+                                            <constraint firstAttribute="trailing" secondItem="I0s-MO-HCc" secondAttribute="trailing" constant="20" id="SLm-Qh-WIW"/>
                                             <constraint firstItem="I0s-MO-HCc" firstAttribute="centerY" secondItem="Uw4-9a-nNY" secondAttribute="centerY" id="Vu5-xY-uya"/>
+                                            <constraint firstItem="I0s-MO-HCc" firstAttribute="leading" secondItem="Uw4-9a-nNY" secondAttribute="leading" constant="20" id="Ynf-ec-2rV"/>
                                         </constraints>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
@@ -107,7 +109,7 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="5k5-t4-Kj7">
-                                <rect key="frame" x="41.666666666666657" y="329" width="194" height="30"/>
+                                <rect key="frame" x="1.6666666666666572" y="329" width="274" height="30"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  Food   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Vw-Kx-e2g" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="44.666666666666664" height="30"/>
@@ -122,7 +124,7 @@
                                         </userDefinedRuntimeAttributes>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Nightlife     " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uRT-x6-sQB" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="49.666666666666664" y="0.0" width="64.333333333333343" height="30"/>
+                                        <rect key="frame" x="49.666666666666679" y="0.0" width="64.333333333333314" height="30"/>
                                         <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                         <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -136,6 +138,18 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   Adventure   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hi4-v2-IAv" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="119" y="0.0" width="75" height="30"/>
                                         <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                        <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                                <real key="value" value="15"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   Adventure   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KYm-jP-CEj" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                        <rect key="frame" x="199" y="0.0" width="75" height="30"/>
+                                        <color key="backgroundColor" red="0.066666666669999999" green="0.070588235289999995" blue="0.066666666669999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                         <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -212,6 +226,10 @@
             <connections>
                 <outlet property="btnEdit" destination="S3X-Ng-F5z" id="bvz-Mj-tl8"/>
                 <outlet property="imgUser" destination="3Vx-tv-GdT" id="gUM-KT-sPs"/>
+                <outlet property="lbl1" destination="9Vw-Kx-e2g" id="nng-fa-xuC"/>
+                <outlet property="lbl2" destination="uRT-x6-sQB" id="FSQ-N3-3nL"/>
+                <outlet property="lbl3" destination="Hi4-v2-IAv" id="cad-zn-fuj"/>
+                <outlet property="lbl4" destination="KYm-jP-CEj" id="WbF-uQ-4mK"/>
                 <outlet property="lblDescription" destination="I0s-MO-HCc" id="Q7Q-yj-uZf"/>
                 <outlet property="lblLocation" destination="GZk-aE-djX" id="CxZ-n5-OdA"/>
                 <outlet property="lblName" destination="hzP-vA-PNR" id="HVG-d1-4YB"/>

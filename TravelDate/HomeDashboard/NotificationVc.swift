@@ -11,16 +11,34 @@ class NotificationVc: BaseClassVc {
    
     @IBOutlet weak var tblVw:UITableView!
     @IBOutlet weak var lblTitle:UILabel!
+    
+    var notifications: [NotificationItem]?
+    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
        registerNib()
         lblTitle.setFont(.medium, size: 18.0)
+        getNotification()
     }
     
     func registerNib(){
         tblVw.register(NotificationCell.self)
         
+    }
+    
+    func getNotification() {
+        request.getNotifications { [self] model, errMsg, errCode in
+            DispatchQueue.main.async {
+                if errCode == 200 {
+                    notifications = model?.data?.notifications ?? []
+                    self.tblVw.reloadData()
+                    
+                } else {
+                    self.showAlert(errMsg)
+                }
+            }
+        }
     }
 }
 
@@ -32,12 +50,19 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return notifications?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : NotificationCell = tableView.dequeue(NotificationCell.self, for: indexPath)
+        if  let model = self.notifications?[indexPath.row] {
+            cell.lblDesc.text = model.message ?? ""
+            cell.lblTitle.text = model.title ?? ""
+            self.loadImage(cell.imgVw, url: URL(string: model.sender?.profileImage ?? "")!)
+            cell.imgVw.layer.cornerRadius = 12
+        }
         return cell
+            
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -46,7 +71,7 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
     
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
+        return UITableView.automaticDimension
     }
     
     

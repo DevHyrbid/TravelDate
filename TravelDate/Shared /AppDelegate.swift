@@ -122,13 +122,45 @@ extension AppDelegate: MessagingDelegate {
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
-
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler:
         @escaping (UNNotificationPresentationOptions) -> Void
     ) {
+
+        let userInfo = notification.request.content.userInfo
+
+        print("📩 Foreground Push:", userInfo)
+
+        guard let type = userInfo["type"] as? String else {
+            completionHandler([.banner, .sound, .badge])
+            return
+        }
+
+        // CHAT PUSH
+        if type == "chat" {
+
+            NotificationCenter.default.post(
+                name: .didReceiveChatMessage,
+                object: nil,
+                userInfo: userInfo
+            )
+
+            // If already inside chat screen → no banner
+            if ChatState.shared.isChatOpen {
+
+                completionHandler([.sound])
+
+            } else {
+
+                // Outside chat screen → show banner
+                completionHandler([.banner, .sound, .badge])
+            }
+
+            return
+        }
+
         completionHandler([.banner, .sound, .badge])
     }
 }
@@ -136,22 +168,36 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 extension AppDelegate {
     
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-        
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+
         let userInfo = response.notification.request.content.userInfo
-        
-        if let screen = userInfo["screen"] as? String,
-           screen == "downloadScreen" {
-            
-            if let window = UIApplication.shared.windows.first {
-                let nav = window.rootViewController as? UINavigationController
-//                let vc = MindsetVC()
-//                nav?.pushViewController(vc, animated: true)
-            }
-        }
-        
+
+        print("📩 Notification Clicked:", userInfo)
+
+        NotificationCenter.default.post(
+            name: .openChatFromPush,
+            object: nil,
+            userInfo: userInfo
+        )
+
         completionHandler()
     }
+}
+
+import Foundation
+
+extension Notification.Name {
+    static let didReceiveChatMessage = Notification.Name("didReceiveChatMessage")
+    static let openChatFromPush = Notification.Name("openChatFromPush")
+}
+final class ChatState {
+
+    static let shared = ChatState()
+
+    var isChatOpen = false
+    var activeRoomId: String?
 }

@@ -169,32 +169,32 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5q-ag-0rz" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="260.33333333333326" width="363" height="670"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgGroup0" translatesAutoresizingMaskIntoConstraints="NO" id="ZlR-63-CLs">
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZlR-63-CLs">
                                                         <rect key="frame" x="0.0" y="0.0" width="363" height="240"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="240" id="XIv-Ei-vTG"/>
                                                         </constraints>
                                                     </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali Crew" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G9e-yJ-b6n">
-                                                        <rect key="frame" x="20" y="260.00000000000006" width="78" height="20.333333333333314"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G9e-yJ-b6n">
+                                                        <rect key="frame" x="20" y="260.00000000000006" width="0.0" height="0.0"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="YHt-cZ-AzS">
-                                                        <rect key="frame" x="15" y="300.33333333333331" width="338" height="35"/>
+                                                        <rect key="frame" x="15" y="280.00000000000006" width="338" height="35"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gX6-jN-4jx" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="170" height="35"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Apr 15 - Apr 28 2026" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iCT-6Y-QQh">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iCT-6Y-QQh">
                                                                         <rect key="frame" x="36" y="0.0" width="124" height="35"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgCalendar" translatesAutoresizingMaskIntoConstraints="NO" id="WOg-9Y-oak">
-                                                                        <rect key="frame" x="10" y="9.6666666666667425" width="16" height="16"/>
+                                                                        <rect key="frame" x="10" y="9.6666666666666288" width="16" height="16"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" constant="16" id="APA-AG-UTi"/>
                                                                             <constraint firstAttribute="height" constant="16" id="Df4-pO-eHq"/>
@@ -219,14 +219,14 @@
                                                             <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wx0-C0-aJ1" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="185" y="0.0" width="153" height="35"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Bali, Indonesia" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HeL-OE-C0Y">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HeL-OE-C0Y">
                                                                         <rect key="frame" x="36" y="0.0" width="102" height="35"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLocation" translatesAutoresizingMaskIntoConstraints="NO" id="4Dg-Fw-wnL">
-                                                                        <rect key="frame" x="10" y="9.6666666666667425" width="16" height="16"/>
+                                                                        <rect key="frame" x="10" y="9.6666666666666288" width="16" height="16"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="height" constant="16" id="TuK-cJ-ru2"/>
                                                                             <constraint firstAttribute="width" constant="16" id="cey-d4-T9j"/>
@@ -255,7 +255,7 @@
                                                         </constraints>
                                                     </stackView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lrW-nS-8gr" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="15" y="350.33333333333331" width="333" height="138"/>
+                                                        <rect key="frame" x="15" y="330.00000000000006" width="333" height="138"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgTime" translatesAutoresizingMaskIntoConstraints="NO" id="KkE-I7-hQs">
                                                                 <rect key="frame" x="15" y="20" width="16" height="16"/>
@@ -265,7 +265,7 @@
                                                                 </constraints>
                                                             </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Time Until Trip" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G7n-t7-xGS">
-                                                                <rect key="frame" x="41" y="19.666666666666742" width="95" height="17"/>
+                                                                <rect key="frame" x="41" y="19.666666666666629" width="95" height="17"/>
                                                                 <fontDescription key="fontDescription" name="Inter24pt-SemiBold" family="Inter 24pt" pointSize="14"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
@@ -276,7 +276,7 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sVh-7U-7fx" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="40" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RjY-jN-iDY">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RjY-jN-iDY">
                                                                                 <rect key="frame" x="5" y="10" width="54" height="18"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -309,7 +309,7 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Btz-Cu-Jnb" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="74" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="21" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iOD-dr-jMb">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iOD-dr-jMb">
                                                                                 <rect key="frame" x="4.9999999999999858" y="10" width="54" height="18"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -342,7 +342,7 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpj-pm-lu4" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="148" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="37" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UP7-q6-LfB">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UP7-q6-LfB">
                                                                                 <rect key="frame" x="5" y="10" width="54" height="18"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -375,7 +375,7 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8ra-a7-xiV" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="222.00000000000003" y="0.0" width="63.999999999999972" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="39 " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AbH-Qo-n3m">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AbH-Qo-n3m">
                                                                                 <rect key="frame" x="5" y="10" width="54" height="18"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -428,14 +428,14 @@
                                                         </userDefinedRuntimeAttributes>
                                                     </view>
                                                     <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPhotos" translatesAutoresizingMaskIntoConstraints="NO" id="K2Y-8p-Hfi">
-                                                        <rect key="frame" x="20" y="508.33333333333331" width="323" height="37.333333333333314"/>
+                                                        <rect key="frame" x="20" y="488.00000000000006" width="323" height="37.333333333333314"/>
                                                     </imageView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dmX-4p-IFn">
-                                                        <rect key="frame" x="20" y="508.33333333333331" width="323" height="37.333333333333314"/>
+                                                        <rect key="frame" x="20" y="488.00000000000006" width="323" height="37.333333333333314"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </view>
                                                     <button opaque="NO" tag="104" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9Q-4g-gZG" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="20" y="575.66666666666674" width="323" height="48"/>
+                                                        <rect key="frame" x="20" y="555.33333333333326" width="323" height="48"/>
                                                         <color key="backgroundColor" name="ThemeOrange"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="48" id="xKr-vE-35C"/>
@@ -453,10 +453,23 @@
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hsH-AJ-BC2">
-                                                        <rect key="frame" x="0.0" y="0.0" width="363" height="500"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="363" height="479.66666666666669"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                         <connections>
                                                             <action selector="btnOpenGroup:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Ukg-xh-8fX"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PC9-17-wed">
+                                                        <rect key="frame" x="321" y="249" width="22" height="22"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="22" id="4Uh-Ig-qGE"/>
+                                                            <constraint firstAttribute="height" constant="22" id="U13-yE-8Ad"/>
+                                                        </constraints>
+                                                        <color key="tintColor" name="ThemeOrange"/>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" image="square.and.arrow.up.circle.fill" catalog="system"/>
+                                                        <connections>
+                                                            <action selector="btnShare:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="NnX-Rd-Ffu"/>
                                                         </connections>
                                                     </button>
                                                     <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JiU-xS-Sul" customClass="Okay">
@@ -502,7 +515,9 @@
                                                     <constraint firstAttribute="height" constant="670" id="V1i-gq-Ba1"/>
                                                     <constraint firstAttribute="bottom" secondItem="JiU-xS-Sul" secondAttribute="bottom" id="VMU-hy-2iL"/>
                                                     <constraint firstItem="YHt-cZ-AzS" firstAttribute="top" secondItem="G9e-yJ-b6n" secondAttribute="bottom" constant="20" id="dup-pP-t0k"/>
+                                                    <constraint firstAttribute="trailing" secondItem="PC9-17-wed" secondAttribute="trailing" constant="20" id="hfe-3z-9jr"/>
                                                     <constraint firstItem="hsH-AJ-BC2" firstAttribute="leading" secondItem="J5q-ag-0rz" secondAttribute="leading" id="iFs-DC-6SK"/>
+                                                    <constraint firstItem="PC9-17-wed" firstAttribute="centerY" secondItem="G9e-yJ-b6n" secondAttribute="centerY" id="kg5-Ll-3NI"/>
                                                     <constraint firstItem="dmX-4p-IFn" firstAttribute="top" secondItem="K2Y-8p-Hfi" secondAttribute="top" id="ol8-oT-IrE"/>
                                                     <constraint firstItem="hsH-AJ-BC2" firstAttribute="trailing" secondItem="ZlR-63-CLs" secondAttribute="trailing" id="pM5-0o-Laz"/>
                                                     <constraint firstItem="dmX-4p-IFn" firstAttribute="leading" secondItem="K2Y-8p-Hfi" secondAttribute="leading" id="r1d-MG-dL6"/>
@@ -837,25 +852,25 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2rP-sU-nq0" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="114.33333333333331" width="363" height="530"/>
                                                 <subviews>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgGroup0" translatesAutoresizingMaskIntoConstraints="NO" id="XQ9-db-c3k">
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XQ9-db-c3k">
                                                         <rect key="frame" x="0.0" y="0.0" width="363" height="240"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="240" id="JaF-Us-I3p"/>
                                                         </constraints>
                                                     </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali Crew" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TPe-ty-nu0">
-                                                        <rect key="frame" x="20" y="260" width="78" height="20.333333333333314"/>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TPe-ty-nu0">
+                                                        <rect key="frame" x="20" y="260" width="0.0" height="0.0"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="gPy-Xc-VsM">
-                                                        <rect key="frame" x="15" y="290.33333333333337" width="338" height="40"/>
+                                                        <rect key="frame" x="15" y="270" width="338" height="40"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="197" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Apr 15 - Apr 28 2026" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
                                                                         <rect key="frame" x="36" y="0.0" width="161" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -887,7 +902,7 @@
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="212" y="0.0" width="126" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali , Indonesia" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
                                                                         <rect key="frame" x="36" y="0.0" width="90" height="40"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" constant="90" id="YYV-Dz-CNB"/>
@@ -926,7 +941,7 @@
                                                         </constraints>
                                                     </stackView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCk-6Q-k96" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="15" y="350.33333333333337" width="333" height="138"/>
+                                                        <rect key="frame" x="15" y="330" width="333" height="138"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgTime" translatesAutoresizingMaskIntoConstraints="NO" id="Ec9-BP-nJw">
                                                                 <rect key="frame" x="10" y="15" width="16" height="16"/>
@@ -942,19 +957,19 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="zFN-rY-e5g">
-                                                                <rect key="frame" x="32" y="49.999999999999943" width="286" height="68"/>
+                                                                <rect key="frame" x="32" y="50" width="286" height="68"/>
                                                                 <subviews>
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2h-n0-rUV" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="40" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4YU-jh-qy6">
-                                                                                <rect key="frame" x="5" y="10" width="54" height="18"/>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4YU-jh-qy6">
+                                                                                <rect key="frame" x="5" y="10" width="54" height="0.0"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Days" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kjv-wK-JnM">
-                                                                                <rect key="frame" x="0.0" y="35" width="64" height="17.666666666666671"/>
+                                                                                <rect key="frame" x="0.0" y="17" width="64" height="17.666666666666671"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
@@ -980,14 +995,14 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rVd-GQ-563" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="74" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="21" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QIQ-1g-ov6">
-                                                                                <rect key="frame" x="5" y="10" width="54" height="18"/>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QIQ-1g-ov6">
+                                                                                <rect key="frame" x="5" y="10" width="54" height="0.0"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hours" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6tk-85-Lt3">
-                                                                                <rect key="frame" x="0.0" y="35" width="64" height="17.666666666666671"/>
+                                                                                <rect key="frame" x="0.0" y="17" width="64" height="17.666666666666671"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
@@ -1013,14 +1028,14 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oeG-ij-oWc" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="148" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="37" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="whp-lI-eRO">
-                                                                                <rect key="frame" x="5" y="10" width="54" height="18"/>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="whp-lI-eRO">
+                                                                                <rect key="frame" x="5" y="10" width="54" height="0.0"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Mins" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c0Q-c2-wC4">
-                                                                                <rect key="frame" x="0.0" y="35" width="64" height="17.666666666666671"/>
+                                                                                <rect key="frame" x="0.0" y="17" width="64" height="17.666666666666671"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
@@ -1046,14 +1061,14 @@
                                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cRZ-2g-KQT" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                         <rect key="frame" x="222" y="0.0" width="64" height="68"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="39 " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jLY-9r-RpV">
-                                                                                <rect key="frame" x="5" y="10" width="54" height="18"/>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jLY-9r-RpV">
+                                                                                <rect key="frame" x="5" y="10" width="54" height="0.0"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Secs" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G2U-nc-95c">
-                                                                                <rect key="frame" x="0.0" y="35" width="64" height="17.666666666666671"/>
+                                                                                <rect key="frame" x="0.0" y="17" width="64" height="17.666666666666671"/>
                                                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                                 <color key="textColor" white="1" alpha="0.84999999999999998" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                 <nil key="highlightedColor"/>
@@ -1740,8 +1755,8 @@
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="CD9-dR-0N5" secondAttribute="trailing" constant="20" id="9ch-TA-QJK"/>
                                             <constraint firstItem="CD9-dR-0N5" firstAttribute="top" secondItem="Wej-20-2wD" secondAttribute="top" id="EQv-yl-1X1"/>
+                                            <constraint firstItem="aIQ-Q5-HdU" firstAttribute="centerX" secondItem="CD9-dR-0N5" secondAttribute="centerX" id="Rvg-0J-NNn"/>
                                             <constraint firstItem="aIQ-Q5-HdU" firstAttribute="top" secondItem="CD9-dR-0N5" secondAttribute="bottom" constant="35" id="Ugn-2f-oUW"/>
-                                            <constraint firstItem="aIQ-Q5-HdU" firstAttribute="centerX" secondItem="BVL-H8-uue" secondAttribute="centerX" id="YGe-uN-flY"/>
                                             <constraint firstItem="CD9-dR-0N5" firstAttribute="leading" secondItem="Wej-20-2wD" secondAttribute="leading" constant="20" id="n4E-IR-ABq"/>
                                         </constraints>
                                     </view>
@@ -2091,7 +2106,6 @@
         <image name="imgChat 1" width="44" height="44"/>
         <image name="imgCross" width="65" height="65"/>
         <image name="imgFrame2" width="354" height="234"/>
-        <image name="imgGroup0" width="354" height="234"/>
         <image name="imgLike" width="65" height="65"/>
         <image name="imgLocation" width="10.666666984558105" height="16"/>
         <image name="imgMatchCopy" width="28" height="21.333333969116211"/>
@@ -2105,6 +2119,7 @@
         <image name="imgTinder" width="386.66665649414062" height="612"/>
         <image name="imgTinderSw" width="402.66665649414062" height="53.333332061767578"/>
         <image name="imgTravel" width="50.666667938232422" height="50.666667938232422"/>
+        <image name="square.and.arrow.up.circle.fill" catalog="system" width="128" height="123"/>
         <namedColor name="ThemeBG">
             <color red="0.067000001668930054" green="0.071000002324581146" blue="0.067000001668930054" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

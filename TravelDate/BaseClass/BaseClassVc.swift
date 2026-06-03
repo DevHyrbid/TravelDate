@@ -5,6 +5,8 @@
 //  Created by Dev CodingZone on 01/04/26.
 //
 
+//private static let baseURL = "http://187.124.251.134:9800/api/v1/api-chat"
+
 // MARK: - Colors
 // MARK: - Colors
 extension UIColor {
@@ -219,6 +221,8 @@ class BaseClassVc: UIViewController {
 
           navigationController?.setNavigationBarHidden(true, animated: false)
       }
+    
+    
     func currentDate(_ format:String) ->String{
         let formatter = DateFormatter()
         formatter.dateFormat = format

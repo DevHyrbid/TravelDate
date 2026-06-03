@@ -131,9 +131,9 @@ class MyGroupViewController: BaseClassVc {
     
     
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-           handleScroll(scrollView)
-       }
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//           handleScroll(scrollView)
+//       }
     
     func registerNib(){
         tblVw.register(GroupTableViewCell.self)
@@ -158,19 +158,32 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         let model = self.res?.members?[indexPath.row]
         if User.curentUser?.name ?? "" == model?.name {
             cell.lblName.text = "You"
-            cell.lblLocation.text = UserDefaults.standard.value(forKey: "user_loc") as? String ?? "No Location"
             cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
             cell.btnEdit.backgroundColor = .clear
             cell.btnEdit.addTarget(self, action: #selector(editUser(_:)), for: .touchUpInside)
             cell.btnEdit.tag = indexPath.row
         } else {
-            cell.btnEdit.tag = indexPath.row
-            cell.lblLocation.text = "No Location"
             cell.lblName.text = model?.name ?? ""
+            cell.btnEdit.tag = indexPath.row
             cell.btnEdit.setTitle("Message", for: .normal)
             cell.btnEdit.backgroundColor = .themeOrange
             cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
+        
+        let styles = model?.travelStyle ?? []
+
+        cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
+        cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
+        cell.lbl3.text = styles.indices.contains(2) ? " \(styles[2]) " : nil
+        cell.lbl4.text = styles.indices.contains(3) ? " \(styles[3]) " : nil
+        cell.lbl1.isHidden = !styles.indices.contains(0)
+        cell.lbl2.isHidden = !styles.indices.contains(1)
+        cell.lbl3.isHidden = !styles.indices.contains(2)
+        cell.lbl4.isHidden = !styles.indices.contains(3)
+        
+        
+        cell.lblLocation.text = model?.locationString ?? ""
+        cell.lblDescription.text = model?.shortBio ?? ""
         
         if let url = URL(string: model?.profileImage ?? "") {
             self.loadImage(cell.imgUser, url: url)
@@ -190,34 +203,28 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
     
     
     @objc func openChat(_ sender:UIButton) {
-        
-        
-        
-        let selectedUser = self.res
-        
-        let chatVc = ChatMessageVc()
-        chatVc.roomId      = selectedUser?.roomId ?? ""
-        chatVc.roomTitle   = selectedUser?.members?[sender.tag].name ?? ""
-        
-//        chatVc.groupId     = selectedUser?.id ?? ""
-        chatVc.roomType    = .individual//"individual"
-//        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
-        
-        // ✅ Correct way - compactMap use karo
-        chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
-        // ✅ Full log before push
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🚀 Opening ChatMessageVc")
-        print("📌 roomId      : \(chatVc.roomId)")
-        print("📌 roomTitle   : \(chatVc.roomTitle)")
-        print("📌 groupId     : \(chatVc.groupId)")
-        print("📌 roomType    : \(chatVc.roomType)")
-        print("📌 memberCount : \(chatVc.memberCount)")
-        print("📌 participants: \(chatVc.participants)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
-        navigationController?.pushViewController(chatVc, animated: true)
-        
+
+        guard let selectedUser = self.res?.members?[sender.tag] else { return }
+
+        let currentUserId = User.curentUser?.id ?? ""
+        let otherParticipantId = selectedUser.id ?? ""
+
+        // Prevent self chat
+        guard otherParticipantId != currentUserId else { return }
+
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: [currentUserId, otherParticipantId],
+            roomId: selectedUser.roomId ?? nil,
+            roomTitle: selectedUser.name ?? "Chat",
+            type: .individual
+        )
+
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     

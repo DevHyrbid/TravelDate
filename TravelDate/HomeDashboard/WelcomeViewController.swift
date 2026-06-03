@@ -8,6 +8,18 @@ struct Theme {
     static let orange = UIColor(named: "ThemeOrange") ?? .orange
     static let bg = UIColor.black
     static let card = UIColor.white.withAlphaComponent(0.04)
+    static let bg_9          = UIColor(hex: "#0F0F10")
+    static let card_9        = UIColor(hex: "#181818")
+    static let cardRaised  = UIColor(hex: "#1F1F20")
+    static let accent      = UIColor(hex: "#FF8A00")
+    static let danger      = UIColor(hex: "#FF3B30")
+    static let textPrimary = UIColor.white
+    static let textSecond  = UIColor(hex: "#8A8A8E")
+    static let separator   = UIColor(hex: "#2A2A2C")
+    static let floatBtnBg  = UIColor(hex: "#2C2C2E")
+
+    static let cardRadius: CGFloat = 22
+    static let rowInset = UIEdgeInsets(top: 15, left: 16, bottom: 15, right: 16)
 }
 import UIKit
 
@@ -362,6 +374,12 @@ class WelcomeViewController: BaseClassVc {
             DispatchQueue.main.async {
                 if errCode == 200 {
                     self.showAlertAction("Group Joined Successfully") { self.backTapped() }
+                    
+                    NotificationCenter.default.post(
+                        name: .valueUpdated,
+                        object: nil,
+                        userInfo: ["value": "Group Joined"]
+                    )
                 } else {
                     self.showAlert(errMsg)
                 }

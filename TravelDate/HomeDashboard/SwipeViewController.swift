@@ -12,21 +12,27 @@ class SwipeViewController: BaseClassVc {
     @IBOutlet weak var emptyStateView: UIView!
 
     // MARK: - Properties
+    private var overlayView: UIView?
+    private var overlayType: OverlayType?
     private var groups: [Group] = []
     private var visibleCards: [MatchCardView] = []
     private var currentIndex = 0
     private let maxVisible = 3
     private var panOriginCenter: CGPoint = .zero
-
+    private var blurView: UIVisualEffectView?
+    var groupsCount = 0
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
+        fetchGroups()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        fetchGroups()
+      
+        checkRequirements()
+        self.tripsTabBarController?.showTabBar()
     }
 
     private var didSetupUI = false
@@ -36,6 +42,158 @@ class SwipeViewController: BaseClassVc {
         didSetupUI = true
         setupStaticUI()
     }
+    
+    
+    private func checkRequirements() {
+
+        let location = User.curentUser?.locationString?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if location.isEmpty {
+            overlayType = .missingLocation
+            showOverlay()
+            return
+        }
+
+        if (User.curentUser?.travelStyles ?? []).isEmpty {
+            overlayType = .missingTravelStyles
+            showOverlay()
+            return
+        }
+
+        if groups.isEmpty {
+            overlayType = .noGroups
+            showOverlay()
+            return
+        }
+
+        overlayType = nil
+        hideOverlay()
+    }
+    
+    
+    private func showOverlay() {
+
+        guard let type = overlayType else { return }
+
+        cardContainerView.isUserInteractionEnabled = false
+        skipButton.isEnabled = false
+        likeButton.isEnabled = false
+
+        overlayView?.removeFromSuperview()
+
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        blur.frame = view.bounds
+        blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        let container = UIView()
+        container.backgroundColor = UIColor.black.withAlphaComponent(0.65)
+        container.layer.cornerRadius = 20
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = UIImageView(image: UIImage(systemName: type.iconName))
+        iconView.tintColor = .white
+        iconView.contentMode = .scaleAspectFit
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLabel = UILabel()
+        titleLabel.text = type.title
+        titleLabel.textColor = .white
+        titleLabel.font = .boldSystemFont(ofSize: 22)
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 0
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let messageLabel = UILabel()
+        messageLabel.text = type.message
+        messageLabel.textColor = .lightGray
+        messageLabel.font = .systemFont(ofSize: 16)
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let actionButton = UIButton(type: .system)
+        actionButton.setTitle(type.buttonTitle, for: .normal)
+        actionButton.backgroundColor = UIColor.systemPink
+        actionButton.setTitleColor(.white, for: .normal)
+        actionButton.layer.cornerRadius = 12
+        actionButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        actionButton.translatesAutoresizingMaskIntoConstraints = false
+        actionButton.addTarget(self, action: #selector(overlayButtonTapped), for: .touchUpInside)
+
+        blur.contentView.addSubview(container)
+
+        container.addSubview(iconView)
+        container.addSubview(titleLabel)
+        container.addSubview(messageLabel)
+        container.addSubview(actionButton)
+
+        view.addSubview(blur)
+
+        NSLayoutConstraint.activate([
+
+            container.centerXAnchor.constraint(equalTo: blur.contentView.centerXAnchor),
+            container.centerYAnchor.constraint(equalTo: blur.contentView.centerYAnchor),
+            container.leadingAnchor.constraint(equalTo: blur.contentView.leadingAnchor, constant: 24),
+            container.trailingAnchor.constraint(equalTo: blur.contentView.trailingAnchor, constant: -24),
+
+            iconView.topAnchor.constraint(equalTo: container.topAnchor, constant: 24),
+            iconView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 60),
+            iconView.heightAnchor.constraint(equalToConstant: 60),
+
+            titleLabel.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 16),
+            titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+
+            messageLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            messageLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            messageLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+
+            actionButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 24),
+            actionButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+            actionButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+            actionButton.heightAnchor.constraint(equalToConstant: 50),
+            actionButton.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -24)
+        ])
+
+        overlayView = blur
+    }
+    
+    
+    private func hideOverlay() {
+
+        cardContainerView.isUserInteractionEnabled = true
+        skipButton.isEnabled = true
+        likeButton.isEnabled = true
+
+        overlayView?.removeFromSuperview()
+        overlayView = nil
+    }
+    
+    
+    @objc private func overlayButtonTapped() {
+
+        guard let type = overlayType else { return }
+
+        switch type {
+
+        case .missingLocation:
+            print("Open Location Screen")
+            
+            
+            self.pushVC(EditProfileVc.self, from: .Settings)
+
+        case .missingTravelStyles:
+            print("Open Travel Styles Screen")
+            // push travel style screen
+            
+            self.pushVC(ProfileViewController.self, from: .Settings)
+
+        case .noGroups:
+            fetchGroups()
+        }
+    }
 
     // MARK: - API
     private func fetchGroups() {
@@ -43,9 +201,19 @@ class SwipeViewController: BaseClassVc {
             guard let self else { return }
             DispatchQueue.main.async {
                 if code == 200 {
-                    self.groups = model?.data?.groups ?? []
-                    self.lblNoData.isHidden = !self.groups.isEmpty
-                    self.buildCardStack()
+                    
+
+                    self.groups = model?.dataGroup ?? []
+
+                    self.groups.forEach { group in
+                        group.members = group.members?.filter {
+                            $0.id != User.curentUser?.id
+                        }
+                    }
+                       self.lblNoData.isHidden = !self.groups.isEmpty
+                       self.buildCardStack()
+
+                       self.checkRequirements()
                 } else {
                     print("EERRR", msg as Any, code as Any)
                 }
@@ -188,6 +356,11 @@ class SwipeViewController: BaseClassVc {
         card.removeFromSuperview()
         currentIndex += 1
 
+        if currentIndex >= groups.count {
+            showAllCardsFinishedView()
+            return
+        }
+
         for (i, c) in visibleCards.enumerated() {
             applyStackAppearance(to: c, stackPosition: i)
         }
@@ -202,6 +375,19 @@ class SwipeViewController: BaseClassVc {
         }
 
         emptyStateView.isHidden = !visibleCards.isEmpty
+    }
+    
+    private func showAllCardsFinishedView() {
+        
+        emptyStateView.isHidden = false
+        lblNoData.isHidden = false
+        lblNoData.text = "You've seen all available groups 🎉 \n No New Groups available"
+
+        skipButton.isHidden = true
+        likeButton.isHidden = true
+        cardContainerView.isHidden = true
+        // Optional:
+        // customView.isHidden = false
     }
 
     // MARK: - Add card to back
@@ -314,7 +500,7 @@ extension SwipeViewController {
                             groupId:             group.id ?? "",
                             swipeId:             "",
                             groupTitle:          group.groupTitle ?? "",
-                            matchedStyles:       [],
+                            matchedStyles:       group.travelStyle ?? [""],
                             message:             "It's a Match!",
                             myGroupImage:        User.curentUser?.profileImage ?? "",
                             matchedGroupImage:   nil,
@@ -340,9 +526,34 @@ extension SwipeViewController {
 // MARK: - MatchBottomSheetDelegate
 extension SwipeViewController: MatchBottomSheetDelegate {
     func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
-        print("Open chat for group: \(groupId)")
-        
+
+        guard let group = groups.first(where: { $0.id == groupId }) else {
+            print("Group not found")
+            return
+        }
+
+        let currentUserId = User.curentUser?.id ?? ""
+
+        let participantIds = group.members?
+            .compactMap { $0.id } ?? []
+
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: participantIds,
+            roomId: group.roomId,
+            roomTitle: group.groupTitle ?? "Group Chat",
+            type: .group
+        )
+
+        vc.memberCount = participantIds.count
+
+        navigationController?.pushViewController(vc, animated: true)
     }
+    
     func matchSheetDidTapKeepSwiping() {
         print("Keep swiping")
     }
@@ -354,3 +565,44 @@ private extension Comparable {
         min(max(self, range.lowerBound), range.upperBound)
     }
 }
+
+
+// MARK: - Overlay Type
+enum OverlayType {
+    case missingLocation
+    case missingTravelStyles
+    case noGroups
+
+    var title: String {
+        switch self {
+        case .missingLocation:    return "Location Required"
+        case .missingTravelStyles: return "Travel Styles Required"
+        case .noGroups:           return "No Groups Available"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .missingLocation:    return "Add your location to start discovering travel groups."
+        case .missingTravelStyles: return "Select your travel styles to find matching groups."
+        case .noGroups:           return "No travel groups available right now."
+        }
+    }
+
+    var buttonTitle: String {
+        switch self {
+        case .missingLocation:    return "Add Location"
+        case .missingTravelStyles: return "Select Travel Styles"
+        case .noGroups:           return "Refresh"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .missingLocation:    return "location.fill"
+        case .missingTravelStyles: return "figure.travel"
+        case .noGroups:           return "arrow.clockwise"
+        }
+    }
+}
+

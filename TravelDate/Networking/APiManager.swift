@@ -27,7 +27,7 @@ class NetworkManger {
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.allHTTPHeaderFields = getJSONHeaderWithAccessToken()
-        print(url,"SSJSJSJ_URLLLL")
+        
         if let params = params, !params.isEmpty {
             request.httpBody = try? JSONSerialization.data(withJSONObject: params)
         }
@@ -41,10 +41,10 @@ class NetworkManger {
             }
             do {
                 let json = try JSONSerialization.jsonObject(with: dataJson, options: .allowFragments)
-                print(json as? [String: Any] ?? [:])
+                
                 success(json as? [String: Any] ?? [:], true)
             } catch {
-                print(error)
+                
                 faliure("json error", 500)
             }
         }

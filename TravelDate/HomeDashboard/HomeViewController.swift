@@ -32,7 +32,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var lblTitle:UILabel!
     @IBOutlet weak var imgTrips:UIImageView!
     @IBOutlet weak var imgProfile:UIImageView!
-    
+    @IBOutlet weak var lblPast:UILabel!
+    @IBOutlet weak var lblDatePast:UILabel!
     @IBOutlet weak var height:NSLayoutConstraint!
     @IBOutlet weak var hideVw:UIView!
     @IBOutlet weak var lblLeft:UILabel!
@@ -67,9 +68,28 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
 
         
         tblVw.register(PastTableViewCell.self)
-       
+        getGroups()
+        getPastGroups()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleValueUpdated(_:)),
+            name: .valueUpdated,
+            object: nil
+        )
+
+        
     }
     
+    
+    @objc private func handleValueUpdated(_ notification: Notification) {
+        if let value = notification.userInfo?["value"] as? String {
+            print("Updated Value: \(value)")
+        }
+        
+        getGroups()
+        getPastGroups()
+    }
     
     
     func makeTripMenu(trips: [Group]) -> UIMenu {
@@ -138,6 +158,39 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             print("❌ Font not loaded")
         }
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tripsTabBarController?.hideTabBar()
+    }
+    
+    
+    func shareInvite(_ code:String) {
+        
+        let message = """
+        ✈️ Join my travel group!
+        
+        Use this link to join:
+        \(code)
+        
+        Let’s plan something awesome 🌍
+        """
+        
+        let activityVC = UIActivityViewController(
+            activityItems: [message],
+            applicationActivities: nil
+        )
+        
+        // For iPad support
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = self.view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
+        present(activityVC, animated: true)
+    }
+   
    
     func setupUi(){
         view.backgroundColor = .black
@@ -153,8 +206,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblGreating.setFont(.regular, size: 14.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
-        getGroups()
-        getPastGroups()
+       
     }
     
     func setupCountdown(startDateString: String) {
@@ -179,19 +231,28 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     func updateCountdown() {
         guard let targetDate = targetDate else { return }
 
+        let calendar = Calendar.current
         let now = Date()
 
-        if targetDate <= now {
+        // Start of the target day (00:00)
+        let targetDayStart = calendar.startOfDay(for: targetDate)
+
+        // If we've reached the target date, show zero
+        if now >= targetDayStart {
             timer?.invalidate()
-            
-            lblDay.text = "0"
-            lblHours.text = "0"
-            lblMin.text = "0"
-            lblSec.text = "0"
+
+            lblDay.text = "00"
+            lblHours.text = "00"
+            lblMin.text = "00"
+            lblSec.text = "00"
             return
         }
 
-        let components = Calendar.current.dateComponents([.day, .hour, .minute, .second], from: now, to: targetDate)
+        let components = calendar.dateComponents(
+            [.day, .hour, .minute, .second],
+            from: now,
+            to: targetDayStart
+        )
 
         lblDay.text = String(format: "%02d", components.day ?? 0)
         lblHours.text = String(format: "%02d", components.hour ?? 0)
@@ -204,8 +265,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         request.getGroups(3) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
-                    if let data  = model?.data {
-                        self.pastData = data
+                    if let data  = model?.dataGroup {
+//                        self.pastData = data
                         self.tblVw.reloadData()
                     }
                    
@@ -218,10 +279,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
-                    if let res = model?.data?.groups?.first {
-                        self.btnList.menu = makeTripMenu(trips: (model?.data?.groups!)!)
+                    if let res = model?.dataGroup?.first {
+                        self.btnList.menu = makeTripMenu(trips: (model?.dataGroup!)!)
                         self.btnList.showsMenuAsPrimaryAction = true
-                        self.data = model?.data ?? nil
+//                        self.data = model?.dataGroup ?? nil
                         self.selected = res
                         self.setupCountdown(startDateString: res.startDate ?? "")
                         self.lblDate.text = self.formatDateRange(
@@ -310,7 +371,7 @@ extension HomeViewController {
     func btnOpenGroupChat() {
         
         
-        
+        /*
         let selectedUser = self.selected
         
         let chatVc = ChatMessageVc()
@@ -334,7 +395,7 @@ extension HomeViewController {
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         
         navigationController?.pushViewController(chatVc, animated: true)
-        
+    */
     }
     
     @IBAction func btnNotification(_ sender:UIButton) {
@@ -347,6 +408,7 @@ extension HomeViewController {
     }
     
 }
+
 
 extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -371,4 +433,13 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
         return 125
     }
     
+}
+
+
+extension HomeViewController {
+    
+    @IBAction func btnShare(_ sender:UIButton) {
+        print("SHARE TAPPED ,","\(self.selected?.joinCode ?? "")")
+        self.shareInvite(self.selected?.joinCode ?? "")
+    }
 }

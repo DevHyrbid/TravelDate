@@ -31,6 +31,14 @@ class EditProfileVc: BaseClassVc {
         setupUi()
     }
     
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tripsTabBarController?.hideTabBar()
+    }
+    
+    
+    
     // MARK: -  Methods
     func setupUi() {
         

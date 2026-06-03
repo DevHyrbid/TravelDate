@@ -44,7 +44,16 @@ class NewMatchVc: BaseClassVc {
         tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         tblVw.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
         tblVw.alwaysBounceVertical = true
+        
+        
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tripsTabBarController?.showTabBar()
+    }
+    
+    
     
     
     override func viewDidLayoutSubviews() {
@@ -78,7 +87,7 @@ class NewMatchVc: BaseClassVc {
             
             if errCode == 200 {
                 DispatchQueue.main.async {
-                    if let res = res?.data?.groups {
+                    if let res = res?.dataGroup {
                         self.data = res
                         if res.count == 0 {
                             self.lblNoData.isHidden = false

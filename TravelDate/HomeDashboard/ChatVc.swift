@@ -30,7 +30,7 @@ final class ChatVc: BaseClassVc {
     @IBOutlet private weak var lblTitle:    UILabel!
 
     // MARK: - Data
-    private var groupsData: [Group]         = []
+    private var groupsData: [DataArray]         = []
     private var chatData:   [ChatRoomModel] = []
 
     // MARK: - State
@@ -56,6 +56,21 @@ final class ChatVc: BaseClassVc {
         configureUI()
         registerNibs()
         fetchAllData()        // ← API called ONCE here
+        NotificationCenter.default.addObserver(
+               self,
+               selector: #selector(handleIncomingPush(_:)),
+               name: .didReceiveChatMessage,
+               object: nil
+           )
+    }
+    
+    @objc private func handleIncomingPush(_ notification: Notification) {
+
+        guard let userInfo = notification.userInfo else { return }
+
+        guard let roomId = userInfo["roomId"] as? String else { return }
+        
+        fetchAllData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -114,11 +129,11 @@ final class ChatVc: BaseClassVc {
     }
 
     private func fetchGroups() {
-        request.getGroups(0) { [weak self] model, msg, code in
+        request.getChatsInbox(0) { [weak self] model, msg, code in
             guard let self else { return }
             DispatchQueue.main.async {
                 if code == 200 {
-                    self.groupsData = model?.data?.groups ?? []
+                    self.groupsData = model?.dataArray ?? []
                     if self.selectedSegment == .groups {
                         self.refreshTableView()
                     }
@@ -209,24 +224,41 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
 private extension ChatVc {
 
     func configureGroupCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
-        let model = groupsData[indexPath.row]
-        cell.lblTitle.text = model.groupTitle ?? ""
-        cell.lblDesc.text  = "\(model.creator?.name ?? "") · Thu"
-        cell.lblTime.text  = timeAgo(from: model.createdAt ?? "")
-        loadAvatarImage(into: cell.imgVw, urlString: model.coverImage)
+
+        let model = groupsData[indexPath.row].data?.group
+        cell.lblTitle.text = model?.title ?? ""
+        cell.lblDesc.text  = "\(model?.description ?? "")"
+        //"\(model.creator?.name ?? "") · Thu"
+        cell.lblTime.text  = timeAgo(from: model?.createdAt ?? "")
+        loadAvatarImage(into: cell.imgVw, urlString: model?.coverImage)
+        cell.imgVw.clipsToBounds = true
+        cell.imgVw.contentMode = .scaleToFill
+        
     }
 
     func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
-        let model = chatData[indexPath.row]
-
-        let senderName = model.lastMessage?.sender?.name
-            ?? model.participants?.first?.name
-            ?? "Unknown"
-
-        cell.lblTitle.text = senderName
-        cell.lblDesc.text  = model.lastMessage?.content ?? "No messages yet"
-        cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? model.createdAt ?? "")
-        loadAvatarImage(into: cell.imgVw, urlString: model.participants?.first?.profileImage)
+        
+        let model = groupsData[indexPath.row]
+        
+//        let model = chatData[indexPath.row]
+//        if model.type == "group" {
+//
+//            
+//            
+        cell.lblTitle.text = model.data?.group?.title ?? ""
+            cell.lblDesc.text  = model.lastMessage ?? ""
+            cell.lblTime.text  = timeAgo(from: model?.createdAt ?? "")
+            loadAvatarImage(into: cell.imgVw, urlString: model.participants?[1].profileImage)
+//        } else {
+//            let senderName = model.participants?[1].name
+//                ?? "Unknown"
+//
+//            cell.lblTitle.text = senderName
+//            cell.lblDesc.text  = model.lastMessage?.content ?? "No messages yet"
+//            cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? model.createdAt ?? "")
+//            loadAvatarImage(into: cell.imgVw, urlString: model.participants?[1].profileImage)
+//        }
+        
     }
 
     func loadAvatarImage(into imageView: UIImageView, urlString: String?) {
@@ -247,39 +279,64 @@ private extension ChatVc {
 private extension ChatVc {
 
     func openGroupChat(at indexPath: IndexPath) {
-        let group  = groupsData[indexPath.row]
-        let chatVc = ChatMessageVc()
 
-        chatVc.roomId       = group.roomId       ?? ""
-        chatVc.roomTitle    = group.groupTitle   ?? "Chat"
-        chatVc.groupId      = group.id           ?? ""
-        chatVc.roomType     = .group
-        chatVc.memberCount  = group.maxGroupSize ?? 0
-        chatVc.participants = group.members?.compactMap { $0.id } ?? []
+        let group = groupsData[indexPath.row]
 
-        #if DEBUG
-        print("🚀 Group Chat → roomId: \(chatVc.roomId) groupId: \(chatVc.groupId)")
-        #endif
+        let currentUserId = User.curentUser?.id ?? ""
 
-        navigationController?.pushViewController(chatVc, animated: true)
+        // Get all member ids
+        var participantIds = group.members?
+            .compactMap { $0.id } ?? []
+
+        // Ensure current user exists
+//        if !participantIds.contains(currentUserId) {
+//            participantIds.append(currentUserId)
+//        }
+//
+//        // Remove duplicates
+//        participantIds = Array(Set(participantIds))
+
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        // Open existing room directly if available
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: participantIds,
+            roomId: group.roomId,
+            roomTitle: group.groupTitle ?? "Group Chat",
+            type: .group
+        )
+
+        vc.memberCount = participantIds.count
+
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     func openDirectChat(at indexPath: IndexPath) {
-        let chat   = chatData[indexPath.row]
-        let chatVc = ChatMessageVc()
+        print(indexPath.row,"sjsjsjsj")
+        let viewModel = ChatViewModel(currentUserId: User.curentUser?.id ?? "")
+        let chat = chatData[indexPath.row]
 
-        chatVc.roomId    = chat.id ?? ""
-        chatVc.roomTitle = chat.lastMessage?.sender?.name
-            ?? chat.participants?.first?.name
-            ?? "Chat"
-        chatVc.roomType     = .individual
-        chatVc.participants = chat.participants?.compactMap { $0.id } ?? []
+        let currentUserId = User.curentUser?.id ?? ""
 
-        #if DEBUG
-        print("🚀 Direct Chat → roomId: \(chatVc.roomId)")
-        #endif
-
-        navigationController?.pushViewController(chatVc, animated: true)
+        // Get the other participant id (not current user)
+        let otherParticipantId = chat.participants?
+            .first(where: { $0.id != currentUserId })?
+            .id ?? ""
+        print(currentUserId,otherParticipantId,"TAPPEDID")
+        // Individual chat
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: [currentUserId, otherParticipantId],
+            roomId: chat.lastMessage?.roomId,
+            roomTitle: chat.participants?[1].name ?? "",
+            type: .individual
+        )
+        vc.roomImageURL = chat.participants?[1].profileImage
+        navigationController?.pushViewController(vc, animated: true)
+       
     }
 }
 
@@ -303,6 +360,13 @@ private extension ChatVc {
                         self.groupsData.remove(at: indexPath.row)
                         self.tblVw.deleteRows(at: [indexPath], with: .automatic)
                         self.lblNoData.isHidden = self.currentRowCount > 0
+                        NotificationCenter.default.post(
+                            name: .valueUpdated,
+                            object: nil,
+                            userInfo: ["value": "New Value"]
+                        )
+                        
+                        
                     }
                 }
             }
@@ -404,4 +468,9 @@ private extension ChatVc {
         default:        return "\(seconds / 604800)w ago"
         }
     }
+}
+
+
+extension Notification.Name {
+    static let valueUpdated = Notification.Name("valueUpdated")
 }
