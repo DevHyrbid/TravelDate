@@ -62,7 +62,7 @@ class MySavedGroupVc: BaseClassVc {
             start: data?.startDate ?? "",
             end: data?.endDate ?? ""
         )
-        lblTitle.text = data?.groupTitle ?? ""
+        lblTitle.text = data?.title ?? ""
         loadImage(imgGroup, url: URL(string: data?.coverImage ?? "")!)
         lblCount.text = "\(data?.members?.count ?? 0)"
         lblName.text = data?.creator?.name ?? ""

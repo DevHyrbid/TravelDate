@@ -13,10 +13,10 @@ enum ChatAPI {
     static var baseUrl: String { "http://187.124.251.134:9800/api/v1/" }
     
     static let createRoom  = baseUrl + "api-chat/room"
-    static let sendMessage = baseUrl + "api-chat/message"
+    static let sendMessage = baseUrl + "chat/"
     
     static func getMessages(roomId: String, page: Int, limit: Int = 20) -> String {
-        baseUrl + "api-chat/room/\(roomId)/messages?page=\(page)&limit=\(limit)"
+        baseUrl + "chat/\(roomId)/messages"
     }
 }
 
@@ -36,7 +36,7 @@ final class ChatAPIService {
             "participants": participants,
             "type": type.rawValue
         ]
-        
+        /*
         request(url: ChatAPI.createRoom,
                 method: "POST",
                 body: body) { (result: Result<CreateRoomResponse, Error>) in
@@ -51,6 +51,7 @@ final class ChatAPIService {
                 completion(.failure(err))
             }
         }
+         */
     }
     
     // MARK: 2. Send Message
@@ -59,14 +60,22 @@ final class ChatAPIService {
                      content: String,
                      contentType: String = "text",
                      completion: @escaping Completion<ChatMessage>) {
-        
-        let body: [String: Any] = [
-            "roomId": roomId,
-            "content": content,
-            "contentType": contentType
-        ]
-        
-        request(url: ChatAPI.sendMessage,
+
+        var body: [String: Any] = [:]
+
+        if contentType == "text" {
+            body = [
+                "content": content,
+                "fileType": "text"
+            ]
+        } else if contentType == "image" {
+            body = [
+                "fileUrl": content, // image URL
+                "fileType": "image"
+            ]
+        }
+
+        request(url: "\(ChatAPI.sendMessage)\(roomId)/messages",
                 method: "POST",
                 body: body) { (result: Result<SendMessageResponse, Error>) in
             switch result {
@@ -83,7 +92,7 @@ final class ChatAPIService {
     }
     
     // MARK: 3. Fetch Messages (paginated)
-    
+   
     func fetchMessages(roomId: String,
                        page: Int,
                        completion: @escaping Completion<[ChatMessage]>) {

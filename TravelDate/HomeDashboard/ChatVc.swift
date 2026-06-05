@@ -30,8 +30,8 @@ final class ChatVc: BaseClassVc {
     @IBOutlet private weak var lblTitle:    UILabel!
 
     // MARK: - Data
-    private var groupsData: [DataArray]         = []
-    private var chatData:   [ChatRoomModel] = []
+    private var groupsData: [ChatData]         = []
+    private var chatData:   [ChatData] = []
 
     // MARK: - State
     private var selectedSegment: ChatSegment = .groups {
@@ -133,7 +133,7 @@ final class ChatVc: BaseClassVc {
             guard let self else { return }
             DispatchQueue.main.async {
                 if code == 200 {
-                    self.groupsData = model?.dataArray ?? []
+                    self.groupsData = model?.data ?? []
                     if self.selectedSegment == .groups {
                         self.refreshTableView()
                     }
@@ -145,11 +145,11 @@ final class ChatVc: BaseClassVc {
     }
 
     private func fetchChats() {
-        request.getChatRooms { [weak self] response, msg, errCode in
+        request.getChatsInbox(1) { [weak self] model, msg, code in
             guard let self else { return }
             DispatchQueue.main.async {
-                if errCode == 200 {
-                    self.chatData = response ?? []
+                if code == 200 {
+                    self.chatData = model?.data ?? []
                     if self.selectedSegment == .chats {
                         self.refreshTableView()
                     }
@@ -159,7 +159,6 @@ final class ChatVc: BaseClassVc {
     }
 
     // MARK: - Table Refresh
-
     private func refreshTableView() {
         tblVw.reloadData()
         lblNoData.isHidden = currentRowCount > 0
@@ -225,40 +224,42 @@ private extension ChatVc {
 
     func configureGroupCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
-        let model = groupsData[indexPath.row].data?.group
-        cell.lblTitle.text = model?.title ?? ""
-        cell.lblDesc.text  = "\(model?.description ?? "")"
-        //"\(model.creator?.name ?? "") · Thu"
-        cell.lblTime.text  = timeAgo(from: model?.createdAt ?? "")
-        loadAvatarImage(into: cell.imgVw, urlString: model?.coverImage)
+        let model = groupsData[indexPath.row]
+        cell.lblTitle.text = model.name ?? ""
+        cell.lblDesc.text  = "\(model.name ?? "")"
+        cell.lblTime.text  = timeAgo(from: model.createdAt ?? "")
+        loadAvatarImage(into: cell.imgVw, urlString: model.image)
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleToFill
         
     }
 
     func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
-        
-        let model = groupsData[indexPath.row]
-        
-//        let model = chatData[indexPath.row]
-//        if model.type == "group" {
-//
-//            
-//            
-        cell.lblTitle.text = model.data?.group?.title ?? ""
-            cell.lblDesc.text  = model.lastMessage ?? ""
-            cell.lblTime.text  = timeAgo(from: model?.createdAt ?? "")
-            loadAvatarImage(into: cell.imgVw, urlString: model.participants?[1].profileImage)
-//        } else {
-//            let senderName = model.participants?[1].name
-//                ?? "Unknown"
-//
-//            cell.lblTitle.text = senderName
-//            cell.lblDesc.text  = model.lastMessage?.content ?? "No messages yet"
-//            cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? model.createdAt ?? "")
-//            loadAvatarImage(into: cell.imgVw, urlString: model.participants?[1].profileImage)
-//        }
-        
+
+        let model = chatData[indexPath.row]
+    
+        if model.type == "MATCH" {
+
+            let matchGroup = model
+
+            cell.lblTitle.text = matchGroup.name ?? ""
+            cell.lblDesc.text = "Matched Trip"
+            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
+            loadAvatarImage(
+                into: cell.imgVw,
+                urlString: matchGroup.image
+            )
+
+        } else {
+
+            cell.lblTitle.text = model.name
+            cell.lblDesc.text = model.name ?? ""
+            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
+            loadAvatarImage(
+                into: cell.imgVw,
+                urlString: model.image
+            )
+        }
     }
 
     func loadAvatarImage(into imageView: UIImageView, urlString: String?) {
@@ -285,8 +286,7 @@ private extension ChatVc {
         let currentUserId = User.curentUser?.id ?? ""
 
         // Get all member ids
-        var participantIds = group.members?
-            .compactMap { $0.id } ?? []
+        var participantIds = group.members?.compactMap { $0.id } ?? []
 
         // Ensure current user exists
 //        if !participantIds.contains(currentUserId) {
@@ -304,8 +304,8 @@ private extension ChatVc {
         let vc = ChatMessageVc(
             viewModel: viewModel,
             participants: participantIds,
-            roomId: group.roomId,
-            roomTitle: group.groupTitle ?? "Group Chat",
+            roomId: group.chatId,
+            roomTitle: "Group Chat",
             type: .group
         )
 
@@ -315,28 +315,28 @@ private extension ChatVc {
     }
 
     func openDirectChat(at indexPath: IndexPath) {
-        print(indexPath.row,"sjsjsjsj")
-        let viewModel = ChatViewModel(currentUserId: User.curentUser?.id ?? "")
-        let chat = chatData[indexPath.row]
 
-        let currentUserId = User.curentUser?.id ?? ""
+        let item = chatData[indexPath.row]
 
-        // Get the other participant id (not current user)
-        let otherParticipantId = chat.participants?
-            .first(where: { $0.id != currentUserId })?
-            .id ?? ""
-        print(currentUserId,otherParticipantId,"TAPPEDID")
-        // Individual chat
-        let vc = ChatMessageVc(
-            viewModel: viewModel,
-            participants: [currentUserId, otherParticipantId],
-            roomId: chat.lastMessage?.roomId,
-            roomTitle: chat.participants?[1].name ?? "",
-            type: .individual
-        )
-        vc.roomImageURL = chat.participants?[1].profileImage
-        navigationController?.pushViewController(vc, animated: true)
-       
+        if item.type == "MATCH" {
+
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: [],
+                roomId: item.chatId,
+                roomTitle: "Match NEED TO CHANGE THIS TEXT",
+                type: .group
+            )
+
+            navigationController?.pushViewController(vc, animated: true)
+            return
+        }
+
+        // existing direct chat logic here
     }
 }
 
@@ -353,7 +353,7 @@ private extension ChatVc {
         ) { [weak self] _, _, completion in
             guard let self else { completion(false); return }
 
-            self.request.deleteGroupAPi(group.id ?? "") { [weak self] _, code in
+            self.request.deleteGroupAPi(group.chatId ?? "") { [weak self] _, code in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     if code == 200 {

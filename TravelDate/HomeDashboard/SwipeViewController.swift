@@ -484,9 +484,8 @@ extension SwipeViewController {
     func performSwipe(isRight: Bool) {
         guard currentIndex < groups.count else { return }
         let group = groups[currentIndex]
-
-        request.groupId = group.id ?? ""
-        request.action  = isRight ? "right" : "left"
+        request.swipedId = group.id ?? ""
+        request.action  = isRight ? "RIGHT" : "LEFT"
 
         request.swipeAPi { [weak self] match, msg, errCode in
             guard let self else { return }
@@ -495,11 +494,11 @@ extension SwipeViewController {
                 if errCode == 200 {
                     // Uncomment and use real model data:
                     // guard data.isMatch == 1 else { return }
-                    if match == 1  {
+                    if match == "It is a match!" {
                         let result = MatchResult(
                             groupId:             group.id ?? "",
                             swipeId:             "",
-                            groupTitle:          group.groupTitle ?? "",
+                            groupTitle:          group.title ?? "",
                             matchedStyles:       group.travelStyle ?? [""],
                             message:             "It's a Match!",
                             myGroupImage:        User.curentUser?.profileImage ?? "",
@@ -545,7 +544,7 @@ extension SwipeViewController: MatchBottomSheetDelegate {
             viewModel: viewModel,
             participants: participantIds,
             roomId: group.roomId,
-            roomTitle: group.groupTitle ?? "Group Chat",
+            roomTitle: group.title ?? "Group Chat",
             type: .group
         )
 

@@ -106,7 +106,7 @@ print(participants,"COUN")
 
     // MARK: - 2. Send Message (optimistic)
 
-    func send(_ rawText: String) {
+    func send(_ rawText: String,_ type:Int) {
         let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, let roomId = roomId else { return }
 
@@ -115,9 +115,16 @@ print(participants,"COUN")
         items.append(temp)
         rebuildSections()
         onAppend?()
+        
+        var content_type = ""
+        if type == 1 {
+            content_type = "text"
+        } else if type == 2 {
+            content_type = "image"
+        }
 
         // b) Hit API
-        service.sendMessage(roomId: roomId, content: text) { [weak self] result in
+        service.sendMessage(roomId: roomId, content: text,contentType: content_type) { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -139,7 +146,7 @@ print(participants,"COUN")
         rebuildSections()
         onReload?()
 
-        service.sendMessage(roomId: roomId, content: text) { [weak self] result in
+        service.sendMessage(roomId: roomId, content: text ?? "") { [weak self] result in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -171,7 +178,7 @@ print(participants,"COUN")
         onReload?()
     }
 
-    // MARK: - 3. Fetch Messages
+    // MARK: - 3. Fetch Messagexs
 
     func loadFirstPage() {
         page = 1

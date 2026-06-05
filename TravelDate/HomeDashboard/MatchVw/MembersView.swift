@@ -178,7 +178,7 @@ final class MembersProgressView: UIView {
             let iv = makeAvatarImageView(image: nil, index: i) // ✅ nil pass karo
             
             // URL se load karo (SDWebImage)
-            if let urlStr = member.profileImage, let url = URL(string: urlStr) {
+            if let urlStr = member.userMembers?.profile_image, let url = URL(string: urlStr) {
                 iv.kf.setImage(with: url, placeholder: UIImage(named: "User"))
             }
             

@@ -77,7 +77,7 @@ final class ChatMessageVc: BaseClassVc {
 
         guard let userInfo = notification.userInfo else { return }
 
-        guard let roomId = userInfo["roomId"] as? String else { return }
+        guard let roomId = userInfo["chatRoomId"] as? String else { return }
 
         // Ignore other rooms
         guard roomId == viewModel.roomId else { return }
@@ -184,13 +184,42 @@ final class ChatMessageVc: BaseClassVc {
         ])
 
         inputBar.onSend = { [weak self] text in
-            self?.viewModel.send(text)
+            self?.viewModel.send(text,1)
         }
         inputBar.onAttach = { [weak self] in
             // Hook up your existing attachment picker here.
+            self?.imgUpload()
             self?.view.endEditing(true)
         }
     }
+    
+    func imgUpload() {
+        
+        imagePicker.showImagePicker(allowCamera: true) { [weak self] img in
+            
+            guard let self = self else { return }
+            
+            print(img)
+            
+            
+            
+            
+            guard let data = img.jpegData(compressionQuality: 0.7) else { return }
+            
+            self.uploadImg(data) { [weak self] imageName in
+                
+                guard let self = self else { return }
+                
+                print(imageName, "UPLOAD SUCCESS")
+                
+                self.viewModel.send(imageName ?? "nil", 2)
+                
+            }
+        }
+    }
+    
+    
+    
 
     // MARK: - Bind
 
@@ -306,6 +335,11 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
 
         let item = viewModel.sections[indexPath.section].items[indexPath.row]
         cell.configure(with: item)
+        cell.onImageTapped = { [weak self] image in
+//            let preview = ImagePreviewVC(image: image)
+//            self?.present(preview, animated: true)
+            print(image,"ssssss")
+        }
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)
         }

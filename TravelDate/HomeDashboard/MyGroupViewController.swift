@@ -79,7 +79,7 @@ class MyGroupViewController: BaseClassVc {
             
             lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
             self.lblLocation.text = res.destination ?? ""
-            self.lblTitle.text = res.groupTitle ?? ""
+            self.lblTitle.text = res.title ?? ""
             if let url = URL(string: res.coverImage ?? "") {
                 loadImage(self.imgTrips, url: url)
             }
@@ -156,14 +156,14 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : GroupTableViewCell = tableView.dequeue(GroupTableViewCell.self, for: indexPath)
         let model = self.res?.members?[indexPath.row]
-        if User.curentUser?.name ?? "" == model?.name {
+        if User.curentUser?.name ?? "" == model?.userMembers?.name {
             cell.lblName.text = "You"
             cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
             cell.btnEdit.backgroundColor = .clear
             cell.btnEdit.addTarget(self, action: #selector(editUser(_:)), for: .touchUpInside)
             cell.btnEdit.tag = indexPath.row
         } else {
-            cell.lblName.text = model?.name ?? ""
+            cell.lblName.text = model?.userMembers?.name ?? ""
             cell.btnEdit.tag = indexPath.row
             cell.btnEdit.setTitle("Message", for: .normal)
             cell.btnEdit.backgroundColor = .themeOrange
@@ -185,7 +185,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         cell.lblLocation.text = model?.locationString ?? ""
         cell.lblDescription.text = model?.shortBio ?? ""
         
-        if let url = URL(string: model?.profileImage ?? "") {
+        if let url = URL(string: model?.userMembers?.profile_image ?? "") {
             self.loadImage(cell.imgUser, url: url)
         }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
@@ -203,10 +203,15 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
     
     
     @objc func openChat(_ sender:UIButton) {
-
         guard let selectedUser = self.res?.members?[sender.tag] else { return }
+        
+        request.targetUserId  = selectedUser.id ?? ""
+        request.directChat { errMsg, errCode in
+            
+        }
+      
 
-        let currentUserId = User.curentUser?.id ?? ""
+        /*let currentUserId = User.curentUser?.id ?? ""
         let otherParticipantId = selectedUser.id ?? ""
 
         // Prevent self chat
@@ -225,6 +230,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         )
 
         navigationController?.pushViewController(vc, animated: true)
+         */
     }
     
     

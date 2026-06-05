@@ -397,7 +397,7 @@ final class MatchCardView: UIView {
     private func configure() {
         guard let group else { return }
 
-        groupTitleLabel.text = group.groupTitle ?? "Travel Group"
+        groupTitleLabel.text = group.title ?? "Travel Group"
 
         let style = group.travelStyle?.joined(separator: ",") ?? "Travelers"
         let emoji = emojiForStyle(style)
@@ -409,7 +409,7 @@ final class MatchCardView: UIView {
         locationLabel.text  = "📍 \(group.destination ?? "—")"
         let count = group.members?.count ?? 0
         travelersLabel.text = "👥 \(count) traveler\(count == 1 ? "" : "s")"
-        ageLabel.text       = "🎂 Avg age: 25–30"
+        ageLabel.text       = "🎂 Avg age: \(group.preferences?.minAge ?? 0)– \((group.preferences?.maxAge ?? 0))"
 
         if let urlStr = group.coverImage, let url = URL(string: urlStr) {
             coverImageView.kf.setImage(with: url,

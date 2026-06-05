@@ -369,7 +369,7 @@ class WelcomeViewController: BaseClassVc {
         guard let code = linkField.text, !code.isEmpty else {
             showAlert(message: "Please add the link"); return
         }
-        request.code = code
+        request.joinCode = code
         request.joinGroupAPi { errMsg, errCode in
             DispatchQueue.main.async {
                 if errCode == 200 {

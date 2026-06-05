@@ -95,7 +95,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     func makeTripMenu(trips: [Group]) -> UIMenu {
         let actions = trips.map { trip in
             UIAction(
-                title: trip.groupTitle ?? "",
+                title: trip.title ?? "",
                 image: UIImage(systemName:"arrow.right")
             ) { _ in
                 
@@ -117,7 +117,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             end: res.endDate ?? ""
         )
         self.lblLocation.text = res.destination ?? ""
-        self.lblTitle.text = res.groupTitle ?? ""
+        self.lblTitle.text = res.title ?? ""
         if let url = URL(string: res.coverImage ?? "") {
             self.loadImage(self.imgTrips, url: url)
         }
@@ -284,13 +284,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         self.btnList.showsMenuAsPrimaryAction = true
 //                        self.data = model?.dataGroup ?? nil
                         self.selected = res
+                        print(self.selected,"JEREK")
                         self.setupCountdown(startDateString: res.startDate ?? "")
                         self.lblDate.text = self.formatDateRange(
                             start: res.startDate ?? "",
                             end: res.endDate ?? ""
                         )
                         self.lblLocation.text = res.destination ?? ""
-                        self.lblTitle.text = res.groupTitle ?? ""
+                        self.lblTitle.text = res.title ?? ""
                         if let url = URL(string: res.coverImage ?? "") {
                             self.loadImage(self.imgTrips, url: url)
                         }
@@ -422,7 +423,7 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
             start: model?.startDate ?? "",
             end: model?.endDate ?? ""
         )
-        cell.lblTitle.text = model?.groupTitle ?? ""
+        cell.lblTitle.text = model?.title ?? ""
         loadImage(cell.imgVw, url: URL(string: model?.coverImage ?? "")!)
         cell.imgVw.layer.cornerRadius =  12
         cell.imgVw.clipsToBounds = true

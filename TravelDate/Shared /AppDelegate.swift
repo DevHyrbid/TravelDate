@@ -139,7 +139,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         }
 
         // CHAT PUSH
-        if type == "chat" {
+        if type == "CHAT_MESSAGE" {
 
             NotificationCenter.default.post(
                 name: .didReceiveChatMessage,

@@ -54,7 +54,7 @@ class User : Mappable {
     
     
     var coverImage : String?
-    var groupTitle : String?
+    
     var destination : String?
     var startDate : String?
     var endDate  : String?
@@ -64,8 +64,8 @@ class User : Mappable {
     var activityInterests : [String]?
     var isActive : Bool?
     
-    var code  : String?
-  
+    var joinCode  : String?
+    
     
     var dateOfBirth: String?
     
@@ -91,11 +91,11 @@ class User : Mappable {
     var userType: String?
     var isDeleted: Bool?
     var isCompleted: Bool?
-   
+    
     
     var isPushNotification: Bool?
     
-  
+    
     
     var accountSource: String?
     
@@ -116,8 +116,9 @@ class User : Mappable {
     var is_push_notification : Int?
     
     var groupId : String?
+    var swipedId : String?
     var action : String?
-
+    
     var latitude :  String?
     var longitude : String?
     var location_string :  String?
@@ -126,15 +127,22 @@ class User : Mappable {
     
     
     
-  
+    
     var maxMembers : Int?
     var preferredGender : String?
+    
+    var targetUserId : String?
+    
+    var arr : [String]?
+    var arrStr : String?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
         
         
-    
+        
+        targetUserId <- map["targetUserId"]
+        swipedId <- map["swipedId"]
         maxMembers  <- map["maxMembers"]
         preferredGender  <- map["preferredGender"]
         
@@ -180,7 +188,7 @@ class User : Mappable {
         isDeleted         <- map["is_deleted"]
         isCompleted       <- map["is_completed"]
         
-       
+        
         
         isPushNotification <- map["is_push_notification"]
         
@@ -200,11 +208,11 @@ class User : Mappable {
         updatedAt         <- map["updatedAt"]
         
         
-        code <- map["code"]
+        joinCode <- map["joinCode"]
         current_password <- map["current_password"]
         new_password <- map["new_password"]
         coverImage <- map["coverImage"]
-        groupTitle <- map["groupTitle"]
+        
         destination <- map["destination"]
         startDate <- map["startDate"]
         endDate <- map["endDate"]
@@ -355,7 +363,7 @@ class User : Mappable {
                 // ✅ 5. Map user
                 User.curentUser = Mapper<User>().map(JSON: userDict)
                 //            joinCode = 41hdhnf7;
-
+                
                 callBack(User.curentUser, responseObject["message"] as? String ?? "", 200)
                 
                 
@@ -494,6 +502,23 @@ class User : Mappable {
             callBack(nil,errMsg, errCode)
         }
         
+    }
+    
+    func directChat(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        
+        NetworkManger.sendRequestAF(urlPath: APiConstant.chatDirect, type: .post, parms: self.toJSON()) { responseObject, suces in
+            print(responseObject)
+            if responseObject["statusCode"] as? Int ?? 0 == 200 {
+                
+                callBack(responseObject["message"] as? String ?? "",200)
+                
+            }else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
     }
     
     func forgotPasswordAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
@@ -663,11 +688,11 @@ class User : Mappable {
         }
         
     }
-     
+    
     
     func joinGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.joinGroup)\(self.code ?? "")", params: [:], method: "POST") { responseObject, suces in
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.joinGroup)", params: self.toJSON(), method: "POST") { responseObject, suces in
             print(responseObject)
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
@@ -691,7 +716,7 @@ class User : Mappable {
                     print(response.data?.notifications?.first?.message ?? "")
                     callBack(response,responseObject["message"] as? String ?? "",200)
                 }
-               
+                
             } else {
                 callBack(nil,responseObject["message"] as? String ?? "",404)
             }
@@ -750,7 +775,7 @@ class User : Mappable {
         if type == 0 { // CURRENT
             url  = APiConstant.myGroup// + "current"
         } else  if type == 1 {
-            url  = APiConstant.allGroups
+            url  = APiConstant.swipeFeed
         } else if type == 2 {
             url = APiConstant.matchedGroup
         } else if type == 3 { // Past
@@ -797,13 +822,13 @@ class User : Mappable {
     }
     
     
-    func  swipeAPi(callBack:(( _ type:Int?,_ errMsg:String,_ errCode:Int)->Void)!) {
+    func  swipeAPi(callBack:(( _ type:String?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, suces in
-            
+            print(responseObject,"SWIPED")
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
-                callBack((responseObject["data"] as? [String:Any] ?? [:])["isMatch"] as? Int ?? 0 ,["message"] as? String ?? "",200)
+                callBack((responseObject["data"] as? [String:Any] ?? [:])["message"] as? String ?? "0" ,["message"] as? String ?? "",200)
             } else {
                 callBack(nil,responseObject["message"] as? String ?? "",404)
             }
@@ -864,7 +889,7 @@ class User : Mappable {
 }
 
 class GroupsResponse: Mappable {
-//    var data: GroupsData?
+    var data: GroupsData?
     var dataGroup: [Group]?
     var success: Int?
     var message: String?
@@ -873,7 +898,7 @@ class GroupsResponse: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
-//        data    <- map["data"]
+        data    <- map["data"]
         dataGroup <- map["data"]
         success <- map["success"]
         message <- map["message"]
@@ -897,7 +922,7 @@ class Group: Mappable {
     var roomId : String?
     var _id: String?
     var id: String?
-    var groupTitle: String?
+//    var groupTitle: String?
     var title: String?
     var destination: String?
     var description: String?
@@ -914,29 +939,19 @@ class Group: Mappable {
     var creator : MemberGroup?
     var createdAt : String?
     
-    var id : String?
-        var title : String?
-        var description : String?
-        var destination : String?
-        var startDate : String?
-        var endDate : String?
-        var travelStyle : String?
-        var maxMembers : Int?
-        var coverImage : String?
-        var isActive : Bool?
-        var isPublic : Bool?
-        var createdAt : String?
-        var updatedAt : String?
-        var creatorId : String?
-        var joinCode : String?
-        var members : [Members]?
-        var preferences : Preferences?
-
-        
-
-           
-        
-
+    
+    var isPublic : Bool?
+    
+    var updatedAt : String?
+    var creatorId : String?
+    
+    var preferences : Preferences?
+    
+    
+    
+    var maxMembers : Int?
+    
+    
     
     required init?(map: Map) {}
     
@@ -948,7 +963,7 @@ class Group: Mappable {
         creator <- map["creator"]
         _id           <- map["id"]
         id           <- map["id"]
-        groupTitle    <- map["groupTitle"]
+        
         destination   <- map["destination"]
         coverImage    <- map["coverImage"]
         startDate     <- map["startDate"]
@@ -964,22 +979,12 @@ class Group: Mappable {
         
         
         
-        id <- map["id"]
-        title <- map["title"]
-        description <- map["description"]
-        destination <- map["destination"]
-        startDate <- map["startDate"]
-        endDate <- map["endDate"]
-        travelStyle <- map["travelStyle"]
+        
         maxMembers <- map["maxMembers"]
-        coverImage <- map["coverImage"]
-        isActive <- map["isActive"]
-        isPublic <- map["isPublic"]
-        createdAt <- map["createdAt"]
-        updatedAt <- map["updatedAt"]
+        
         creatorId <- map["creatorId"]
         joinCode <- map["joinCode"]
-        members <- map["members"]
+        
         preferences <- map["preferences"]
     }
 }
@@ -1001,7 +1006,7 @@ class MemberGroup: Mappable {
     
     
     var coverImage : String?
-    var groupTitle : String?
+    
     var destination : String?
     var startDate : String?
     var endDate  : String?
@@ -1010,7 +1015,7 @@ class MemberGroup: Mappable {
     var isActive : Bool?
     
     var code  : String?
-  
+    
     
     var dateOfBirth: String?
     
@@ -1036,11 +1041,11 @@ class MemberGroup: Mappable {
     var userType: String?
     var isDeleted: Bool?
     var isCompleted: Bool?
-   
+    
     
     var isPushNotification: Bool?
     
-  
+    
     
     var accountSource: String?
     
@@ -1062,14 +1067,16 @@ class MemberGroup: Mappable {
     
     var groupId : String?
     var action : String?
-
+    
     var latitude :  String?
     var longitude : String?
     var location_string :  String?
     var roomId : String?
+    var userMembers : UserMembers?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        userMembers <- map["user"]
         roomId <- map["roomId"]
         _id          <- map["id"]
         
@@ -1100,7 +1107,7 @@ class MemberGroup: Mappable {
         isDeleted         <- map["is_deleted"]
         isCompleted       <- map["is_completed"]
         
-       
+        
         
         isPushNotification <- map["is_push_notification"]
         
@@ -1117,7 +1124,7 @@ class MemberGroup: Mappable {
         
         code <- map["code"]
         coverImage <- map["coverImage"]
-        groupTitle <- map["groupTitle"]
+        
         destination <- map["destination"]
         startDate <- map["startDate"]
         endDate <- map["endDate"]
@@ -1138,6 +1145,25 @@ class MemberGroup: Mappable {
         
         
     }
+}
+
+
+struct UserMembers : Mappable {
+    var id : String?
+    var name : String?
+    var profile_image : String?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        name <- map["name"]
+        profile_image <- map["profile_image"]
+    }
+
 }
 
 
@@ -1209,7 +1235,7 @@ import ObjectMapper
 
 // MARK: - ChatRoomModel
 class ChatRoomModel: Mappable {
-
+    
     var id: String?
     var type: String?
     var groupName: String?
@@ -1220,11 +1246,11 @@ class ChatRoomModel: Mappable {
     var participants: [ParticipantModel]?
     var lastMessage: LastMessageModel?
     var unreadCount: Int?
-
+    
     required init?(map: Map) {
-
+        
     }
-
+    
     func mapping(map: Map) {
         id              <- map["id"]
         type            <- map["type"]
@@ -1241,15 +1267,15 @@ class ChatRoomModel: Mappable {
 
 // MARK: - ParticipantModel
 class ParticipantModel: Mappable {
-
+    
     var id: String?
     var name: String?
     var profileImage: String?
-
+    
     required init?(map: Map) {
-
+        
     }
-
+    
     func mapping(map: Map) {
         id              <- map["id"]
         name            <- map["name"]
@@ -1259,7 +1285,7 @@ class ParticipantModel: Mappable {
 
 // MARK: - LastMessageModel
 class LastMessageModel: Mappable {
-
+    
     var id: String?
     var roomId: String?
     var senderId: String?
@@ -1269,11 +1295,11 @@ class LastMessageModel: Mappable {
     var createdAt: String?
     var updatedAt: String?
     var sender: SenderModel?
-
+    
     required init?(map: Map) {
-
+        
     }
-
+    
     func mapping(map: Map) {
         id              <- map["id"]
         roomId          <- map["roomId"]
@@ -1289,15 +1315,15 @@ class LastMessageModel: Mappable {
 
 // MARK: - SenderModel
 class SenderModel: Mappable {
-
+    
     var id: String?
     var name: String?
     var profileImage: String?
-
+    
     required init?(map: Map) {
-
+        
     }
-
+    
     func mapping(map: Map) {
         id              <- map["id"]
         name            <- map["name"]
@@ -1402,8 +1428,42 @@ class Sender: Mappable {
         isFriendship    <- map["is_friendship"]
     }
 }
-struct Data : Mappable {
+struct DataGroup : Mappable {
     var group : Group?
+    var match : Match?
+    var myGroup : MyGroup?
+    var otherGroup : MyGroup?
+    init?(map: Map) {
+        
+    }
+    
+    mutating func mapping(map: Map) {
+        match <- map["match"]
+        myGroup <- map["myGroup"]
+        otherGroup <- map["otherGroup"]
+        group <- map["group"]
+    }
+    
+}
+
+struct MyGroup : Mappable {
+    var id : String?
+    var title : String?
+    var description : String?
+    var destination : String?
+    var startDate : String?
+    var endDate : String?
+    var travelStyle : String?
+    var maxMembers : Int?
+    var coverImage : String?
+    var isActive : Bool?
+    var isPublic : Bool?
+    var createdAt : String?
+    var updatedAt : String?
+    var creatorId : String?
+    var joinCode : String?
+    var members : [Members]?
+    var preferences : Preferences?
 
     init?(map: Map) {
 
@@ -1411,29 +1471,120 @@ struct Data : Mappable {
 
     mutating func mapping(map: Map) {
 
-        group <- map["group"]
+        id <- map["id"]
+        title <- map["title"]
+        description <- map["description"]
+        destination <- map["destination"]
+        startDate <- map["startDate"]
+        endDate <- map["endDate"]
+        travelStyle <- map["travelStyle"]
+        maxMembers <- map["maxMembers"]
+        coverImage <- map["coverImage"]
+        isActive <- map["isActive"]
+        isPublic <- map["isPublic"]
+        createdAt <- map["createdAt"]
+        updatedAt <- map["updatedAt"]
+        creatorId <- map["creatorId"]
+        joinCode <- map["joinCode"]
+        members <- map["members"]
+        preferences <- map["preferences"]
+    }
+
+}
+
+struct Match : Mappable {
+    var id : String?
+    var group1Id : String?
+    var group2Id : String?
+    var score : Int?
+    var matchedAt : String?
+    var group1 : Group1?
+    var group2 : Group1?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        group1Id <- map["group1Id"]
+        group2Id <- map["group2Id"]
+        score <- map["score"]
+        matchedAt <- map["matchedAt"]
+        group1 <- map["group1"]
+        group2 <- map["group2"]
+    }
+
+}
+
+
+struct Group1 : Mappable {
+    var id : String?
+    var title : String?
+    var description : String?
+    var destination : String?
+    var startDate : String?
+    var endDate : String?
+    var travelStyle : String?
+    var maxMembers : Int?
+    var coverImage : String?
+    var isActive : Bool?
+    var isPublic : Bool?
+    var createdAt : String?
+    var updatedAt : String?
+    var creatorId : String?
+    var joinCode : String?
+    var members : [Members]?
+    var preferences : Preferences?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        title <- map["title"]
+        description <- map["description"]
+        destination <- map["destination"]
+        startDate <- map["startDate"]
+        endDate <- map["endDate"]
+        travelStyle <- map["travelStyle"]
+        maxMembers <- map["maxMembers"]
+        coverImage <- map["coverImage"]
+        isActive <- map["isActive"]
+        isPublic <- map["isPublic"]
+        createdAt <- map["createdAt"]
+        updatedAt <- map["updatedAt"]
+        creatorId <- map["creatorId"]
+        joinCode <- map["joinCode"]
+        members <- map["members"]
+        preferences <- map["preferences"]
     }
 
 }
 
 
 
-struct DataArray : Mappable {
+
+
+
+struct ChatData : Mappable {
     var chatId : String?
     var type : String?
     var name : String?
     var image : String?
     var createdAt : String?
     var lastMessageAt : String?
-    var lastMessage : String?
-    var data : Data?
-
+    var lastMessage : LastMessage?
+    var members : [UserMembers]?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
-
+        members <- map["members"]
         chatId <- map["chatId"]
         type <- map["type"]
         name <- map["name"]
@@ -1441,16 +1592,23 @@ struct DataArray : Mappable {
         createdAt <- map["createdAt"]
         lastMessageAt <- map["lastMessageAt"]
         lastMessage <- map["lastMessage"]
-        data <- map["data"]
     }
 
 }
 
-struct ChatInboxModel : Mappable {
-    var success : Bool?
-    var code : Int?
-    var message : String?
-    var dataArray : [DataArray]?
+
+
+struct LastMessage : Mappable {
+    var id : String?
+    var chatRoomId : String?
+    var senderId : String?
+    var content : String?
+    var fileUrl : String?
+    var fileType : String?
+    var replyToId : String?
+    var reactions : [String]?
+    var createdAt : String?
+    var sender : Sender?
 
     init?(map: Map) {
 
@@ -1458,12 +1616,35 @@ struct ChatInboxModel : Mappable {
 
     mutating func mapping(map: Map) {
 
+        id <- map["id"]
+        chatRoomId <- map["chatRoomId"]
+        senderId <- map["senderId"]
+        content <- map["content"]
+        fileUrl <- map["fileUrl"]
+        fileType <- map["fileType"]
+        replyToId <- map["replyToId"]
+        reactions <- map["reactions"]
+        createdAt <- map["createdAt"]
+        sender <- map["sender"]
+    }
+
+}
+struct ChatInboxModel : Mappable {
+    var success : Bool?
+    var code : Int?
+    var message : String?
+    var data : [ChatData]?
+    init?(map: Map) {
+        
+    }
+    
+    mutating func mapping(map: Map) {
+        data <- map["data"]
         success <- map["success"]
         code <- map["code"]
         message <- map["message"]
-        dataArray <- map["data"]
     }
-
+    
 }
 
 struct Members : Mappable {
@@ -1473,13 +1654,13 @@ struct Members : Mappable {
     var role : String?
     var joinedAt : String?
     var user : User?
-
+    
     init?(map: Map) {
-
+        
     }
-
+    
     mutating func mapping(map: Map) {
-
+        
         id <- map["id"]
         groupId <- map["groupId"]
         userId <- map["userId"]
@@ -1487,7 +1668,7 @@ struct Members : Mappable {
         joinedAt <- map["joinedAt"]
         user <- map["user"]
     }
-
+    
 }
 
 
@@ -1498,13 +1679,13 @@ struct Preferences : Mappable {
     var maxAge : Int?
     var preferredGender : String?
     var activityInterests : [String]?
-
+    
     init?(map: Map) {
-
+        
     }
-
+    
     mutating func mapping(map: Map) {
-
+        
         id <- map["id"]
         groupId <- map["groupId"]
         minAge <- map["minAge"]
@@ -1512,5 +1693,5 @@ struct Preferences : Mappable {
         preferredGender <- map["preferredGender"]
         activityInterests <- map["activityInterests"]
     }
-
+    
 }

@@ -195,7 +195,7 @@ class NewMatchCell: UITableViewCell {
 
     // MARK: - Configure
     func configure(with model: Group) {
-        titleLabel.text     = model.groupTitle ?? ""
+        titleLabel.text     = model.title ?? ""
         locationLabel.text  = model.destination ?? ""
         travelersLabel.text = "\(model.members?.count ?? 0) travelers"
 
@@ -456,7 +456,7 @@ class SavedGroupCell: UITableViewCell {
 
     // MARK: - Configure
     func configure(with model: Group) {
-        nameLabel.text      = model.groupTitle ?? ""
+        nameLabel.text      = model.title ?? ""
         locationLabel.text  = model.destination ?? ""
         travelersLabel.text = "\(model.members?.count ?? 0) travelers"
         membersView.configure(

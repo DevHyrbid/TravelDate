@@ -31,16 +31,17 @@ class APiConstant : NSObject {
     static let logout = baseUrl + "auth/logout"
     static let delete = baseUrl + "auth/delete"
     static let profile = baseUrl + "users/profile"
-    static let joinGroup = baseUrl + "group/join/"
+    static let joinGroup = baseUrl + "groups/join/"
     static let inviteUser = baseUrl + "group/invite"
-    static let swipe = baseUrl + "group/swipe/"
-    static let matchedGroup = baseUrl + "group/my-matches?limit=100&page=1"
+    static let swipe = baseUrl + "group-swipe"
+    static let swipeFeed = baseUrl + "group-discovery/feed"
+    static let matchedGroup = baseUrl + "groups/my-groups"
     static let roomChats = baseUrl + "api-chat/rooms"
     
     static let notification = baseUrl + "notifications"
     
     static let chatInbox = baseUrl + "chat/inbox?"
-    
+    static let chatDirect = baseUrl + "chat/direct"
 }
 
 

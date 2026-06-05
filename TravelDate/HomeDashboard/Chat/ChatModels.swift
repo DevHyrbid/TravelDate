@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 // MARK: - Room Type
 
@@ -41,9 +42,11 @@ struct ChatMessage: Codable {
     let roomId: String?
     let senderId: String?
     let content: String?
-    let contentType: String?
+    let contentType: String?      // or Int if your API sends a number
+    let messageType: Int?         // add if needed
     let createdAt: String?
     let sender: ChatUser?
+    let fileUrl: String?
 }
 
 // MARK: - Chat Item (what the UI actually renders)
@@ -52,14 +55,16 @@ struct ChatMessage: Codable {
 // (sending / sent / failed) and a temporary id for optimistic updates.
 
 struct ChatItem {
-    var id: String              // server id OR temp local id
+    var id: String
     let senderId: String
     let senderName: String
     let senderImage: String?
-    var content: String
+    var content: String?          // make optional (image-only messages have no text)
     let createdAt: Date
     var status: MessageStatus
-
+    var messageType: Int          // 1 = text, 2 = image
+    var imageURL: String?
+    var localImage: UIImage?
     var isMine: Bool {
         senderId == (User.curentUser?.id ?? "")
     }
@@ -67,29 +72,50 @@ struct ChatItem {
 
 extension ChatItem {
 
-    /// Build from a server message.
     init(message: ChatMessage) {
         self.id          = message.id
         self.senderId    = message.senderId ?? message.sender?.id ?? ""
         self.senderName  = message.sender?.name ?? ""
         self.senderImage = message.sender?.profileImage
-        self.content     = message.content ?? ""
         self.createdAt   = ChatDate.parse(message.createdAt)
         self.status      = .sent
+
+        let type = message.contentType == "image" ? 2 : 1  // adjust to your API's value
+        self.messageType = type
+
+        if type == 2 {
+            self.content  = nil
+            self.imageURL = message.fileUrl ?? message.content
+        } else {
+            self.content  = message.content ?? ""
+            self.imageURL = nil
+        }
     }
 
-    /// Build a temporary local message for optimistic UI.
-    /// `senderId` is passed in (the VM's currentUserId) so this model has no
-    /// hard dependency on the shape of your `User` object beyond `.id`.
     static func temporary(content: String, senderId: String) -> ChatItem {
         ChatItem(
             id:          "temp-\(UUID().uuidString)",
             senderId:    senderId,
-            senderName:  "",          // not shown for my own bubbles
-            senderImage: nil,         // not shown for my own bubbles
+            senderName:  "",
+            senderImage: nil,
             content:     content,
             createdAt:   Date(),
-            status:      .sending
+            status:      .sending,
+            messageType: 1
+        )
+    }
+
+    static func temporaryImage(localImage: UIImage, senderId: String) -> ChatItem {
+        ChatItem(
+            id:          "temp-\(UUID().uuidString)",
+            senderId:    senderId,
+            senderName:  "",
+            senderImage: nil,
+            content:     nil,
+            createdAt:   Date(),
+            status:      .sending,
+            messageType: 2,
+            localImage:  localImage
         )
     }
 }
