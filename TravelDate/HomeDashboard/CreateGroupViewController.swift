@@ -301,6 +301,9 @@ class CreateGroupViewController: BaseClassVc {
          tuple = (address,Double(cord.latitude),Double(cord.longitude))
             self?.destinationTF.text = address
             self?.locationView.isHidden = true
+            
+            self?.request.latitude = Double(cord.latitude)
+            self?.request.longitude = Double(cord.longitude)
         }
         view.addSubview(locationView)
         locationView.translatesAutoresizingMaskIntoConstraints = false
@@ -766,64 +769,187 @@ class CreateGroupViewController: BaseClassVc {
     @objc private func startDateTapped() { showDatePicker(isStart: true)  }
     @objc private func endDateTapped()   { showDatePicker(isStart: false) }
 
+//    private func showDatePicker(isStart: Bool) {
+//        let alert = UIAlertController(
+//            title: "Select Date", message: "\n\n\n\n\n\n",
+//            preferredStyle: .actionSheet)
+//
+//        let picker = UIDatePicker()
+//        picker.datePickerMode = .date
+//        if #available(iOS 14.0, *) {
+//            picker.preferredDatePickerStyle = .inline
+//        }
+//
+//        if isStart {
+//            picker.minimumDate = Date()
+//        } else {
+//            guard !startDate.isEmpty else { return }
+//            let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
+//            if let s = fmt.date(from: startDate) {
+//                picker.minimumDate = s
+//                picker.date = s.addingTimeInterval(86400)
+//                picker.maximumDate = Calendar.current.date(from: DateComponents(year: 2100))
+//            }
+//        }
+//
+//        picker.frame = CGRect(
+//            x: 0, y: 20,
+//            width: alert.view.bounds.width - 20, height: 160)
+//        alert.view.addSubview(picker)
+//
+//        alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
+//            guard let self else { return }
+//            let fmt  = DateFormatter(); fmt.dateFormat  = "yyyy-MM-dd"
+//            let disp = DateFormatter(); disp.dateFormat = "dd MMM yyyy"
+//            let sel  = picker.date
+//            if isStart {
+//                self.startDate = fmt.string(from: sel)
+//                self.startDateLabel.text      = disp.string(from: sel)
+//                self.startDateLabel.textColor = .white
+//                if !self.endDate.isEmpty,
+//                   let e = fmt.date(from: self.endDate), e < sel {
+//                    self.endDate = ""
+//                    self.endDateLabel.text      = "Select date"
+//                    self.endDateLabel.textColor = .appPlaceholder
+//                }
+//            } else {
+//                self.endDate = fmt.string(from: sel)
+//                self.endDateLabel.text      = disp.string(from: sel)
+//                self.endDateLabel.textColor = .white
+//            }
+//        })
+//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//
+//        if let pop = alert.popoverPresentationController {
+//            pop.sourceView = view
+//            pop.sourceRect = CGRect(
+//                x: view.bounds.midX, y: view.bounds.midY,
+//                width: 0, height: 0)
+//            pop.permittedArrowDirections = []
+//        }
+//        present(alert, animated: true)
+//    }
+    
+    
     private func showDatePicker(isStart: Bool) {
-        let alert = UIAlertController(
-            title: "Select Date", message: "\n\n\n\n\n\n",
-            preferredStyle: .actionSheet)
+
+        let vc = UIViewController()
+        vc.view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        vc.modalPresentationStyle = .overFullScreen
+
+        let container = UIView()
+        container.backgroundColor = .systemBackground
+        container.layer.cornerRadius = 20
+        container.translatesAutoresizingMaskIntoConstraints = false
 
         let picker = UIDatePicker()
         picker.datePickerMode = .date
+
         if #available(iOS 13.4, *) {
             picker.preferredDatePickerStyle = .wheels
         }
 
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
         if isStart {
+
+            // Start date = today onwards
             picker.minimumDate = Date()
+            picker.maximumDate = Calendar.current.date(
+                byAdding: .year,
+                value: 50,
+                to: Date()
+            )
+
         } else {
-            guard !startDate.isEmpty else { return }
-            let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
-            if let s = fmt.date(from: startDate) {
-                picker.minimumDate = s
-                picker.date = s.addingTimeInterval(86400)
+
+            guard !startDate.isEmpty,
+                  let start = formatter.date(from: startDate) else {
+                return
             }
+
+            // End date must be at least 1 day after start date
+            let nextDay = Calendar.current.date(
+                byAdding: .day,
+                value: 1,
+                to: start
+            )!
+
+            picker.minimumDate = nextDay
+            picker.maximumDate = Calendar.current.date(
+                byAdding: .year,
+                value: 50,
+                to: start
+            )
+            picker.date = nextDay
         }
 
-        picker.frame = CGRect(
-            x: 0, y: 20,
-            width: alert.view.bounds.width - 20, height: 160)
-        alert.view.addSubview(picker)
+        let doneBtn = UIButton(type: .system)
+        doneBtn.setTitle("Done", for: .normal)
+        doneBtn.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
 
-        alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
-            guard let self else { return }
-            let fmt  = DateFormatter(); fmt.dateFormat  = "yyyy-MM-dd"
-            let disp = DateFormatter(); disp.dateFormat = "dd MMM yyyy"
-            let sel  = picker.date
+        doneBtn.addAction(UIAction { [weak self, weak vc] _ in
+            guard let self = self else { return }
+
+            let apiFormatter = DateFormatter()
+            apiFormatter.dateFormat = "yyyy-MM-dd"
+
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateFormat = "dd MMM yyyy"
+
+            let selectedDate = picker.date
+
             if isStart {
-                self.startDate = fmt.string(from: sel)
-                self.startDateLabel.text      = disp.string(from: sel)
+
+                self.startDate = apiFormatter.string(from: selectedDate)
+                self.startDateLabel.text = displayFormatter.string(from: selectedDate)
                 self.startDateLabel.textColor = .white
+
+                // Clear end date if it is same day or before new start date
                 if !self.endDate.isEmpty,
-                   let e = fmt.date(from: self.endDate), e < sel {
+                   let end = apiFormatter.date(from: self.endDate),
+                   end <= selectedDate {
+
                     self.endDate = ""
-                    self.endDateLabel.text      = "Select date"
+                    self.endDateLabel.text = "Select date"
                     self.endDateLabel.textColor = .appPlaceholder
                 }
+
             } else {
-                self.endDate = fmt.string(from: sel)
-                self.endDateLabel.text      = disp.string(from: sel)
+
+                self.endDate = apiFormatter.string(from: selectedDate)
+                self.endDateLabel.text = displayFormatter.string(from: selectedDate)
                 self.endDateLabel.textColor = .white
             }
-        })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
-        if let pop = alert.popoverPresentationController {
-            pop.sourceView = view
-            pop.sourceRect = CGRect(
-                x: view.bounds.midX, y: view.bounds.midY,
-                width: 0, height: 0)
-            pop.permittedArrowDirections = []
+            vc?.dismiss(animated: true)
+        }, for: .touchUpInside)
+
+        [container, picker, doneBtn].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
         }
-        present(alert, animated: true)
+
+        vc.view.addSubview(container)
+        container.addSubview(picker)
+        container.addSubview(doneBtn)
+
+        NSLayoutConstraint.activate([
+
+            container.centerYAnchor.constraint(equalTo: vc.view.centerYAnchor),
+            container.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor, constant: 20),
+            container.trailingAnchor.constraint(equalTo: vc.view.trailingAnchor, constant: -20),
+
+            picker.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+            picker.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            picker.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+
+            doneBtn.topAnchor.constraint(equalTo: picker.bottomAnchor, constant: 16),
+            doneBtn.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
+            doneBtn.centerXAnchor.constraint(equalTo: container.centerXAnchor)
+        ])
+
+        present(vc, animated: true)
     }
 
     @objc func decrease() {
@@ -878,7 +1004,6 @@ class CreateGroupViewController: BaseClassVc {
         AppLoader.show()
         uploadImg(data) { [weak self] imageName in
             guard let self else { return }
-
             self.request.coverImage = imageName
             self.request.title = title
             self.request.description = title

@@ -227,7 +227,7 @@ private extension ChatVc {
         let model = groupsData[indexPath.row]
         cell.lblTitle.text = model.name ?? ""
         cell.lblDesc.text  = "\(model.name ?? "")"
-        cell.lblTime.text  = timeAgo(from: model.createdAt ?? "")
+        cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
         loadAvatarImage(into: cell.imgVw, urlString: model.image)
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleToFill
@@ -243,8 +243,8 @@ private extension ChatVc {
             let matchGroup = model
 
             cell.lblTitle.text = matchGroup.name ?? ""
-            cell.lblDesc.text = "Matched Trip"
-            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
+            cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
+            cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
             loadAvatarImage(
                 into: cell.imgVw,
                 urlString: matchGroup.image
@@ -253,7 +253,7 @@ private extension ChatVc {
         } else {
 
             cell.lblTitle.text = model.name
-            cell.lblDesc.text = model.name ?? ""
+            cell.lblDesc.text = model.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
             loadAvatarImage(
                 into: cell.imgVw,
@@ -303,7 +303,7 @@ private extension ChatVc {
         // Open existing room directly if available
         let vc = ChatMessageVc(
             viewModel: viewModel,
-            participants: participantIds,
+            participants: group.members ?? [],
             roomId: group.chatId,
             roomTitle: "Group Chat",
             type: .group
@@ -323,13 +323,28 @@ private extension ChatVc {
             let viewModel = ChatViewModel(
                 currentUserId: User.curentUser?.id ?? ""
             )
-
             let vc = ChatMessageVc(
                 viewModel: viewModel,
-                participants: [],
+                participants: item.members ?? [],
                 roomId: item.chatId,
-                roomTitle: "Match NEED TO CHANGE THIS TEXT",
+                roomTitle: item.name ?? "",
                 type: .group
+            )
+
+            navigationController?.pushViewController(vc, animated: true)
+            return
+        } else {
+            
+//            2B8392
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: item.members ?? [],
+                roomId: item.chatId,
+                roomTitle: item.name ?? "",
+                type: .individual
             )
 
             navigationController?.pushViewController(vc, animated: true)

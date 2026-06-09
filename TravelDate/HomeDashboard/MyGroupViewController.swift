@@ -170,7 +170,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
             cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
         
-        let styles = model?.travelStyle ?? []
+        let styles = model?.userMembers?.travelStyles ?? []
 
         cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
         cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
@@ -182,8 +182,8 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         cell.lbl4.isHidden = !styles.indices.contains(3)
         
         
-        cell.lblLocation.text = model?.locationString ?? ""
-        cell.lblDescription.text = model?.shortBio ?? ""
+        cell.lblLocation.text = model?.userMembers?.locationstring ?? ""
+        cell.lblDescription.text = model?.userMembers?.shortbio ?? ""
         
         if let url = URL(string: model?.userMembers?.profile_image ?? "") {
             self.loadImage(cell.imgUser, url: url)
@@ -205,32 +205,33 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
     @objc func openChat(_ sender:UIButton) {
         guard let selectedUser = self.res?.members?[sender.tag] else { return }
         
-        request.targetUserId  = selectedUser.id ?? ""
-        request.directChat { errMsg, errCode in
-            
+        request.targetUserId  = selectedUser.userMembers?.id  ?? ""
+        request.directChat { model,errMsg, errCode in
+            if errCode == 200 {
+                
+                
+                
+                let currentUserId = User.curentUser?.id ?? ""
+                let otherParticipantId = selectedUser.userMembers?.id  ?? ""
+                
+                // Prevent self chat
+                guard otherParticipantId != currentUserId else { return }
+                
+                let viewModel = ChatViewModel(
+                    currentUserId: currentUserId
+                )
+                
+                let vc = ChatMessageVc(
+                    viewModel: viewModel,
+                    participants: model?.participantsUser ?? [],
+                    roomId: model?.id ?? "", //. ID HERE
+                    roomTitle: selectedUser.name ?? "Chat",
+                    type: .individual
+                )
+                
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
         }
-      
-
-        /*let currentUserId = User.curentUser?.id ?? ""
-        let otherParticipantId = selectedUser.id ?? ""
-
-        // Prevent self chat
-        guard otherParticipantId != currentUserId else { return }
-
-        let viewModel = ChatViewModel(
-            currentUserId: currentUserId
-        )
-
-        let vc = ChatMessageVc(
-            viewModel: viewModel,
-            participants: [currentUserId, otherParticipantId],
-            roomId: selectedUser.roomId ?? nil,
-            roomTitle: selectedUser.name ?? "Chat",
-            type: .individual
-        )
-
-        navigationController?.pushViewController(vc, animated: true)
-         */
     }
     
     

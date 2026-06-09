@@ -18,10 +18,11 @@ class APiConstant : NSObject {
     static let checkEmail = baseUrl + "auth/check-email"
     static let createGroup = baseUrl + "groups"
     static let myGroup = baseUrl + "groups/my-groups"
+    static let pastGroups = baseUrl + "groups/past-trips"
     
     
-    static let savedGroup = baseUrl + "group/saved?limit=100&page=1"
-    static let saveGroup = baseUrl + "group/save/"
+    static let savedGroup = baseUrl + "groups/saved"
+    static let saveGroup = baseUrl + "groups/"
     static let users = baseUrl + "users/all-users?limit=100&page="
     static let allGroups = baseUrl + "group?limit=100&page=1"
     static let socialLogin = baseUrl + "users/social-login"
@@ -38,10 +39,12 @@ class APiConstant : NSObject {
     static let matchedGroup = baseUrl + "groups/my-groups"
     static let roomChats = baseUrl + "api-chat/rooms"
     
-    static let notification = baseUrl + "notifications"
+    static let notification = baseUrl + "notifications?page=1&limit=20"
     
     static let chatInbox = baseUrl + "chat/inbox?"
     static let chatDirect = baseUrl + "chat/direct"
+    
+    static let dashboardAPi = baseUrl + "groups/dashboard"
 }
 
 

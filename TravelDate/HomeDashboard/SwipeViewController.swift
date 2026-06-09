@@ -525,7 +525,7 @@ extension SwipeViewController {
 // MARK: - MatchBottomSheetDelegate
 extension SwipeViewController: MatchBottomSheetDelegate {
     func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
-
+/*
         guard let group = groups.first(where: { $0.id == groupId }) else {
             print("Group not found")
             return
@@ -542,15 +542,21 @@ extension SwipeViewController: MatchBottomSheetDelegate {
 
         let vc = ChatMessageVc(
             viewModel: viewModel,
-            participants: participantIds,
+            participants: participantIds as! [UserMembers],
             roomId: group.roomId,
             roomTitle: group.title ?? "Group Chat",
             type: .group
         )
 
         vc.memberCount = participantIds.count
+ ✈️ Join my travel group!
 
+ Use this link to join:
+ 2B8392
+
+ Let’s plan something awesome 🌍
         navigationController?.pushViewController(vc, animated: true)
+ */
     }
     
     func matchSheetDidTapKeepSwiping() {

@@ -19,7 +19,7 @@ final class ChatViewModel {
     let currentUserId: String
 
     // MARK: - Inputs (injected by the VC before start())
-    var participants: [String] = []
+    var participants: [UserMembers] = []
      var roomType: ChatRoomType = .individual
     private(set) var roomId: String?
 
@@ -46,7 +46,7 @@ final class ChatViewModel {
     }
 
     /// Inject the room context. Called by the VC right after init.
-    func configure(participants: [String],
+    func configure(participants: [UserMembers],
                    type: ChatRoomType,
                    roomId: String? = nil) {
         self.participants = participants
@@ -95,11 +95,12 @@ final class ChatViewModel {
 //        if !other.isEmpty { result.append(other) }
 //        return result
 //    }
+    
+    
     private func safeParticipants() -> [String] {
-print(participants,"COUN")
-        return participants
-            .joined(separator: ",")
-            .split(separator: ",")
+        print(participants, "COUN")
+
+        return participants.compactMap { $0.id }
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
     }
@@ -141,13 +142,17 @@ print(participants,"COUN")
     func retry(itemId: String) {
         guard let index = items.firstIndex(where: { $0.id == itemId }),
               let roomId = roomId else { return }
-        let text = items[index].content
+
         items[index].status = .sending
         rebuildSections()
         onReload?()
 
-        service.sendMessage(roomId: roomId, content: text ?? "") { [weak self] result in
-            guard let self = self else { return }
+        let item = items[index]
+        let content     = item.messageType == 2 ? (item.imageURL ?? "") : (item.content ?? "")
+        let contentType = item.messageType == 2 ? "image" : "text"
+
+        service.sendMessage(roomId: roomId, content: content, contentType: contentType) { [weak self] result in
+            guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let serverMsg):
@@ -171,7 +176,7 @@ print(participants,"COUN")
         onReload?()
     }
 
-    private func markFailed(id: String) {
+  func markFailed(id: String) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].status = .failed
         rebuildSections()
@@ -194,6 +199,33 @@ print(participants,"COUN")
         fetch(page: page + 1, isFirst: false)
     }
 
+    func appendOptimistic(item: ChatItem) {
+        items.append(item)
+        rebuildSections()
+        onAppend?()
+    }
+
+    func confirmImageSent(id: String, imageURL: String) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].imageURL   = imageURL
+        items[index].localImage = nil
+        items[index].status     = .sent
+        // Also push to API so other users receive it
+        guard let roomId = roomId else { return }
+        service.sendMessage(roomId: roomId, content: imageURL, contentType: "image") { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let serverMsg):
+                    self?.replaceTemp(id: id, with: ChatItem(message: serverMsg))
+                case .failure:
+                    self?.markFailed(id: id)
+                }
+            }
+        }
+        rebuildSections()
+        onReload?()
+    }
+    
     private func fetch(page: Int, isFirst: Bool) {
         guard let roomId = roomId, !isLoading else { return }
         setLoading(true)

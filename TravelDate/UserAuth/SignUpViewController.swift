@@ -249,8 +249,8 @@ class SignUpViewController: BaseClassVc {
         request.password = passwordField.text ?? ""
         request.deviceToken = Constants.device_Config.deviceToken
         request.deviceType = Constants.device_Config.deviceType
-        request.latitude = "\(String(describing: tuple?.lat ?? 0.0))"
-        request.longitude = "\(String(describing:tuple?.lng ?? 0.0))"
+        request.latitude = tuple?.lat ?? 0.0
+        request.longitude = tuple?.lng ?? 0.0
         request.location_string = "\(String(describing:tuple?.title ?? ""))"
         
         request.signUp { loginUser, errMsg, errCode in

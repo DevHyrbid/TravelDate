@@ -121,8 +121,15 @@ class BaseClassVc: UIViewController {
     
 
     func loadImage(_ img:UIImageView, url: URL) {
+        var  urlStr = URL(string: "")
+        if url.absoluteString.contains("https://lh3.googleusercontent.com") {
+            urlStr =  URL(string: url.absoluteString)
+        } else {
+            urlStr = URL(string:APiConstant.base + url.absoluteString)
+        }
+       
         img.kf.setImage(
-            with: url,
+            with: urlStr,
             placeholder: UIImage(named: "User"), // optional
             options: [
                 .transition(.fade(0.3)),

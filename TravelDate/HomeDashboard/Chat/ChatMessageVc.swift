@@ -33,7 +33,7 @@ final class ChatMessageVc: BaseClassVc {
 
     init(
         viewModel: ChatViewModel,
-        participants: [String],
+        participants: [UserMembers],
         roomId: String? = nil,
         roomTitle: String,
         type: ChatRoomType
@@ -194,26 +194,26 @@ final class ChatMessageVc: BaseClassVc {
     }
     
     func imgUpload() {
-        
         imagePicker.showImagePicker(allowCamera: true) { [weak self] img in
-            
-            guard let self = self else { return }
-            
-            print(img)
-            
-            
-            
-            
-            guard let data = img.jpegData(compressionQuality: 0.7) else { return }
-            
+            guard let self else { return }
+
+            // 1. Show optimistic cell immediately
+            let tempItem = ChatItem.temporaryImage(localImage: img, senderId: self.viewModel.currentUserId)
+            self.viewModel.appendOptimistic(item: tempItem)
+
+            guard let data = img.jpegData(compressionQuality: 0.7) else {
+                self.viewModel.markFailed(id: tempItem.id)
+                return
+            }
+
             self.uploadImg(data) { [weak self] imageName in
-                
-                guard let self = self else { return }
-                
-                print(imageName, "UPLOAD SUCCESS")
-                
-                self.viewModel.send(imageName ?? "nil", 2)
-                
+                guard let self else { return }
+                guard let imageName else {
+                    self.viewModel.markFailed(id: tempItem.id)
+                    return
+                }
+                // 2. Confirm with real URL
+                self.viewModel.confirmImageSent(id: tempItem.id, imageURL: imageName)
             }
         }
     }
@@ -263,7 +263,7 @@ final class ChatMessageVc: BaseClassVc {
     
     
     @objc  func didTapManageGroup() {
-
+/*
         let participants = self.viewModel.participants
 
         let groupMembers: [GroupMember] = participants.enumerated().map { index, userId in
@@ -290,7 +290,7 @@ final class ChatMessageVc: BaseClassVc {
             onDelete: { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             }
-        )
+        )*/
     }
     
 

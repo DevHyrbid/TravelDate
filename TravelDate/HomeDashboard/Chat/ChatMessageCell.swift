@@ -169,23 +169,12 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Attachment
 
     private func configureAttachment(_ item: ChatItem) {
+        print(item.imageURL,"lkjhgfdfghjklkjgfdfghj")
         let hasImage = item.imageURL != nil || item.localImage != nil
-        let hasText  = (((item.content ?? "")?.isEmpty) == nil)
-        
-        // Show/hide text
-        messageLabel.isHidden = !hasText
-        messageLabel.text     = item.content
+        let hasText  = !(item.content ?? "").isEmpty
 
-        // Adjust top padding for message when image is above
-        let msgTopPad: CGFloat = hasImage && hasText ? 10 : (hasText ? 10 : 0)
-        // Update the constant on the existing constraint (it's the topAnchor to attachmentView.bottomAnchor)
-        messageLabel.constraints.forEach { c in
-            if c.firstAttribute == .top { c.constant = msgTopPad }
-        }
-        // Also update bottom padding when text-only vs image-only
-        messageLabel.constraints.forEach { c in
-            if c.firstAttribute == .bottom { c.constant = hasText ? -10 : 0 }
-        }
+        messageLabel.isHidden = !hasText
+        messageLabel.text     = hasText ? item.content : nil
 
         if hasImage {
             attachmentHeight.constant = 220
@@ -194,8 +183,10 @@ final class ChatMessageCell: UITableViewCell {
             if let local = item.localImage {
                 attachmentView.image = local
             } else if let str = item.imageURL, let url = URL(string: str) {
+                print("-e-e-e--ee-",url)
                 attachmentView.image = nil
-                ChatImageLoader.load(url: url, into: attachmentView)
+//                ChatImageLoader.load(url: url, into: attachmentView)
+                ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)\(url.absoluteString)")
             }
         } else {
             attachmentHeight.constant = 0

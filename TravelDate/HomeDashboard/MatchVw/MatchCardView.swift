@@ -411,7 +411,7 @@ final class MatchCardView: UIView {
         travelersLabel.text = "👥 \(count) traveler\(count == 1 ? "" : "s")"
         ageLabel.text       = "🎂 Avg age: \(group.preferences?.minAge ?? 0)– \((group.preferences?.maxAge ?? 0))"
 
-        if let urlStr = group.coverImage, let url = URL(string: urlStr) {
+        if let urlStr = group.coverImage, let url = URL(string: "\(APiConstant.base)\(urlStr)") {
             coverImageView.kf.setImage(with: url,
                                        placeholder: UIImage(named: "User"),
                                        options: [.transition(.fade(0.25)), .cacheOriginalImage])

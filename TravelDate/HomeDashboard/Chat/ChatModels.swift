@@ -80,18 +80,19 @@ extension ChatItem {
         self.createdAt   = ChatDate.parse(message.createdAt)
         self.status      = .sent
 
-        let type = message.contentType == "image" ? 2 : 1  // adjust to your API's value
-        self.messageType = type
+        // ✅ Only signal is fileUrl — contentType/messageType are always nil
+        let isImage = message.fileUrl != nil
+        self.messageType = isImage ? 2 : 1
 
-        if type == 2 {
+        if isImage {
             self.content  = nil
-            self.imageURL = message.fileUrl ?? message.content
+            self.imageURL = message.fileUrl   // direct full URL, no fallback needed
         } else {
             self.content  = message.content ?? ""
             self.imageURL = nil
         }
     }
-
+    
     static func temporary(content: String, senderId: String) -> ChatItem {
         ChatItem(
             id:          "temp-\(UUID().uuidString)",

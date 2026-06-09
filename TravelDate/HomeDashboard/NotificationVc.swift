@@ -58,7 +58,11 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
         if  let model = self.notifications?[indexPath.row] {
             cell.lblDesc.text = model.message ?? ""
             cell.lblTitle.text = model.title ?? ""
-            self.loadImage(cell.imgVw, url: URL(string: model.sender?.profileImage ?? "")!)
+            
+            if let profileImage = model.sender?.profileImage,
+               let url = URL(string: profileImage) {
+                self.loadImage(cell.imgVw, url: url)
+            }
             cell.imgVw.layer.cornerRadius = 12
         }
         return cell

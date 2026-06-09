@@ -46,9 +46,10 @@ final class ChatHeaderView: UIView {
         subtitleLabel.isHidden = (subtitle?.isEmpty ?? true)
         moreButton.isHidden   = !showMore
 
-        if let str = imageURL, let url = URL(string: str) {
+        if let str = imageURL {
             profileImageView.image = UIImage(named: "User")
-            ChatImageLoader.load(url: url, into: profileImageView)
+//            ChatImageLoader.load(url: url, into: profileImageView)
+            ImageLoader.setImageKing(profileImageView, urlString: "\(APiConstant.base)\(str)")
         } else {
             profileImageView.image = UIImage(named: "User")
         }

@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+import CoreLocation
 // MARK: - Past Trip Model
 import SwiftUI
 struct PastTrip {
@@ -37,23 +37,26 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var height:NSLayoutConstraint!
     @IBOutlet weak var hideVw:UIView!
     @IBOutlet weak var lblLeft:UILabel!
-    
     @IBOutlet weak var vwMembers:UIView!
-    
     @IBOutlet weak var btnList:UIButton!
-    
     @IBOutlet weak var tblVw:UITableView!
+    @IBOutlet weak var lblActive:UILabel!
+    @IBOutlet weak var lblNew:UILabel!
+    @IBOutlet weak var lblSaved:UILabel!
+    
+    
+    // MARK: - Properties
     var timer: Timer?
     var targetDate: Date?
     var data: GroupsData? = nil
-    var pastData: GroupsData? = nil
+    var pastData: [Group]? = nil
     var selected : Group? = nil
     let membersView = MembersProgressView()
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-
+    
         
         membersView.translatesAutoresizingMaskIntoConstraints = false
         vwMembers.addSubview(membersView)
@@ -137,6 +140,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         
         
     }
+    
+   
+
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -265,17 +272,15 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         request.getGroups(3) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
-                    if let data  = model?.dataGroup {
-//                        self.pastData = data
+                        self.pastData = model?.dataGroup ?? []
                         self.tblVw.reloadData()
-                    }
-                   
                 }
             }
         }
     }
     
     func getGroups() {
+        getDashboard()
         request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
@@ -330,6 +335,20 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     deinit {
         timer?.invalidate()
+    }
+    
+    func getDashboard() {
+        request.getDashBoardAPi { model, errMsg, errCode in
+            if errCode == 200 {
+                DispatchQueue.main.async {
+                    if let first = model?.data?.counts {
+                        self.lblSaved.text =  "\(first.savedGroups ?? 0)"
+                        self.lblActive.text = "\(first.activeChats ?? 0)"
+                        self.lblNew.text =    "\(first.newMatches ?? 0)"
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -413,12 +432,12 @@ extension HomeViewController {
 
 extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return  pastData?.groups?.count ?? 0
+        return  pastData?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : PastTableViewCell = tblVw.dequeue(PastTableViewCell.self, for: indexPath)
-        let model = pastData?.groups?[indexPath.row]
+        let model = pastData?[indexPath.row]
         cell.lblDate.text = self.formatDateRange(
             start: model?.startDate ?? "",
             end: model?.endDate ?? ""

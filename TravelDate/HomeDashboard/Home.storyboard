@@ -716,6 +716,7 @@
                         <outlet property="hideVw" destination="JiU-xS-Sul" id="q5n-hj-hfq"/>
                         <outlet property="imgProfile" destination="T0e-b5-quS" id="JKQ-Eh-emB"/>
                         <outlet property="imgTrips" destination="ZlR-63-CLs" id="HwE-TJ-d9o"/>
+                        <outlet property="lblActive" destination="QJd-AE-iqW" id="CVV-0b-fgT"/>
                         <outlet property="lblDate" destination="iCT-6Y-QQh" id="Sdx-ro-bIx"/>
                         <outlet property="lblDay" destination="RjY-jN-iDY" id="MEF-3k-Sm3"/>
                         <outlet property="lblGreating" destination="qYD-36-U9g" id="p73-u1-fah"/>
@@ -723,6 +724,8 @@
                         <outlet property="lblLocation" destination="HeL-OE-C0Y" id="mgd-NS-9JQ"/>
                         <outlet property="lblMin" destination="UP7-q6-LfB" id="Klu-Oz-TW1"/>
                         <outlet property="lblName" destination="67h-t0-IzZ" id="3Gs-AM-S7z"/>
+                        <outlet property="lblNew" destination="8DU-L9-Mjq" id="wYR-ix-ePS"/>
+                        <outlet property="lblSaved" destination="jsn-Hz-gvQ" id="p8F-pX-JNv"/>
                         <outlet property="lblSec" destination="AbH-Qo-n3m" id="I9h-wO-nN2"/>
                         <outlet property="lblTitle" destination="G9e-yJ-b6n" id="3RN-mC-Bmy"/>
                         <outlet property="scrollVw" destination="6mJ-wt-uI1" id="tTd-Z8-A00"/>
@@ -1417,19 +1420,19 @@
                                                 <rect key="frame" x="15" y="130.33333333333337" width="363" height="350"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgFrame2" translatesAutoresizingMaskIntoConstraints="NO" id="S01-Fj-sMK">
-                                                        <rect key="frame" x="0.0" y="0.0" width="363" height="200"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="363" height="240"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="height" constant="200" id="LeC-Jb-mgr"/>
+                                                            <constraint firstAttribute="height" constant="240" id="LeC-Jb-mgr"/>
                                                         </constraints>
                                                     </imageView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali Crew" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1b8-wx-SFt">
-                                                        <rect key="frame" x="20" y="219.99999999999997" width="78" height="20.333333333333343"/>
+                                                        <rect key="frame" x="20" y="260" width="78" height="20.333333333333314"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="t5X-zy-mUQ">
-                                                        <rect key="frame" x="15" y="270.33333333333337" width="333" height="40"/>
+                                                        <rect key="frame" x="15" y="310.33333333333337" width="333" height="40"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="T3f-PV-eiY" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="213" height="40"/>
@@ -1544,7 +1547,7 @@
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="OB9-lp-ZlH">
+                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" scrollEnabled="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="OB9-lp-ZlH">
                                                 <rect key="frame" x="5" y="538.33333333333337" width="383" height="300"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>

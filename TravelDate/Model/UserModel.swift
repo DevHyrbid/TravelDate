@@ -119,8 +119,8 @@ class User : Mappable {
     var swipedId : String?
     var action : String?
     
-    var latitude :  String?
-    var longitude : String?
+    var latitude :  Double?
+    var longitude : Double?
     var location_string :  String?
     var minAge : Int?
     var maxAge : Int?
@@ -135,6 +135,11 @@ class User : Mappable {
     
     var arr : [String]?
     var arrStr : String?
+    
+    
+    
+    
+   
     required init?(map: Map) {}
     
     func mapping(map: Map) {
@@ -504,20 +509,21 @@ class User : Mappable {
         
     }
     
-    func directChat(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+    func directChat(callBack:((_ model:ChatRoomModel?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         
         NetworkManger.sendRequestAF(urlPath: APiConstant.chatDirect, type: .post, parms: self.toJSON()) { responseObject, suces in
             print(responseObject)
-            if responseObject["statusCode"] as? Int ?? 0 == 200 {
+            if responseObject["code"] as? Int ?? 0 == 200 {
+                let model = Mapper<ChatRoomModel>().map(JSON: responseObject["data"] as? [String:Any] ?? [:])
                 
-                callBack(responseObject["message"] as? String ?? "",200)
+               callBack(model,responseObject["message"] as? String ?? "",200)
                 
             }else {
-                callBack(responseObject["message"] as? String ?? "",404)
+                callBack(nil,responseObject["message"] as? String ?? "",404)
             }
         } faliure: { errMsg, errCode in
-            callBack(errMsg, errCode)
+            callBack(nil,errMsg, errCode)
         }
     }
     
@@ -770,6 +776,31 @@ class User : Mappable {
         }
         
     }
+    
+    func getDashBoardAPi(callBack:(( _ res:DashboardResponse?, _ errMsg:String,_ errCode:Int)->Void)!)  {
+        
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.dashboardAPi , params: [:], method: "GET") { responseObject, suces in
+            print(responseObject)
+            
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                if let response = Mapper<DashboardResponse>().map(JSON: responseObject) {
+                    
+                    callBack(response,responseObject["message"] as? String ?? "",200)
+                }
+                
+            } else {
+                callBack(nil,responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
+        }
+        
+    }
+    
+    
     func getGroups(_ type:Int?,callBack:(( _ res:GroupsResponse?, _ errMsg:String,_ errCode:Int)->Void)!) {
         var url = ""
         if type == 0 { // CURRENT
@@ -779,7 +810,7 @@ class User : Mappable {
         } else if type == 2 {
             url = APiConstant.matchedGroup
         } else if type == 3 { // Past
-            url  = APiConstant.myGroup// + "past"
+            url  = APiConstant.pastGroups// + "past"
         } else if type == 4 { // Past
             url  = APiConstant.savedGroup 
         }
@@ -840,7 +871,7 @@ class User : Mappable {
     
     func  saveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.saveGroup)" + "\(id ?? "")", params: self.toJSON(), method: "POST") { responseObject, suces in
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.saveGroup)" + "\(id ?? "")/save", params: self.toJSON(), method: "POST") { responseObject, suces in
             
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
@@ -1152,13 +1183,17 @@ struct UserMembers : Mappable {
     var id : String?
     var name : String?
     var profile_image : String?
-
+    var shortbio : String?
+    var locationstring : String?
+    var travelStyles : [String]?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
-
+        travelStyles <- map["travelStyles"]
+        locationstring <- map["location_string"]
+        shortbio <- map["short_bio"]
         id <- map["id"]
         name <- map["name"]
         profile_image <- map["profile_image"]
@@ -1244,6 +1279,7 @@ class ChatRoomModel: Mappable {
     var updatedAt: String?
     var groupId: String?
     var participants: [ParticipantModel]?
+    var participantsUser : [UserMembers]?
     var lastMessage: LastMessageModel?
     var unreadCount: Int?
     
@@ -1260,6 +1296,7 @@ class ChatRoomModel: Mappable {
         updatedAt       <- map["updatedAt"]
         groupId         <- map["groupId"]
         participants    <- map["participants"]
+        participantsUser <- map["participants"]
         lastMessage     <- map["lastMessage"]
         unreadCount     <- map["unreadCount"]
     }
@@ -1694,4 +1731,46 @@ struct Preferences : Mappable {
         activityInterests <- map["activityInterests"]
     }
     
+}
+
+import ObjectMapper
+
+class DashboardResponse: Mappable {
+    var success: Bool?
+    var code: Int?
+    var message: String?
+    var data: DashboardData?
+
+    required init?(map: Map) {}
+
+    func mapping(map: Map) {
+        success <- map["success"]
+        code <- map["code"]
+        message <- map["message"]
+        data <- map["data"]
+    }
+}
+
+class DashboardData: Mappable {
+    var counts: DashboardCounts?
+
+    required init?(map: Map) {}
+
+    func mapping(map: Map) {
+        counts <- map["counts"]
+    }
+}
+
+class DashboardCounts: Mappable {
+    var newMatches: Int?
+    var activeChats: Int?
+    var savedGroups: Int?
+
+    required init?(map: Map) {}
+
+    func mapping(map: Map) {
+        newMatches <- map["newMatches"]
+        activeChats <- map["activeChats"]
+        savedGroups <- map["savedGroups"]
+    }
 }
