@@ -168,6 +168,9 @@ PODS:
   - nanopb/encode (3.30910.0)
   - ObjectMapper (4.4.2)
   - PromisesObjC (2.4.0)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - Socket.IO-Client-Swift (16.1.1):
     - Starscream (~> 4.0.8)
   - Starscream (4.0.8)
@@ -181,6 +184,7 @@ DEPENDENCIES:
   - IQKeyboardManagerSwift
   - Kingfisher (~> 7.11)
   - ObjectMapper (~> 4.2)
+  - SDWebImage
   - Socket.IO-Client-Swift (~> 16.0)
 
 SPEC REPOS:
@@ -214,6 +218,7 @@ SPEC REPOS:
     - nanopb
     - ObjectMapper
     - PromisesObjC
+    - SDWebImage
     - Socket.IO-Client-Swift
     - Starscream
 
@@ -247,9 +252,10 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   ObjectMapper: e6e4d91ff7f2861df7aecc536c92d8363f4c9677
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   Socket.IO-Client-Swift: 3614bea82ba005df1c2ff01154f4004993e05ad7
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
 
-PODFILE CHECKSUM: 9cd46dfe230ae6a5ca7d1f595b06c28cca3113b2
+PODFILE CHECKSUM: 95f4c2e7a276c90c127e2317bf3ecd024285fb67
 
 COCOAPODS: 1.16.2

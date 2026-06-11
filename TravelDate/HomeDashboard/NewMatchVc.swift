@@ -11,7 +11,7 @@ enum MatchTab {
     case saved
     case active
 }
-
+var selectedGlobal = 0
 class NewMatchVc: BaseClassVc {
     @IBOutlet weak var tblVw:UITableView!
     @IBOutlet weak var lblNewMatch:UILabel!
@@ -22,8 +22,9 @@ class NewMatchVc: BaseClassVc {
     
     @IBOutlet weak var lblNoData:UILabel!
     var selectedTab: MatchTab = .new
-    var data: [Group]? = nil
-    
+    var data: [DataMatch]? = nil
+    var dataGroup: [Group]?
+
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,8 +40,15 @@ class NewMatchVc: BaseClassVc {
         btnNew.layer.cornerRadius = 20
         btnSave.layer.cornerRadius = 20
         registerNib()
-        selectTab(.new) // default selected
-        getGroups(1)
+        if selectedGlobal == 0 {
+            selectTab(.new) // default selected
+            getGroups(1)
+        }
+        if selectedGlobal == 1 {
+            selectTab(.saved) // default selected
+            getGroups(2)
+        }
+        
         tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         tblVw.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
         tblVw.alwaysBounceVertical = true
@@ -70,33 +78,52 @@ class NewMatchVc: BaseClassVc {
         }
     }
     
-    func groupSaveAPi() {
-        
+    
+    
+    
+    func getNewMatches() {
+        request.newMatches { [self] res, errMsg, errCode in
+            if errCode == 200 {
+                DispatchQueue.main.async {
+                    self.data = res?.dataMatch ?? nil
+                    self.tblVw.reloadData()
+                    if self.data?.count == 0 {
+                        self.lblNoData.isHidden = false
+                    } else {
+                        self.lblNoData.isHidden = true
+                    }
+                }
+            }
+        }
     }
     
     
     func getGroups(_ req:Int) {
         var reqType = req
-        if reqType == 1 {
-            reqType = 2
-        } else   if reqType == 2 {
+
+        switch req {
+        case 1:
+            getNewMatches()
+            return
+
+        case 2:
             reqType = 4
+
+        default:
+            break
         }
+
         request.getGroups(reqType) { [weak self] res, errMsg, errCode in
-            guard let self = self else { return }
-            
-            if errCode == 200 {
-                DispatchQueue.main.async {
-                    if let res = res?.dataGroup {
-                        self.data = res
-                        if res.count == 0 {
-                            self.lblNoData.isHidden = false
-                        } else {
-                            self.lblNoData.isHidden = true
-                        }
-                        self.tblVw.reloadData()
-                    }
-                }
+            guard errCode == 200 else { return }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                guard let groups = res?.dataGroup else { return }
+
+                self.dataGroup = groups
+                self.lblNoData.isHidden = !groups.isEmpty
+                self.tblVw.reloadData()
             }
         }
     }
@@ -152,10 +179,11 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let model = data?[indexPath.row]
+       
 
         switch selectedTab {
         case .new:
+            let model = data?[indexPath.row].otherGroup ?? nil
             let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCell", for: indexPath) as! NewMatchCell
             if let model { cell.configure(with: model) }
             if let url = URL(string: model?.coverImage ?? "") {
@@ -185,6 +213,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             return cell
 
         case .saved:
+            let model = dataGroup?[indexPath.row]
             let cell = tableView.dequeueReusableCell(withIdentifier: "SavedGroupCell", for: indexPath) as! SavedGroupCell
             if let model { cell.configure(with: model) }
             if let url = URL(string: model?.coverImage ?? "") {

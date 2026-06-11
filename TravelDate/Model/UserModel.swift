@@ -835,6 +835,30 @@ class User : Mappable {
         
     }
     
+    //newmatches
+    
+    func newMatches(callBack:(( _ res:NewMatchModel?, _ errMsg:String,_ errCode:Int)->Void)!) {
+       
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.newmatches , params: [:], method: "GET") { responseObject, suces in
+            print(responseObject)
+            
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                if let response = Mapper<NewMatchModel>().map(JSON: responseObject) {
+                    
+                    callBack(response,responseObject["message"] as? String ?? "",200)
+                }
+                
+            } else {
+                callBack(nil,responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
+        }
+        
+    }
     
     func  deleteGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
@@ -1612,6 +1636,7 @@ struct ChatData : Mappable {
     var type : String?
     var name : String?
     var image : String?
+    var imageArr : [String]?
     var createdAt : String?
     var lastMessageAt : String?
     var lastMessage : LastMessage?
@@ -1621,6 +1646,7 @@ struct ChatData : Mappable {
     }
 
     mutating func mapping(map: Map) {
+        imageArr <- map["image"]
         members <- map["members"]
         chatId <- map["chatId"]
         type <- map["type"]
@@ -1773,4 +1799,73 @@ class DashboardCounts: Mappable {
         activeChats <- map["activeChats"]
         savedGroups <- map["savedGroups"]
     }
+}
+
+
+struct NewMatchModel : Mappable {
+    var success : Bool?
+    var code : Int?
+    var message : String?
+    var dataMatch : [DataMatch]?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        success <- map["success"]
+        code <- map["code"]
+        message <- map["message"]
+        dataMatch <- map["data"]
+    }
+
+}
+
+
+struct DataMatch : Mappable {
+    var matchId : String?
+    var score : Int?
+    var matchedAt : String?
+    var chatRoom : ChatRoom?
+    var myGroup : Group?
+    var otherGroup : Group?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        matchId <- map["matchId"]
+        score <- map["score"]
+        matchedAt <- map["matchedAt"]
+        chatRoom <- map["chatRoom"]
+        myGroup <- map["myGroup"]
+        otherGroup <- map["otherGroup"]
+    }
+
+}
+
+
+struct ChatRoom : Mappable {
+    var id : String?
+    var type : String?
+    var createdAt : String?
+    var matchId : String?
+    var groupId : String?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+
+        id <- map["id"]
+        type <- map["type"]
+        createdAt <- map["createdAt"]
+        matchId <- map["matchId"]
+        groupId <- map["groupId"]
+    }
+
 }

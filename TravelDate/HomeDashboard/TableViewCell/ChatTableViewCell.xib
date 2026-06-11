@@ -5,6 +5,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -71,6 +72,33 @@ The business plan loo…  · Thu
                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <nil key="highlightedColor"/>
                     </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PBh-oV-Ege">
+                        <rect key="frame" x="20" y="7.6666666666666643" width="60" height="59.999999999999993"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="jlo-zc-SbW">
+                                <rect key="frame" x="0.0" y="0.0" width="30" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="30" id="0H7-vj-pWi"/>
+                                </constraints>
+                            </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="IxD-Qa-bOW">
+                                <rect key="frame" x="30" y="0.0" width="30" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="30" id="EiW-4z-ZSm"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="IxD-Qa-bOW" firstAttribute="top" secondItem="PBh-oV-Ege" secondAttribute="top" id="HD1-S4-pty"/>
+                            <constraint firstItem="IxD-Qa-bOW" firstAttribute="leading" secondItem="jlo-zc-SbW" secondAttribute="trailing" id="IiL-zr-Wfs"/>
+                            <constraint firstAttribute="trailing" secondItem="IxD-Qa-bOW" secondAttribute="trailing" id="bZE-D4-UuG"/>
+                            <constraint firstAttribute="bottom" secondItem="IxD-Qa-bOW" secondAttribute="bottom" id="mzj-nx-axt"/>
+                            <constraint firstItem="jlo-zc-SbW" firstAttribute="top" secondItem="PBh-oV-Ege" secondAttribute="top" id="r5Y-ju-bM0"/>
+                            <constraint firstItem="jlo-zc-SbW" firstAttribute="leading" secondItem="PBh-oV-Ege" secondAttribute="leading" id="xwJ-mw-tc4"/>
+                            <constraint firstAttribute="bottom" secondItem="jlo-zc-SbW" secondAttribute="bottom" id="zud-Tg-5ng"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <color key="backgroundColor" name="ThemeTxt"/>
                 <constraints>
@@ -78,7 +106,11 @@ The business plan loo…  · Thu
                     <constraint firstItem="hUn-th-E5r" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="10" id="8na-fB-yKO"/>
                     <constraint firstItem="piD-bp-3q1" firstAttribute="leading" secondItem="jY5-eX-JF5" secondAttribute="trailing" constant="10" id="CIb-J8-oEp"/>
                     <constraint firstItem="dBg-Bi-M2k" firstAttribute="centerY" secondItem="frl-xJ-nQO" secondAttribute="centerY" id="REK-W5-5aA"/>
+                    <constraint firstItem="PBh-oV-Ege" firstAttribute="top" secondItem="Mou-o8-loU" secondAttribute="top" id="XAF-4H-5hm"/>
+                    <constraint firstItem="PBh-oV-Ege" firstAttribute="bottom" secondItem="Mou-o8-loU" secondAttribute="bottom" id="Zyb-8E-l0F"/>
+                    <constraint firstItem="PBh-oV-Ege" firstAttribute="leading" secondItem="Mou-o8-loU" secondAttribute="leading" id="a9E-S0-lQ2"/>
                     <constraint firstAttribute="trailing" secondItem="hUn-th-E5r" secondAttribute="trailing" constant="10" id="aY4-vn-L62"/>
+                    <constraint firstItem="PBh-oV-Ege" firstAttribute="trailing" secondItem="Mou-o8-loU" secondAttribute="trailing" id="b9W-ga-GP4"/>
                     <constraint firstAttribute="trailing" secondItem="piD-bp-3q1" secondAttribute="trailing" constant="20" id="hL6-94-Lvw"/>
                     <constraint firstItem="jY5-eX-JF5" firstAttribute="top" secondItem="frl-xJ-nQO" secondAttribute="bottom" id="lF5-Kl-IpB"/>
                     <constraint firstItem="dBg-Bi-M2k" firstAttribute="trailing" secondItem="piD-bp-3q1" secondAttribute="trailing" id="lJN-cd-lnG"/>
@@ -93,11 +125,14 @@ The business plan loo…  · Thu
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
+                <outlet property="containerView" destination="PBh-oV-Ege" id="2bU-nf-eMM"/>
                 <outlet property="imgVw" destination="Mou-o8-loU" id="jIo-F1-PBq"/>
                 <outlet property="lblDesc" destination="jY5-eX-JF5" id="b7x-mW-bap"/>
                 <outlet property="lblOnline" destination="dBg-Bi-M2k" id="drI-ez-8DO"/>
                 <outlet property="lblTime" destination="piD-bp-3q1" id="BbE-nO-Fpr"/>
                 <outlet property="lblTitle" destination="frl-xJ-nQO" id="72D-na-Q1c"/>
+                <outlet property="leftImageView" destination="jlo-zc-SbW" id="Ygw-PM-h6w"/>
+                <outlet property="rightImageView" destination="IxD-Qa-bOW" id="BBT-TK-cXm"/>
             </connections>
             <point key="canvasLocation" x="87.786259541984734" y="8.8028169014084519"/>
         </tableViewCell>
@@ -110,5 +145,8 @@ The business plan loo…  · Thu
         <namedColor name="ThemeTxt">
             <color red="0.082000002264976501" green="0.090000003576278687" blue="0.093999996781349182" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

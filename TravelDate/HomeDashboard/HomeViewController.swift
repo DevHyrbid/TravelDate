@@ -360,13 +360,17 @@ extension HomeViewController {
         print(sender.tag , "CLODIDID")
         switch sender.tag {
         case 101:
-            
-            self.pushVC(NewMatchVc.self, from: .Home,hideTabBar: true)
+            selectedGlobal = 0
+             
+            self.tripsTabBarController?.switchTo(index: 1)
+//            self.pushVC(NewMatchVc.self, from: .Home,hideTabBar: true)
             break
         case 102:
-            self.pushVC(ChatVc.self, from: .Home,hideTabBar: true)
+            self.tripsTabBarController?.switchTo(index:3)
             break
         case 103:
+            selectedGlobal = 1
+            self.tripsTabBarController?.switchTo(index: 1)
             break
             
         case 104:
@@ -384,8 +388,17 @@ extension HomeViewController {
         
         self.pushVC(MyGroupViewController.self, from: .Home,hideTabBar: true) { vc in
             vc.res = self.selected
+            
         }
-        
+    }
+    //self.editGroupTapped(self.selected!.toJSON())
+    
+    @objc private func editGroupTapped(_ group: [String: Any]) {
+        guard let model = GroupModel.from(group) else { return }
+
+        let vc = EditGroupViewController()
+        vc.groupModel = model
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func btnOpenGroupChat() {

@@ -38,7 +38,7 @@ class APiConstant : NSObject {
     static let swipeFeed = baseUrl + "group-discovery/feed"
     static let matchedGroup = baseUrl + "groups/my-groups"
     static let roomChats = baseUrl + "api-chat/rooms"
-    
+    static let newmatches = baseUrl + "group-match/my-matches"
     static let notification = baseUrl + "notifications?page=1&limit=20"
     
     static let chatInbox = baseUrl + "chat/inbox?"

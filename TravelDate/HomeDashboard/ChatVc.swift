@@ -4,7 +4,7 @@
 //
 
 import UIKit
-
+import SDWebImage
 // MARK: - Segment Enum
 
 enum ChatSegment: Int, CaseIterable {
@@ -229,6 +229,7 @@ private extension ChatVc {
         cell.lblDesc.text  = "\(model.name ?? "")"
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
         loadAvatarImage(into: cell.imgVw, urlString: model.image)
+        cell.containerView.isHidden  = true
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleToFill
         
@@ -245,12 +246,26 @@ private extension ChatVc {
             cell.lblTitle.text = matchGroup.name ?? ""
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
-            loadAvatarImage(
-                into: cell.imgVw,
-                urlString: matchGroup.image
-            )
+            print(matchGroup.imageArr,"FGHJKL")
+            if let images = matchGroup.imageArr,
+               images.count >= 2 {
+
+                cell.containerView.isHidden = false
+                loadImage(cell.leftImageView, url: URL(string: images[0])!)
+                loadImage(cell.rightImageView, url: URL(string: images[1])!)
+                
+
+            } else {
+
+                let imageUrl = matchGroup.imageArr?.first ?? matchGroup.image ?? ""
+                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
+                
+
+                cell.rightImageView.image = nil
+            }
 
         } else {
+            cell.containerView.isHidden = true
 
             cell.lblTitle.text = model.name
             cell.lblDesc.text = model.lastMessage?.content ?? ""
@@ -271,6 +286,81 @@ private extension ChatVc {
             loadImage(imageView, url: url)
         } else {
             imageView.image = UIImage(named: "User")
+        }
+    }
+    
+    
+   
+
+    func loadMergedImage(into imageView: UIImageView, imageUrls: [String]) {
+
+        guard !imageUrls.isEmpty else {
+            imageView.image = nil
+            return
+        }
+
+        // Single image
+        if imageUrls.count == 1 {
+            imageView.sd_setImage(with: URL(string: imageUrls[0]))
+            return
+        }
+
+        let group = DispatchGroup()
+
+        var leftImage: UIImage?
+        var rightImage: UIImage?
+
+        group.enter()
+        SDWebImageManager.shared.loadImage(
+            with: URL(string: imageUrls[0]),
+            options: [],
+            progress: nil
+        ) { image, _, _, _, _, _ in
+            leftImage = image
+            group.leave()
+        }
+
+        group.enter()
+        SDWebImageManager.shared.loadImage(
+            with: URL(string: imageUrls[1]),
+            options: [],
+            progress: nil
+        ) { image, _, _, _, _, _ in
+            rightImage = image
+            group.leave()
+        }
+
+        group.notify(queue: .main) {
+
+            guard
+                let left = leftImage,
+                let right = rightImage
+            else {
+                return
+            }
+
+            let canvasSize = CGSize(width: 400, height: 400)
+
+            UIGraphicsBeginImageContextWithOptions(canvasSize, false, 0)
+
+            left.draw(in: CGRect(
+                x: 0,
+                y: 0,
+                width: canvasSize.width / 2,
+                height: canvasSize.height
+            ))
+
+            right.draw(in: CGRect(
+                x: canvasSize.width / 2,
+                y: 0,
+                width: canvasSize.width / 2,
+                height: canvasSize.height
+            ))
+
+            let mergedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+
+            imageView.image = mergedImage
         }
     }
 }

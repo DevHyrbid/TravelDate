@@ -10,28 +10,27 @@ import MapKit
 class CreateGroupViewController: BaseClassVc {
 
     // MARK: - State
-    private var minAge = 18
-    private var maxAge = 35
-    private let minAgeLabel = UILabel()
-    private let maxAgeLabel = UILabel()
-    private var groupSize = 4
-    private let styles = ["Partygoers", "Adventure travelers", "Cultural travelers", "Leisure travelers"]
+    var minAge = 18
+    var maxAge = 35
+    let minAgeLabel = UILabel()
+    let maxAgeLabel = UILabel()
+    var groupSize = 4
+    let styles = ["Partygoers", "Adventure travelers", "Cultural travelers", "Leisure travelers"]
     var selectedStyles: Set<Int> = []
     var selectedImage: UIImage?
-    private var startDate: String = ""
-    private var endDate: String = ""
+    var startDate: String = ""
+    var endDate: String = ""
 
     // MARK: - UI References
-    private let scrollView  = UIScrollView()
-    private let contentView = UIView()
-    private let formCard    = UIView()   // ← inner dark card
-
-    private let groupNameField  = PaddedTextField()
+    let scrollView  = UIScrollView()
+    let contentView = UIView()
+    let formCard    = UIView()   // ← inner dark card
+    let groupNameField  = PaddedTextField()
     let destinationTF           = UITextField()
-    private let sizeLabel       = UILabel()
-    private var styleRows       = [UIView]()
-    private let startDateLabel  = UILabel()
-    private let endDateLabel    = UILabel()
+    let sizeLabel       = UILabel()
+    var styleRows       = [UIView]()
+    let startDateLabel  = UILabel()
+    let endDateLabel    = UILabel()
     var locationView: LocationSearchView!
 
     // MARK: - Lifecycle
@@ -769,66 +768,7 @@ class CreateGroupViewController: BaseClassVc {
     @objc private func startDateTapped() { showDatePicker(isStart: true)  }
     @objc private func endDateTapped()   { showDatePicker(isStart: false) }
 
-//    private func showDatePicker(isStart: Bool) {
-//        let alert = UIAlertController(
-//            title: "Select Date", message: "\n\n\n\n\n\n",
-//            preferredStyle: .actionSheet)
-//
-//        let picker = UIDatePicker()
-//        picker.datePickerMode = .date
-//        if #available(iOS 14.0, *) {
-//            picker.preferredDatePickerStyle = .inline
-//        }
-//
-//        if isStart {
-//            picker.minimumDate = Date()
-//        } else {
-//            guard !startDate.isEmpty else { return }
-//            let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
-//            if let s = fmt.date(from: startDate) {
-//                picker.minimumDate = s
-//                picker.date = s.addingTimeInterval(86400)
-//                picker.maximumDate = Calendar.current.date(from: DateComponents(year: 2100))
-//            }
-//        }
-//
-//        picker.frame = CGRect(
-//            x: 0, y: 20,
-//            width: alert.view.bounds.width - 20, height: 160)
-//        alert.view.addSubview(picker)
-//
-//        alert.addAction(UIAlertAction(title: "Done", style: .default) { [weak self] _ in
-//            guard let self else { return }
-//            let fmt  = DateFormatter(); fmt.dateFormat  = "yyyy-MM-dd"
-//            let disp = DateFormatter(); disp.dateFormat = "dd MMM yyyy"
-//            let sel  = picker.date
-//            if isStart {
-//                self.startDate = fmt.string(from: sel)
-//                self.startDateLabel.text      = disp.string(from: sel)
-//                self.startDateLabel.textColor = .white
-//                if !self.endDate.isEmpty,
-//                   let e = fmt.date(from: self.endDate), e < sel {
-//                    self.endDate = ""
-//                    self.endDateLabel.text      = "Select date"
-//                    self.endDateLabel.textColor = .appPlaceholder
-//                }
-//            } else {
-//                self.endDate = fmt.string(from: sel)
-//                self.endDateLabel.text      = disp.string(from: sel)
-//                self.endDateLabel.textColor = .white
-//            }
-//        })
-//        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//
-//        if let pop = alert.popoverPresentationController {
-//            pop.sourceView = view
-//            pop.sourceRect = CGRect(
-//                x: view.bounds.midX, y: view.bounds.midY,
-//                width: 0, height: 0)
-//            pop.permittedArrowDirections = []
-//        }
-//        present(alert, animated: true)
-//    }
+
     
     
     private func showDatePicker(isStart: Bool) {

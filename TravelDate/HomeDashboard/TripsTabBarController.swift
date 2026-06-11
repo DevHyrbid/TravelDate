@@ -267,7 +267,7 @@ class TripsTabBarController: UIViewController {
         switchTo(index: sender.tag)
     }
 
-    private func switchTo(index: Int) {
+    func switchTo(index: Int) {
         // Remove current child
         if let current = children.first {
             current.willMove(toParent: nil)
