@@ -862,8 +862,9 @@ class User : Mappable {
     
     func  deleteGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")", params: [:], method: "DELETE") { responseObject, suces in
-            print(self.toJSON(),"JSON")
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")?type=hard", params: [:], method: "DELETE") { responseObject, suces in
+            print("\(APiConstant.createGroup)/\(id ?? "")","JSON")
+            print(responseObject,"FGHJKLFGHJKFGHJ")
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
                 callBack(responseObject["message"] as? String ?? "",200)
@@ -883,6 +884,7 @@ class User : Mappable {
             print(responseObject,"SWIPED")
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
+                
                 callBack((responseObject["data"] as? [String:Any] ?? [:])["message"] as? String ?? "0" ,["message"] as? String ?? "",200)
             } else {
                 callBack(nil,responseObject["message"] as? String ?? "",404)
@@ -990,11 +992,12 @@ class Group: Mappable {
     var joinCode: String?
     
     var members: [MemberGroup]?
+    var membersUser: [UserMembers]?
     var userId: MemberGroup?
     var creator : MemberGroup?
     var createdAt : String?
     
-    
+    var chatRoom : ChatRoom?
     var isPublic : Bool?
     
     var updatedAt : String?
@@ -1011,6 +1014,8 @@ class Group: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        membersUser <- map["members"]
+        chatRoom <- map["chatRoom"]
         description <- map["description"]
         title <- map["title"]
         roomId <- map["roomId"]
@@ -1128,9 +1133,11 @@ class MemberGroup: Mappable {
     var location_string :  String?
     var roomId : String?
     var userMembers : UserMembers?
+    var members : UserMembers?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        members <- map["members"]
         userMembers <- map["user"]
         roomId <- map["roomId"]
         _id          <- map["id"]
@@ -1641,11 +1648,14 @@ struct ChatData : Mappable {
     var lastMessageAt : String?
     var lastMessage : LastMessage?
     var members : [UserMembers]?
+    var chatRoom : ChatRoom?
+    
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
+        chatRoom <- map["chatRoom"]
         imageArr <- map["image"]
         members <- map["members"]
         chatId <- map["chatId"]
@@ -1664,6 +1674,7 @@ struct ChatData : Mappable {
 struct LastMessage : Mappable {
     var id : String?
     var chatRoomId : String?
+    var groupId : String?
     var senderId : String?
     var content : String?
     var fileUrl : String?
@@ -1678,7 +1689,7 @@ struct LastMessage : Mappable {
     }
 
     mutating func mapping(map: Map) {
-
+        groupId <- map["groupId"]
         id <- map["id"]
         chatRoomId <- map["chatRoomId"]
         senderId <- map["senderId"]
@@ -1826,17 +1837,21 @@ struct NewMatchModel : Mappable {
 struct DataMatch : Mappable {
     var matchId : String?
     var score : Int?
-    var matchedAt : String?
+    var matchedAtStr : String?
     var chatRoom : ChatRoom?
+    var members : [UserMembers]?
+    var membersUser : [Members]?
     var myGroup : Group?
     var otherGroup : Group?
-
+    var matchedAt : String?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
-
+        matchedAtStr <- map["matchedAt"]
+        members <- map["members"]
+        membersUser <- map["members"]
         matchId <- map["matchId"]
         score <- map["score"]
         matchedAt <- map["matchedAt"]

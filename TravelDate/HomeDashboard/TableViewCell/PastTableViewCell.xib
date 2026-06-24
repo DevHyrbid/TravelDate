@@ -32,10 +32,13 @@
                                     <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
                                         <color key="value" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
+                                        <real key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TJY-Yw-x6U">
-                                <rect key="frame" x="136" y="32.666666666666664" width="42" height="20"/>
+                                <rect key="frame" x="136" y="32.666666666666664" width="183" height="20"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -51,6 +54,7 @@
                         <constraints>
                             <constraint firstItem="ZXx-a0-E10" firstAttribute="leading" secondItem="Ymp-tP-3dB" secondAttribute="leading" constant="8" id="LgX-Dj-vge"/>
                             <constraint firstItem="TJY-Yw-x6U" firstAttribute="centerY" secondItem="ZXx-a0-E10" secondAttribute="centerY" constant="-10" id="TnM-na-gV1"/>
+                            <constraint firstAttribute="trailing" secondItem="TJY-Yw-x6U" secondAttribute="trailing" constant="10" id="X0C-br-F0w"/>
                             <constraint firstItem="Dki-ri-941" firstAttribute="leading" secondItem="TJY-Yw-x6U" secondAttribute="leading" id="bpd-7f-r1Z"/>
                             <constraint firstItem="ZXx-a0-E10" firstAttribute="centerY" secondItem="Ymp-tP-3dB" secondAttribute="centerY" id="gOB-nP-fsd"/>
                             <constraint firstItem="TJY-Yw-x6U" firstAttribute="leading" secondItem="ZXx-a0-E10" secondAttribute="trailing" constant="8" id="iBG-I5-bnY"/>

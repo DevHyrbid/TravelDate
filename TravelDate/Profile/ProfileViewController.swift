@@ -166,3 +166,30 @@ extension ProfileViewController : CollectionDelegate
         return arr.count
     }
 }
+
+extension ProfileViewController{
+    @IBAction func btnUpgrade(_ sender:UIButton){
+        
+        // Screen 1 — Free Trial
+        let vm = SubscriptionViewModel()
+        vm.screenMode = .freeTrial
+        let vc = SubscriptionViewController(viewModel: vm, mode: .freeTrial)
+        
+        // Screen 2 — Plans
+        //        let vm2 = SubscriptionViewModel()
+        //        vm2.screenMode = .plans
+        //        let vc2 = SubscriptionViewController(viewModel: vm2, mode: .plans)
+        
+        
+        
+        // Callback when purchase succeeds
+        vm.onPurchaseSuccess = {
+            print("User subscribed! Unlock premium features.")
+        }
+        
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true)
+        
+    }
+}

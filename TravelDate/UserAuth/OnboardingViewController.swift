@@ -81,6 +81,7 @@ class OnboardingViewController: BaseClassVc {
         super.viewDidLoad()
         view.backgroundColor = .black
         setupData()
+        goToLogin()
         setupCollectionView()
         setupBottomBar()
 //        setupSkipButton()

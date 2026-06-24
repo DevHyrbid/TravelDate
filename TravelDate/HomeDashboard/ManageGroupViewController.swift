@@ -17,6 +17,7 @@ struct GroupMember {
     var isCurrentUser: Bool
     var avatarColor: UIColor
     var initials: String
+    var profileImage: String?   // ← add this
 }
 
 // MARK: - Design Tokens
@@ -30,7 +31,7 @@ final class ManageGroupViewController: UIViewController {
     // MARK: Config
     var groupName: String = "Bali Adventure Crew"
     var groupSubtitle: String = "Bali Adventure Crew"
-    var tripDates: String = "Apr 15 – Apr 25, 2026"
+    var tripDates: String = "Static"
     var onDeleteGroup: (() -> Void)?
 
     private var members: [GroupMember] = [
@@ -286,9 +287,30 @@ final class ManageGroupViewController: UIViewController {
         avatarView.addSubview(circle)
         circle.pinEdges(to: avatarView)
 
-        if member.isCurrentUser {
+        // Remote profile image — loads async, sits on top of color fallback
+        if let urlString = member.profileImage,
+           !urlString.isEmpty,
+           let url = URL(string: urlString) {
+            let iv = UIImageView()
+            iv.contentMode   = .scaleAspectFill
+            iv.clipsToBounds = true
+            iv.translatesAutoresizingMaskIntoConstraints = false
+            circle.addSubview(iv)
+            NSLayoutConstraint.activate([
+                iv.topAnchor.constraint(equalTo: circle.topAnchor),
+                iv.leadingAnchor.constraint(equalTo: circle.leadingAnchor),
+                iv.trailingAnchor.constraint(equalTo: circle.trailingAnchor),
+                iv.bottomAnchor.constraint(equalTo: circle.bottomAnchor),
+            ])
+            URLSession.shared.dataTask(with: url) { data, _, _ in
+                guard let data, let img = UIImage(data: data) else { return }
+                DispatchQueue.main.async { iv.image = img }
+            }.resume()
+
+        } else if member.isCurrentUser {
+            // Fallback: person icon for current user
             let icon = UIImageView(image: UIImage(systemName: "person.fill"))
-            icon.tintColor = .white
+            icon.tintColor   = .white
             icon.contentMode = .scaleAspectFit
             icon.translatesAutoresizingMaskIntoConstraints = false
             circle.addSubview(icon)
@@ -298,28 +320,11 @@ final class ManageGroupViewController: UIViewController {
                 icon.widthAnchor.constraint(equalToConstant: 22),
                 icon.heightAnchor.constraint(equalToConstant: 22),
             ])
-
-            let crown = UILabel()
-            crown.text = "👑"
-            crown.font = .systemFont(ofSize: 9)
-            crown.backgroundColor = Theme.accent
-            crown.textAlignment = .center
-            crown.layer.cornerRadius = 9
-            crown.layer.borderWidth = 2
-            crown.layer.borderColor = Theme.card.cgColor
-            crown.clipsToBounds = true
-            crown.translatesAutoresizingMaskIntoConstraints = false
-            avatarView.addSubview(crown)
-            NSLayoutConstraint.activate([
-                crown.widthAnchor.constraint(equalToConstant: 18),
-                crown.heightAnchor.constraint(equalToConstant: 18),
-                crown.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 2),
-                crown.topAnchor.constraint(equalTo: avatarView.topAnchor, constant: -2),
-            ])
         } else {
+            // Fallback: initials
             let lbl = UILabel()
-            lbl.text = member.initials
-            lbl.font = .systemFont(ofSize: 15, weight: .semibold)
+            lbl.text      = member.initials
+            lbl.font      = .systemFont(ofSize: 15, weight: .semibold)
             lbl.textColor = .white
             lbl.translatesAutoresizingMaskIntoConstraints = false
             circle.addSubview(lbl)
@@ -328,6 +333,28 @@ final class ManageGroupViewController: UIViewController {
                 lbl.centerYAnchor.constraint(equalTo: circle.centerYAnchor),
             ])
         }
+
+        // Crown badge — always shown for admin regardless of avatar type
+        if member.isAdmin {
+            let crown = UILabel()
+            crown.text                = "👑"
+            crown.font                = .systemFont(ofSize: 9)
+            crown.backgroundColor     = Theme.accent
+            crown.textAlignment       = .center
+            crown.layer.cornerRadius  = 9
+            crown.layer.borderWidth   = 2
+            crown.layer.borderColor   = Theme.card.cgColor
+            crown.clipsToBounds       = true
+            crown.translatesAutoresizingMaskIntoConstraints = false
+            avatarView.addSubview(crown)
+            NSLayoutConstraint.activate([
+                crown.widthAnchor.constraint(equalToConstant: 18),
+                crown.heightAnchor.constraint(equalToConstant: 18),
+                crown.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 2),
+                crown.topAnchor.constraint(equalTo: avatarView.topAnchor, constant: -2),
+            ])
+        }
+
         return avatarView
     }
 

@@ -137,12 +137,25 @@ final class ChatMessageVc: BaseClassVc {
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
 
-        headerView.configure(
-            title:    roomTitle,
-            subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
-            imageURL: roomImageURL,
-            showMore: true
-        )
+        let images = self.viewModel.participants
+            .compactMap { $0.profile_image }
+            .filter { !$0.isEmpty }
+
+        if images.count > 1 {
+            headerView.configure(
+                title: roomTitle,
+                subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
+                imageURLs: Array(images.prefix(2)),
+                showMore: true
+            )
+        } else {
+            headerView.configure(
+                title: roomTitle,
+                subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
+                imageURL: roomImageURL,
+                showMore: true
+            )
+        }
 
         headerView.onBack    = { [weak self] in self?.backTapped() }
         headerView.onProfile = { [weak self] in self?.handleProfileTapped() }
@@ -262,26 +275,40 @@ final class ChatMessageVc: BaseClassVc {
     }
     
     
-    @objc  func didTapManageGroup() {
-/*
-        let participants = self.viewModel.participants
-
-        let groupMembers: [GroupMember] = participants.enumerated().map { index, userId in
-
+    @objc func didTapManageGroup() {
+        // Use raw members array from group data (has full user objects)
+        //        viewModel.participants?.toJSON()
+        let rawMembers = viewModel.participants.toJSON()
+        let groupMembers: [GroupMember] = rawMembers.enumerated().map { index, memberDict in
+            let userId        = memberDict["id"]            as? String ?? ""
+            let name          = memberDict["name"]          as? String ?? "Unknown"
+            let photoURL      = memberDict["profile_image"] as? String
+            let isAdmin       = index == 0
             let isCurrentUser = userId == User.curentUser?.id
-            let isAdmin = index == 0
-
+            
+            let displayName = isCurrentUser ? "You" : name
+            
+            let initials = name
+                .split(separator: " ")
+                .prefix(2)
+                .compactMap { $0.first.map(String.init) }
+                .joined()
+                .uppercased()
+            
             return GroupMember(
-                id: userId,
-                name: isCurrentUser ? "You" : userId,
-                role: isAdmin ? "Group Creator" : "Member",
-                isAdmin: isAdmin,
+                id:            userId,
+                name:          displayName,
+                role:          isAdmin ? "Group Creator" : "Member",
+                isAdmin:       isAdmin,
                 isCurrentUser: isCurrentUser,
-                avatarColor: UIColor(hex: "#555555"),
-                initials: String(userId.prefix(2)).uppercased()
+                avatarColor:   isCurrentUser
+                ? UIColor(hex: "#FF6B00").withAlphaComponent(0.4)
+                : UIColor(hex: "#555555"),
+                initials:      initials.isEmpty ? "?" : initials,
+                profileImage:  photoURL
             )
         }
-
+        
         ManageGroupViewController.present(
             from: self,
             groupName: roomTitle,
@@ -290,7 +317,7 @@ final class ChatMessageVc: BaseClassVc {
             onDelete: { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             }
-        )*/
+        )
     }
     
 

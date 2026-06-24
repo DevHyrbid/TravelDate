@@ -35,6 +35,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var lblPast:UILabel!
     @IBOutlet weak var lblDatePast:UILabel!
     @IBOutlet weak var height:NSLayoutConstraint!
+    @IBOutlet weak var pastTblheight:NSLayoutConstraint!
+    @IBOutlet weak var pastLbl:UILabel!
+    @IBOutlet weak var pastLblYear:UILabel!
     @IBOutlet weak var hideVw:UIView!
     @IBOutlet weak var lblLeft:UILabel!
     @IBOutlet weak var vwMembers:UIView!
@@ -147,7 +150,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        getDashboard()
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
@@ -274,13 +277,22 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 DispatchQueue.main.async { [self] in
                         self.pastData = model?.dataGroup ?? []
                         self.tblVw.reloadData()
+                    if pastData?.count == 0 {
+                        self.pastTblheight.constant = 0
+                        self.pastLbl.isHidden = true
+                        self.pastLblYear.isHidden = true
+                    } else {
+                        self.pastLbl.isHidden = false
+                        self.pastLblYear.isHidden = false
+                        self.pastTblheight.constant = CGFloat(125) * CGFloat(pastData?.count ?? 0)
+                    }
                 }
             }
         }
     }
     
     func getGroups() {
-        getDashboard()
+        
         request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
@@ -289,7 +301,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         self.btnList.showsMenuAsPrimaryAction = true
 //                        self.data = model?.dataGroup ?? nil
                         self.selected = res
-                        print(self.selected,"JEREK")
+//                        print(self.selected,"JEREK")
                         self.setupCountdown(startDateString: res.startDate ?? "")
                         self.lblDate.text = self.formatDateRange(
                             start: res.startDate ?? "",
@@ -338,6 +350,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     }
     
     func getDashboard() {
+        getGroups()
+        getPastGroups()
         request.getDashBoardAPi { model, errMsg, errCode in
             if errCode == 200 {
                 DispatchQueue.main.async {
@@ -391,9 +405,16 @@ extension HomeViewController {
             
         }
     }
+    
+    @IBAction func editGroupTapped(_ sender:UIButton) {
+        if selected == nil {
+            return 
+        }
+        self.editGroupTappedfunc(self.selected!.toJSON())
+    }
     //self.editGroupTapped(self.selected!.toJSON())
     
-    @objc private func editGroupTapped(_ group: [String: Any]) {
+    @objc private func editGroupTappedfunc(_ group: [String: Any]) {
         guard let model = GroupModel.from(group) else { return }
 
         let vc = EditGroupViewController()
@@ -461,6 +482,11 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
         cell.imgVw.clipsToBounds = true
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+    }
+    
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 125

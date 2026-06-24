@@ -80,6 +80,7 @@ class MyGroupViewController: BaseClassVc {
             lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
             self.lblLocation.text = res.destination ?? ""
             self.lblTitle.text = res.title ?? ""
+            print(res.coverImage,"ghjkl;ghjkr̥")
             if let url = URL(string: res.coverImage ?? "") {
                 loadImage(self.imgTrips, url: url)
             }
@@ -184,9 +185,11 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         
         cell.lblLocation.text = model?.userMembers?.locationstring ?? ""
         cell.lblDescription.text = model?.userMembers?.shortbio ?? ""
-        
+        print(model?.userMembers?.profile_image,"vbnmcvbn")
         if let url = URL(string: model?.userMembers?.profile_image ?? "") {
             self.loadImage(cell.imgUser, url: url)
+        } else {
+            cell.imgUser.image = UIImage(named: "User")
         }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true

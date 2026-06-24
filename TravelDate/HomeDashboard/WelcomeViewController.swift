@@ -75,7 +75,7 @@ class WelcomeViewController: BaseClassVc {
         b.setTitle("+ Create", for: .normal)
         b.setTitleColor(.themeOrange, for: .normal)
         b.layer.cornerRadius = 12
-        b.layer.borderWidth  = 1.5
+        b.layer.borderWidth  = 2
         b.layer.borderColor  = UIColor.themeOrange.cgColor
         b.titleLabel?.setFont(.semiBold, size: 16)
         b.addTarget(self, action: #selector(openCreateGroup), for: .touchUpInside)
@@ -198,7 +198,7 @@ class WelcomeViewController: BaseClassVc {
     private static func sectionDesc(_ text: String) -> UILabel {
         let l = UILabel()
         l.text          = text
-        l.textColor     = UIColor.white.withAlphaComponent(0.6)
+        l.textColor     = UIColor.white
         l.setFont(.regular, size: 13)
         l.numberOfLines = 0
         return l

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5A053F85EC96DCDA79C1A8F5 /* Pods_TravelDate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23208269C85D8876427E8CAC /* Pods_TravelDate.framework */; };
+		BC7E157B2FE533760058974A /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC7E157A2FE533750058974A /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -15,6 +16,7 @@
 		6CA67003EEEF38E797A1DF08 /* Pods-TravelDate.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelDate.debug.xcconfig"; path = "Target Support Files/Pods-TravelDate/Pods-TravelDate.debug.xcconfig"; sourceTree = "<group>"; };
 		9A1367559CF9B8B73BE074F0 /* Pods-TravelDate.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelDate.release.xcconfig"; path = "Target Support Files/Pods-TravelDate/Pods-TravelDate.release.xcconfig"; sourceTree = "<group>"; };
 		BC0DC08C2F7BCF4600C96E41 /* TravelDate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TravelDate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC7E157A2FE533750058974A /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -44,6 +46,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A053F85EC96DCDA79C1A8F5 /* Pods_TravelDate.framework in Frameworks */,
+				BC7E157B2FE533760058974A /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,6 +65,7 @@
 		65BD01A2DDDB7FEF4B068FFC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BC7E157A2FE533750058974A /* StoreKit.framework */,
 				23208269C85D8876427E8CAC /* Pods_TravelDate.framework */,
 			);
 			name = Frameworks;

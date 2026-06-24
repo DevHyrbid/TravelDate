@@ -40,6 +40,8 @@ class NewMatchVc: BaseClassVc {
         btnNew.layer.cornerRadius = 20
         btnSave.layer.cornerRadius = 20
         registerNib()
+        print(selectedGlobal,"TYUIO:HYUIOPYUIO")
+        
         if selectedGlobal == 0 {
             selectTab(.new) // default selected
             getGroups(1)
@@ -48,7 +50,6 @@ class NewMatchVc: BaseClassVc {
             selectTab(.saved) // default selected
             getGroups(2)
         }
-        
         tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         tblVw.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
         tblVw.alwaysBounceVertical = true
@@ -59,6 +60,9 @@ class NewMatchVc: BaseClassVc {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tripsTabBarController?.showTabBar()
+        
+        setupUi()
+        
     }
     
     
@@ -115,7 +119,7 @@ class NewMatchVc: BaseClassVc {
 
         request.getGroups(reqType) { [weak self] res, errMsg, errCode in
             guard errCode == 200 else { return }
-
+            self?.dataGroup?.removeAll()
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
 
@@ -175,7 +179,16 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data?.count ?? 0
+        switch selectedTab {
+        case .new:
+            return data?.count ?? 0
+        case .saved:
+            return dataGroup?.count ?? 0
+        default:
+            break
+        }
+        
+        return 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -185,12 +198,12 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
         case .new:
             let model = data?[indexPath.row].otherGroup ?? nil
             let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCell", for: indexPath) as! NewMatchCell
-            if let model { cell.configure(with: model) }
+            if let model { cell.configureNewMatch(with: data![indexPath.row]) }
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.imageView_, url: url)
             }
             cell.timeLabel.text = formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? "")
-            cell.onStartChat = { /* push chat VC */ }
+            cell.onStartChat = { self.openGroupChat(at: indexPath) }
             cell.onSaveGroup = { [weak self] in
                 guard let self = self else { return }
                 guard let groupId = model?._id else { return }
@@ -257,6 +270,35 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
         case .active: return 750
         }
     }
+    
+    
+    func openGroupChat(at indexPath: IndexPath) {
+
+        let group = self.data?[indexPath.row]
+
+        let currentUserId = User.curentUser?.id ?? ""
+
+        // Get all member ids
+//
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        // Open existing room directly if available
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: group?.members ?? [],
+            roomId: group?.chatRoom?.id,
+            roomTitle: group?.otherGroup?.title ?? "",
+            type: .group
+        )
+        vc.roomImageURL =  group?.otherGroup?.coverImage ?? ""
+        vc.memberCount = group?.members?.count ?? 0
+
+        navigationController?.pushViewController(vc, animated: true)
+
+ }
+    
     
 }
 

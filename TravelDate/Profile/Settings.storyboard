@@ -1432,13 +1432,24 @@
                                                                     <constraint firstAttribute="height" constant="165.33000000000001" id="kCV-GK-Ulc"/>
                                                                 </constraints>
                                                             </imageView>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uxD-f2-R6z">
+                                                                <rect key="frame" x="0.0" y="0.0" width="373" height="165"/>
+                                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                                <connections>
+                                                                    <action selector="btnUpgrade:" destination="7QY-Mn-5hw" eventType="touchUpInside" id="11h-Rr-SRB"/>
+                                                                </connections>
+                                                            </button>
                                                         </subviews>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
+                                                            <constraint firstItem="uxD-f2-R6z" firstAttribute="leading" secondItem="vqD-OV-Em9" secondAttribute="leading" id="0gf-2K-cF9"/>
                                                             <constraint firstAttribute="bottom" secondItem="i4z-d3-W7I" secondAttribute="bottom" id="IYI-1G-mfJ"/>
+                                                            <constraint firstAttribute="trailing" secondItem="uxD-f2-R6z" secondAttribute="trailing" id="PZc-BQ-kBM"/>
                                                             <constraint firstItem="i4z-d3-W7I" firstAttribute="leading" secondItem="vqD-OV-Em9" secondAttribute="leading" id="UII-ST-G9O"/>
+                                                            <constraint firstAttribute="bottom" secondItem="uxD-f2-R6z" secondAttribute="bottom" id="nx6-p6-JbN"/>
                                                             <constraint firstAttribute="trailing" secondItem="i4z-d3-W7I" secondAttribute="trailing" id="nzt-1d-7ha"/>
                                                             <constraint firstItem="i4z-d3-W7I" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="top" id="odf-QG-Gbe"/>
+                                                            <constraint firstItem="uxD-f2-R6z" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="top" id="rN4-LC-E1n"/>
                                                         </constraints>
                                                     </view>
                                                 </subviews>

@@ -7,19 +7,23 @@
 import UIKit
 import Kingfisher
 
-// MARK: - InviteFriendsViewController
+// MARK: - InviteVc
 final class InviteVc: BaseClassVc {
 
-  
-  
-    var  inviteLink = ""
+    var inviteLink = ""
+    var joinCode   = ""
 
     // MARK: - UI
     private let customHeaderView = UIView()
     private let searchContainer  = UIView()
     private let searchField      = UITextField()
     private let tableView        = UITableView()
-    var joinCode = ""
+    private let inviteCard       = UIView()
+    private let linkLabel        = UILabel()
+    private var suggestedHeader  : UIView!
+
+    var users: [User]? = nil
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +37,7 @@ final class InviteVc: BaseClassVc {
         setupTableView()
         setupSkipButton()
         getAllUsers()
+
         let tap = UITapGestureRecognizer(target: self, action: #selector(shareInvite))
         inviteCard.addGestureRecognizer(tap)
         inviteCard.isUserInteractionEnabled = true
@@ -44,24 +49,19 @@ final class InviteVc: BaseClassVc {
         customHeaderView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(customHeaderView)
 
-        // Back button
         let backBtn = UIButton(type: .system)
         backBtn.setImage(UIImage(systemName: "arrow.left"), for: .normal)
         backBtn.tintColor = .white
         backBtn.translatesAutoresizingMaskIntoConstraints = false
-        backBtn.widthAnchor.constraint(equalToConstant: 32).isActive  = true
-        backBtn.heightAnchor.constraint(equalToConstant: 32).isActive = true
-        backBtn.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         customHeaderView.addSubview(backBtn)
+        backBtn.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
 
-        // Title label
         let titleLabel = UILabel()
         titleLabel.text      = "Invite Friends"
         titleLabel.textColor = .white
-        titleLabel.setFont(.bold, size:20.0)
+        titleLabel.setFont(.bold, size: 20.0)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Subtitle label
         let subLabel = UILabel()
         subLabel.text      = "Build your travel crew"
         subLabel.textColor = .appGrayText
@@ -75,10 +75,12 @@ final class InviteVc: BaseClassVc {
             customHeaderView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             customHeaderView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customHeaderView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customHeaderView.heightAnchor.constraint(equalToConstant: 56),
+            customHeaderView.heightAnchor.constraint(equalToConstant: 60),
 
             backBtn.leadingAnchor.constraint(equalTo: customHeaderView.leadingAnchor, constant: 16),
             backBtn.centerYAnchor.constraint(equalTo: customHeaderView.centerYAnchor),
+            backBtn.widthAnchor.constraint(equalToConstant: 32),
+            backBtn.heightAnchor.constraint(equalToConstant: 32),
 
             titleLabel.leadingAnchor.constraint(equalTo: backBtn.trailingAnchor, constant: 12),
             titleLabel.topAnchor.constraint(equalTo: customHeaderView.topAnchor, constant: 10),
@@ -87,36 +89,11 @@ final class InviteVc: BaseClassVc {
             subLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2)
         ])
     }
-    
-    @objc private func shareInvite() {
-        
-        let message = """
-        ✈️ Join my travel group on TravelDate!
-        
-        Use this link to join:
-        \(inviteLink)
-        
-        Let’s plan something awesome 🌍
-        """
-        
-        let activityVC = UIActivityViewController(
-            activityItems: [message],
-            applicationActivities: nil
-        )
-        
-        // For iPad support
-        if let popover = activityVC.popoverPresentationController {
-            popover.sourceView = self.view
-            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-            popover.permittedArrowDirections = []
-        }
-        
-        present(activityVC, animated: true)
-    }
 
     // MARK: - Search Bar
     private func setupSearch() {
-        searchContainer.backgroundColor   = .appCard
+        // FIX: border color matches Figma subtle border, gap from header = 24
+        searchContainer.backgroundColor    = .appCard
         searchContainer.layer.cornerRadius = 14
         searchContainer.layer.borderWidth  = 1
         searchContainer.layer.borderColor  = UIColor.appBorder.cgColor
@@ -134,13 +111,13 @@ final class InviteVc: BaseClassVc {
 
         let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
         searchIcon.tintColor  = .appGrayText
+        searchIcon.contentMode = .scaleAspectFit
         searchIcon.translatesAutoresizingMaskIntoConstraints = false
-        searchIcon.widthAnchor.constraint(equalToConstant: 18).isActive  = true
-        searchIcon.heightAnchor.constraint(equalToConstant: 18).isActive = true
         searchContainer.addSubview(searchIcon)
 
         NSLayoutConstraint.activate([
-            searchContainer.topAnchor.constraint(equalTo: customHeaderView.bottomAnchor, constant: 12),
+            // FIX: 24pt gap from header (was 12)
+            searchContainer.topAnchor.constraint(equalTo: customHeaderView.bottomAnchor, constant: 24),
             searchContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchContainer.heightAnchor.constraint(equalToConstant: 52),
@@ -150,52 +127,51 @@ final class InviteVc: BaseClassVc {
             searchField.trailingAnchor.constraint(equalTo: searchIcon.leadingAnchor, constant: -8),
 
             searchIcon.trailingAnchor.constraint(equalTo: searchContainer.trailingAnchor, constant: -16),
-            searchIcon.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor)
+            searchIcon.centerYAnchor.constraint(equalTo: searchContainer.centerYAnchor),
+            searchIcon.widthAnchor.constraint(equalToConstant: 20),
+            searchIcon.heightAnchor.constraint(equalToConstant: 20)
         ])
     }
 
     // MARK: - Invite Link Card
-    private let inviteCard   = UIView()
-    private let linkLabel    = UILabel()
-    
-    var users: [User]? = nil
-    
     private func setupInviteCard() {
         inviteCard.backgroundColor    = .appCard
         inviteCard.layer.cornerRadius = 16
         inviteCard.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(inviteCard)
 
-        // Share icon circle
+        // FIX: Share icon — use "square.and.arrow.up" nodes style circle bg with brownish-orange tint
         let iconBg = UIView()
-        iconBg.backgroundColor    = UIColor.appOrange.withAlphaComponent(0.15)
-        iconBg.layer.cornerRadius = 20
+        iconBg.backgroundColor    = UIColor.appOrange.withAlphaComponent(0.18)
+        iconBg.layer.cornerRadius = 22
         iconBg.translatesAutoresizingMaskIntoConstraints = false
-        iconBg.widthAnchor.constraint(equalToConstant: 40).isActive  = true
-        iconBg.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        inviteCard.addSubview(iconBg)
 
-        let shareIcon = UIImageView(image: UIImage(systemName: "arrowshape.turn.up.right"))
-        shareIcon.tintColor      = .appOrange
-        shareIcon.contentMode    = .scaleAspectFit
+        let shareIcon = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
+        shareIcon.tintColor    = .appOrange
+        shareIcon.contentMode  = .scaleAspectFit
         shareIcon.translatesAutoresizingMaskIntoConstraints = false
         iconBg.addSubview(shareIcon)
+
         NSLayoutConstraint.activate([
+            iconBg.widthAnchor.constraint(equalToConstant: 44),
+            iconBg.heightAnchor.constraint(equalToConstant: 44),
             shareIcon.centerXAnchor.constraint(equalTo: iconBg.centerXAnchor),
             shareIcon.centerYAnchor.constraint(equalTo: iconBg.centerYAnchor),
-            shareIcon.widthAnchor.constraint(equalToConstant: 18),
-            shareIcon.heightAnchor.constraint(equalToConstant: 18)
+            shareIcon.widthAnchor.constraint(equalToConstant: 20),
+            shareIcon.heightAnchor.constraint(equalToConstant: 20)
         ])
 
-        // Text stack
         let titleLbl = UILabel()
         titleLbl.text      = "Share Invite Link"
         titleLbl.textColor = .white
         titleLbl.setFont(.semiBold, size: 15.0)
 
         let subLbl = UILabel()
-        subLbl.text      = "Anyone with this link can join your group"
-        subLbl.textColor = .appGrayText
+        subLbl.text          = "Anyone with this link can join your group"
+        subLbl.textColor     = .appGrayText
         subLbl.setFont(.regular, size: 12.0)
+        subLbl.numberOfLines = 1
 
         let textStack = UIStackView(arrangedSubviews: [titleLbl, subLbl])
         textStack.axis    = .vertical
@@ -214,51 +190,66 @@ final class InviteVc: BaseClassVc {
         divider.translatesAutoresizingMaskIntoConstraints = false
         inviteCard.addSubview(divider)
 
-        // Link row
-        linkLabel.text      = inviteLink
-        linkLabel.textColor = .appGrayText
-        linkLabel.setFont(.regular, size: 12.0)
-        linkLabel.translatesAutoresizingMaskIntoConstraints = false
+        // FIX: Link row — url sits in its own dark inner container
+        let linkContainer = UIView()
+        linkContainer.backgroundColor    = UIColor.black.withAlphaComponent(0.25)
+        linkContainer.layer.cornerRadius = 10
+        linkContainer.layer.borderWidth  = 1
+        linkContainer.layer.borderColor  = UIColor.appBorder.cgColor
+        linkContainer.translatesAutoresizingMaskIntoConstraints = false
+        inviteCard.addSubview(linkContainer)
 
+        linkLabel.text          = inviteLink
+        linkLabel.textColor     = .appGrayText
+        linkLabel.setFont(.regular, size: 12.0)
+        linkLabel.lineBreakMode = .byTruncatingTail
+        linkLabel.numberOfLines = 1
+        linkLabel.translatesAutoresizingMaskIntoConstraints = false
+        linkContainer.addSubview(linkLabel)
+
+        // FIX: Copy button — true pill/capsule shape
         let copyBtn = UIButton(type: .system)
         copyBtn.setTitle("Copy", for: .normal)
         copyBtn.setImage(UIImage(systemName: "doc.on.doc"), for: .normal)
-        copyBtn.tintColor        = .white
-        copyBtn.backgroundColor  = .appOrange
-        copyBtn.layer.cornerRadius = 10
-        copyBtn.titleLabel?.setFont(.semiBold, size: 12.0)
+        copyBtn.tintColor          = .white
+        copyBtn.backgroundColor    = .appOrange
+        copyBtn.layer.cornerRadius = 20   // FIX: capsule — half of height 40
+        copyBtn.titleLabel?.setFont(.semiBold, size: 13.0)
+        copyBtn.imageEdgeInsets    = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 0)
         copyBtn.translatesAutoresizingMaskIntoConstraints = false
-        copyBtn.widthAnchor.constraint(equalToConstant: 84).isActive  = true
-        copyBtn.heightAnchor.constraint(equalToConstant: 36).isActive = true
-        // icon left padding
-        copyBtn.imageEdgeInsets  = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 0)
         copyBtn.addTarget(self, action: #selector(copyLink), for: .touchUpInside)
-
-        let linkRow = UIStackView(arrangedSubviews: [linkLabel, copyBtn])
-        linkRow.axis         = .horizontal
-        linkRow.alignment    = .center
-        linkRow.spacing      = 8
-        linkRow.translatesAutoresizingMaskIntoConstraints = false
-        inviteCard.addSubview(linkRow)
+        inviteCard.addSubview(copyBtn)
 
         NSLayoutConstraint.activate([
-            inviteCard.topAnchor.constraint(equalTo: searchContainer.bottomAnchor, constant: 16),
+            // FIX: gap from search = 20pt (was 16)
+            inviteCard.topAnchor.constraint(equalTo: searchContainer.bottomAnchor, constant: 20),
             inviteCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             inviteCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
-            topRow.topAnchor.constraint(equalTo: inviteCard.topAnchor, constant: 14),
+            topRow.topAnchor.constraint(equalTo: inviteCard.topAnchor, constant: 16),
             topRow.leadingAnchor.constraint(equalTo: inviteCard.leadingAnchor, constant: 14),
             topRow.trailingAnchor.constraint(equalTo: inviteCard.trailingAnchor, constant: -14),
 
-            divider.topAnchor.constraint(equalTo: topRow.bottomAnchor, constant: 12),
+            divider.topAnchor.constraint(equalTo: topRow.bottomAnchor, constant: 14),
             divider.leadingAnchor.constraint(equalTo: inviteCard.leadingAnchor),
             divider.trailingAnchor.constraint(equalTo: inviteCard.trailingAnchor),
             divider.heightAnchor.constraint(equalToConstant: 1),
 
-            linkRow.topAnchor.constraint(equalTo: divider.bottomAnchor, constant: 12),
-            linkRow.leadingAnchor.constraint(equalTo: inviteCard.leadingAnchor, constant: 14),
-            linkRow.trailingAnchor.constraint(equalTo: inviteCard.trailingAnchor, constant: -14),
-            linkRow.bottomAnchor.constraint(equalTo: inviteCard.bottomAnchor, constant: -14)
+            // Link container + copy button row
+            linkContainer.topAnchor.constraint(equalTo: divider.bottomAnchor, constant: 12),
+            linkContainer.leadingAnchor.constraint(equalTo: inviteCard.leadingAnchor, constant: 14),
+            linkContainer.trailingAnchor.constraint(equalTo: copyBtn.leadingAnchor, constant: -10),
+            linkContainer.heightAnchor.constraint(equalToConstant: 40),
+            linkContainer.bottomAnchor.constraint(equalTo: inviteCard.bottomAnchor, constant: -14),
+
+            linkLabel.leadingAnchor.constraint(equalTo: linkContainer.leadingAnchor, constant: 10),
+            linkLabel.trailingAnchor.constraint(equalTo: linkContainer.trailingAnchor, constant: -10),
+            linkLabel.centerYAnchor.constraint(equalTo: linkContainer.centerYAnchor),
+
+            copyBtn.trailingAnchor.constraint(equalTo: inviteCard.trailingAnchor, constant: -14),
+            copyBtn.centerYAnchor.constraint(equalTo: linkContainer.centerYAnchor),
+            copyBtn.widthAnchor.constraint(equalToConstant: 90),
+            copyBtn.heightAnchor.constraint(equalToConstant: 40)
         ])
     }
 
@@ -275,16 +266,16 @@ final class InviteVc: BaseClassVc {
         titleLbl.translatesAutoresizingMaskIntoConstraints = false
 
         let countLbl = UILabel()
-        countLbl.text      = "\(users?.count) friends"
+        countLbl.text      = "\(users?.count ?? 0) friends"
         countLbl.textColor = .appGrayText
-        countLbl.setFont(.regular, size: 16.0)
+        countLbl.setFont(.regular, size: 14.0)
         countLbl.translatesAutoresizingMaskIntoConstraints = false
 
         header.addSubview(titleLbl)
         header.addSubview(countLbl)
 
         NSLayoutConstraint.activate([
-            header.topAnchor.constraint(equalTo: inviteCard.bottomAnchor, constant: 20),
+            header.topAnchor.constraint(equalTo: inviteCard.bottomAnchor, constant: 24),
             header.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             header.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             header.heightAnchor.constraint(equalToConstant: 24),
@@ -296,11 +287,8 @@ final class InviteVc: BaseClassVc {
             countLbl.centerYAnchor.constraint(equalTo: header.centerYAnchor)
         ])
 
-        // store reference for tableView top anchor
         suggestedHeader = header
     }
-
-    private var suggestedHeader: UIView!
 
     // MARK: - TableView
     private func setupTableView() {
@@ -337,57 +325,61 @@ final class InviteVc: BaseClassVc {
         ])
     }
 
-   
+    // MARK: - Actions
+    @objc private func shareInvite() {
+        let message = """
+        ✈️ Join my travel group on TravelDate!
+
+        Use this link to join:
+        \(inviteLink)
+
+        Let's plan something awesome 🌍
+        """
+        let activityVC = UIActivityViewController(activityItems: [message], applicationActivities: nil)
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = self.view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        present(activityVC, animated: true)
+    }
+
     @objc private func copyLink() {
         UIPasteboard.general.string = inviteLink
         // Optional: show toast
     }
 
     @objc private func skipTapped() {
-        
-        self.pushVC(TripsTabBarController.self, from: .Home) { vc in
-            
-        }
+        self.pushVC(TripsTabBarController.self, from: .Home) { vc in }
     }
 
-    func inviteFriend(at index: Int) {
-//        users[index].isInvited.toggle()
-        inviteUser(users?[index].id ?? "")
-        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-        
-    }
-    
-    
+    // MARK: - API
     func getAllUsers() {
         request.getAllUsersAPi { res, err, code in
             if code == 200 {
-                
                 DispatchQueue.main.async {
                     if res?.data?.users?.count != 0 {
                         self.users = res?.data?.users ?? []
                         self.tableView.reloadData()
-                        
-                        
-                      
                     }
                 }
-                
             } else {
                 self.showAlert(err)
             }
         }
     }
-    
-    func inviteUser(_ id:String){
-        request.userId = id
+
+    func inviteFriend(at index: Int) {
+        inviteUser(users?[index].id ?? "")
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+    }
+
+    func inviteUser(_ id: String) {
+        request.userId  = id
         request.groupId = joinCode
-        request.inviteGroupAPi { err, code in
-            
-        }
+        request.inviteGroupAPi { err, code in }
     }
 }
-
-
 
 // MARK: - UITableViewDataSource
 extension InviteVc: UITableViewDataSource {
@@ -408,25 +400,25 @@ extension InviteVc: UITableViewDataSource {
 final class FriendCell: UITableViewCell {
     static let id = "FriendCell"
 
-    private let avatarView   = UIImageView()
-    private let nameLabel    = UILabel()
+    private let avatarView    = UIImageView()
+    private let nameLabel     = UILabel()
     private let usernameLabel = UILabel()
     private let inviteButton  = UIButton(type: .system)
     private var onInvite: (() -> Void)?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor      = .appBg
-        selectionStyle       = .none
+        backgroundColor = .appBg
+        selectionStyle  = .none
         setupCell()
     }
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupCell() {
-        // Container card
         let card = UIView()
         card.backgroundColor    = .appCard
-        card.layer.cornerRadius = 16
+        // FIX: corner radius 14 matches Figma card rounding
+        card.layer.cornerRadius = 14
         card.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(card)
 
@@ -434,14 +426,15 @@ final class FriendCell: UITableViewCell {
             card.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
             card.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             card.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            card.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5)
+            card.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -5),
+            card.heightAnchor.constraint(equalToConstant: 72)
         ])
 
-        // Avatar
-        avatarView.contentMode       = .scaleAspectFill
-        avatarView.clipsToBounds     = true
+        // Avatar — circle
+        avatarView.contentMode        = .scaleAspectFill
+        avatarView.clipsToBounds      = true
         avatarView.layer.cornerRadius = 24
-        avatarView.backgroundColor   = .appBorder
+        avatarView.backgroundColor    = .appBorder
         avatarView.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(avatarView)
 
@@ -461,13 +454,9 @@ final class FriendCell: UITableViewCell {
         textStack.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(textStack)
 
-        // Invite button
-        inviteButton.setTitle("Invite", for: .normal)
-        inviteButton.setImage(UIImage(systemName: "paperplane"), for: .normal)
-        inviteButton.tintColor         = .appOrange
+        // FIX: Invite button — true pill shape, cornerRadius = half of height (38/2 = 19)
+        inviteButton.layer.cornerRadius = 19
         inviteButton.layer.borderWidth  = 1.5
-        inviteButton.layer.borderColor  = UIColor.appOrange.cgColor
-        inviteButton.layer.cornerRadius = 20
         inviteButton.titleLabel?.setFont(.medium, size: 13.0)
         inviteButton.imageEdgeInsets    = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 0)
         inviteButton.translatesAutoresizingMaskIntoConstraints = false
@@ -486,46 +475,37 @@ final class FriendCell: UITableViewCell {
 
             inviteButton.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
             inviteButton.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            inviteButton.widthAnchor.constraint(equalToConstant: 88),
-            inviteButton.heightAnchor.constraint(equalToConstant: 38),
-
-            card.heightAnchor.constraint(equalToConstant: 72)
+            inviteButton.widthAnchor.constraint(equalToConstant: 92),
+            inviteButton.heightAnchor.constraint(equalToConstant: 38)
         ])
     }
 
     func configure(with friend: User, onInvite: @escaping () -> Void) {
-        self.onInvite       = onInvite
-        nameLabel.text      = friend.name
-        usernameLabel.text  = friend.name
+        self.onInvite      = onInvite
+        nameLabel.text     = friend.name
+        usernameLabel.text = "@\(friend.name?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")"
+
         let url = URL(string: friend.profile_image ?? "")
         avatarView.kf.setImage(
             with: url,
-            placeholder: UIImage(named: "placeholder"), // optional
-            options: [
-                .transition(.fade(0.3)),
-                .cacheOriginalImage
-            ]
+            placeholder: UIImage(named: "placeholder"),
+            options: [.transition(.fade(0.3)), .cacheOriginalImage]
         )
 
         if friend.isInvited ?? false {
             inviteButton.setTitle("Invited", for: .normal)
-            inviteButton.tintColor        = .appGrayText
-            inviteButton.layer.borderColor = UIColor.appGrayText.cgColor
-            inviteButton.backgroundColor  = .clear
             inviteButton.setImage(UIImage(systemName: "checkmark"), for: .normal)
+            inviteButton.tintColor         = .appGrayText
+            inviteButton.layer.borderColor = UIColor.appGrayText.cgColor
+            inviteButton.backgroundColor   = .clear
         } else {
             inviteButton.setTitle("Invite", for: .normal)
-            inviteButton.tintColor        = .appOrange
-            inviteButton.layer.borderColor = UIColor.appOrange.cgColor
-            inviteButton.backgroundColor  = .clear
             inviteButton.setImage(UIImage(systemName: "paperplane"), for: .normal)
+            inviteButton.tintColor         = .appOrange
+            inviteButton.layer.borderColor = UIColor.appOrange.cgColor
+            inviteButton.backgroundColor   = .clear
         }
     }
 
-    @objc private func inviteTapped() {
-        onInvite?()
-    }
-    
-    
-   
+    @objc private func inviteTapped() { onInvite?() }
 }

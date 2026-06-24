@@ -25,6 +25,7 @@ class MySavedGroupVc: BaseClassVc {
         super.viewDidLoad()
        registerNib()
         setupData()
+        print(data?.members?.count,"sadf",data,"2-304irek")
     }
     
     func registerNib(){
@@ -83,16 +84,22 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : GroupTableViewCell = tableView.dequeue(GroupTableViewCell.self, for: indexPath)
-        let model = data?.members?[indexPath.row]
-        cell.lblName.text =  model?.name ?? ""
-        cell.imgUser.layer.cornerRadius =  cell.imgUser.frame.height / 2
-        loadImage(cell.imgUser, url: URL(string: model?.userMembers?.profile_image ?? "")!)
-        cell.lblLocation.layer.cornerRadius = 15
-        cell.btnEdit.backgroundColor = UIColor.themeOrange
-        cell.btnEdit.setTitleColor(.white, for: .normal)
-        cell.btnEdit.setTitle("Message", for: .normal)
-        cell.btnEdit.layer.borderWidth = 0
-        let styles = model?.userMembers?.travelStyles ?? []
+        let model = self.data?.members?[indexPath.row]
+        if User.curentUser?.name ?? "" == model?.name {
+            cell.lblName.text = "You"
+            cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
+            cell.btnEdit.backgroundColor = .clear
+            cell.btnEdit.addTarget(self, action: #selector(editUser(_:)), for: .touchUpInside)
+            cell.btnEdit.tag = indexPath.row
+        } else {
+            cell.lblName.text = model?.name ?? ""
+            cell.btnEdit.tag = indexPath.row
+            cell.btnEdit.setTitle("Message", for: .normal)
+            cell.btnEdit.backgroundColor = .themeOrange
+            cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
+        }
+        
+        let styles = model?.travelStyles ?? []
 
         cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
         cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
@@ -104,10 +111,13 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
         cell.lbl4.isHidden = !styles.indices.contains(3)
         
         
-        cell.lblLocation.text = model?.userMembers?.locationstring ?? ""
-        cell.lblDescription.text = model?.userMembers?.shortbio ?? ""
+//        cell.lblLocation.text = model?.locationstring ?? ""
+        cell.lblDescription.text = model?.shortBio ?? ""
         
-       
+        if let url = URL(string: model?.profile_image ?? "") {
+            self.loadImage(cell.imgUser, url: url)
+        }
+        cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true
         return cell
     }
@@ -116,6 +126,42 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
         
     }
     
+    @objc func editUser(_ sender:UIButton) {
+        self.pushVC(EditProfileVc.self, from: .Settings)
+    }
+    
+    
+    @objc func openChat(_ sender:UIButton) {
+        guard let selectedUser = self.data?.members?[sender.tag] else { return }
+        
+        request.targetUserId  = selectedUser.userMembers?.id  ?? ""
+        request.directChat { model,errMsg, errCode in
+            if errCode == 200 {
+                
+                
+                
+                let currentUserId = User.curentUser?.id ?? ""
+                let otherParticipantId = selectedUser.userMembers?.id  ?? ""
+                
+                // Prevent self chat
+                guard otherParticipantId != currentUserId else { return }
+                
+                let viewModel = ChatViewModel(
+                    currentUserId: currentUserId
+                )
+                
+                let vc = ChatMessageVc(
+                    viewModel: viewModel,
+                    participants: model?.participantsUser ?? [],
+                    roomId: model?.id ?? "", //. ID HERE
+                    roomTitle: selectedUser.name ?? "Chat",
+                    type: .individual
+                )
+                
+                self.navigationController?.pushViewController(vc, animated: true)
+            }
+        }
+    }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 400
@@ -131,7 +177,7 @@ extension MySavedGroupVc {
     }
     
     @IBAction func btnChat(_ sender:UIButton) {
-        super.backTapped()
+        
     }
 }
 

@@ -294,7 +294,7 @@ class CreateGroupViewController: BaseClassVc {
     // MARK: - Location View
     private func setupLocationView() {
         locationView = LocationSearchView()
-        locationView.isHidden = true
+        locationView.isHidden = false
         locationView.attach(to: destinationTF)
         locationView.onLocationSelected = { [weak self] address, cord in
          tuple = (address,Double(cord.latitude),Double(cord.longitude))
@@ -742,7 +742,7 @@ class CreateGroupViewController: BaseClassVc {
     }
 
     // MARK: - Actions
-    @objc private func handleBack() {
+    @objc  func handleBack() {
         navigationController?.popViewController(animated: true)
     }
 
@@ -765,9 +765,14 @@ class CreateGroupViewController: BaseClassVc {
         }
     }
 
-    @objc private func startDateTapped() { showDatePicker(isStart: true)  }
-    @objc private func endDateTapped()   { showDatePicker(isStart: false) }
-
+    @objc private func startDateTapped() {
+        
+        showDatePicker(isStart: true)
+    }
+    @objc private func endDateTapped()   {
+        showDatePicker(isStart: false)
+    }
+    
 
     
     

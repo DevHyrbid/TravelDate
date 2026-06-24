@@ -199,7 +199,9 @@ class NewMatchCell: UITableViewCell {
         locationLabel.text  = model.destination ?? ""
         travelersLabel.text = "\(model.members?.count ?? 0) travelers"
 
-        let base = "Matched 2 hours ago "
+        let ago = timeAgo(from: model.createdAt ?? "")
+
+        let base = "Matched \(ago) "
         let hi   = "(92% Match)"
         let full = base + hi
         let attr = NSMutableAttributedString(
@@ -216,6 +218,68 @@ class NewMatchCell: UITableViewCell {
             totalCount: model.maxGroupSize ?? 0,
             completedCount: model.members?.count ?? 0
         )
+    }
+    
+    func configureNewMatch(with model: DataMatch) {
+        titleLabel.text = model.otherGroup?.title ?? ""
+        locationLabel.text = model.otherGroup?.destination ?? ""
+        travelersLabel.text = "\(model.members?.count ?? 0) travelers"
+
+        let ago = timeAgo(from: model.matchedAtStr ?? "")
+
+        let base = "Matched \(ago) "
+        let hi = "(92% Match)"
+        let full = base + hi
+
+        let attr = NSMutableAttributedString(
+            string: full,
+            attributes: [
+                .foregroundColor: UIColor(white: 0.55, alpha: 1),
+                .font: AppFont.regular(13)
+            ]
+        )
+
+        attr.addAttribute(
+            .foregroundColor,
+            value: UIColor.themeOrange,
+            range: NSRange(location: base.count, length: hi.count)
+        )
+
+        matchedLabel.attributedText = attr
+        
+//        membersView.configure(
+//            members: model.membersUser ?? [],
+//            totalCount: model.myGroup?.maxMembers ?? 0,
+//            completedCount: model.members?.count ?? 0
+//        )
+    }
+    
+    func timeAgo(from isoString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+
+        guard let date = formatter.date(from: isoString) else {
+            return ""
+        }
+
+        let components = Calendar.current.dateComponents(
+            [.day, .hour, .minute],
+            from: date,
+            to: Date()
+        )
+
+        if let days = components.day, days > 0 {
+            return "\(days)d ago"
+        }
+
+        if let hours = components.hour, hours > 0 {
+            return "\(hours)h ago"
+        }
+
+        return "\(components.minute ?? 0)m ago"
     }
 
     func setTimeText(_ text: String) { timeLabel.text   = text  }

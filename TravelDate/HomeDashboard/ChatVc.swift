@@ -247,22 +247,22 @@ private extension ChatVc {
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
             print(matchGroup.imageArr,"FGHJKL")
-            if let images = matchGroup.imageArr,
-               images.count >= 2 {
-
-                cell.containerView.isHidden = false
-                loadImage(cell.leftImageView, url: URL(string: images[0])!)
-                loadImage(cell.rightImageView, url: URL(string: images[1])!)
-                
-
-            } else {
+//            if let images = matchGroup.imageArr,
+//               images.count >= 2 {
+//
+//                cell.containerView.isHidden = false
+//                loadImage(cell.leftImageView, url: URL(string: images[0])!)
+//                loadImage(cell.rightImageView, url: URL(string: images[1])!)
+//                
+//
+//            } else {}
 
                 let imageUrl = matchGroup.imageArr?.first ?? matchGroup.image ?? ""
                 loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
                 
 
                 cell.rightImageView.image = nil
-            }
+            
 
         } else {
             cell.containerView.isHidden = true
@@ -395,10 +395,10 @@ private extension ChatVc {
             viewModel: viewModel,
             participants: group.members ?? [],
             roomId: group.chatId,
-            roomTitle: "Group Chat",
+            roomTitle: group.name ?? "",
             type: .group
         )
-
+        vc.roomImageURL =  group.image ?? ""
         vc.memberCount = participantIds.count
 
         navigationController?.pushViewController(vc, animated: true)
@@ -458,7 +458,7 @@ private extension ChatVc {
         ) { [weak self] _, _, completion in
             guard let self else { completion(false); return }
 
-            self.request.deleteGroupAPi(group.chatId ?? "") { [weak self] _, code in
+            self.request.deleteGroupAPi(group.chatRoom?.groupId ?? "") { [weak self] _, code in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     if code == 200 {
@@ -556,7 +556,7 @@ private extension ChatVc {
 
 // MARK: - Date Helper
 
-private extension ChatVc {
+ extension UIViewController {
 
     func timeAgo(from isoString: String) -> String {
         let formatter          = ISO8601DateFormatter()
