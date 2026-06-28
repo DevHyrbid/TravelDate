@@ -20,7 +20,7 @@ final class FeatureRowView: UIView {
     private let iconContainer: UIView = {
         let v = UIView()
         v.backgroundColor    = UIColor(hex: "#FF7A00").withAlphaComponent(0.12)
-        v.layer.cornerRadius = 22   // 44/2 — full circle
+        v.layer.cornerRadius = 22
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
@@ -36,7 +36,7 @@ final class FeatureRowView: UIView {
     // Figma: title is white semibold, description is gray/55% alpha
     private let titleLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 14, weight: .semibold)
+        l.font          = .systemFont(ofSize: 16, weight: .semibold)
         l.textColor     = .white
         l.numberOfLines = 1
         return l
@@ -44,8 +44,8 @@ final class FeatureRowView: UIView {
 
     private let descriptionLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 12, weight: .regular)
-        l.textColor     = UIColor(white: 1, alpha: 0.55)
+        l.font          = .systemFont(ofSize: 14, weight: .regular)
+        l.textColor     = UIColor(white: 1, alpha: 0.68)
         l.numberOfLines = 3
         return l
     }()
@@ -63,7 +63,7 @@ final class FeatureRowView: UIView {
 
         let textStack = UIStackView(arrangedSubviews: [titleLabel, descriptionLabel])
         textStack.axis    = .vertical
-        textStack.spacing = 4
+        textStack.spacing = 7
         textStack.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(iconContainer)
@@ -81,10 +81,10 @@ final class FeatureRowView: UIView {
             iconImageView.widthAnchor.constraint(equalToConstant: 20),
             iconImageView.heightAnchor.constraint(equalToConstant: 20),
 
-            textStack.leadingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: 14),
+            textStack.leadingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: 16),
             textStack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            textStack.topAnchor.constraint(equalTo: topAnchor, constant: 4),
-            textStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
+            textStack.topAnchor.constraint(equalTo: topAnchor),
+            textStack.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 

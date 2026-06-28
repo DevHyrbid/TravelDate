@@ -172,6 +172,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tripsTabBarController?.hideTabBar()
+        
     }
     
     
@@ -353,6 +354,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         getGroups()
         getPastGroups()
         request.getDashBoardAPi { model, errMsg, errCode in
+            
+            
+            
+            
             if errCode == 200 {
                 DispatchQueue.main.async {
                     if let first = model?.data?.counts {
@@ -422,34 +427,34 @@ extension HomeViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
+    
+    
     func btnOpenGroupChat() {
         
+        let group = self.selected
         
-        /*
-        let selectedUser = self.selected
-        
-        let chatVc = ChatMessageVc()
-        chatVc.roomId      = selectedUser?.roomId ?? ""
-        chatVc.roomTitle   = selectedUser?.groupTitle ?? "Chat"
-        chatVc.groupId     = selectedUser?.id ?? ""
-        chatVc.roomType    = .group
-        chatVc.memberCount = selectedUser?.maxGroupSize ?? 0
-        
-        // ✅ Correct way - compactMap use karo
-        chatVc.participants = selectedUser?.members?.compactMap { $0.id } ?? []
-        // ✅ Full log before push
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("🚀 Opening ChatMessageVc")
-        print("📌 roomId      : \(chatVc.roomId)")
-        print("📌 roomTitle   : \(chatVc.roomTitle)")
-        print("📌 groupId     : \(chatVc.groupId)")
-        print("📌 roomType    : \(chatVc.roomType)")
-        print("📌 memberCount : \(chatVc.memberCount)")
-        print("📌 participants: \(chatVc.participants)")
-        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
-        navigationController?.pushViewController(chatVc, animated: true)
-    */
+
+        let currentUserId = User.curentUser?.id ?? ""
+
+        // Get all member ids
+        var participantIds = group?.members?.compactMap { $0.id } ?? []
+
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        // Open existing room directly if available
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: group?.membersUser ?? [],
+            roomId: "group.chatId",
+            roomTitle: group?.title ?? "",
+            type: .group
+        )
+        vc.roomImageURL =  group?.coverImage ?? ""
+        vc.memberCount = participantIds.count
+
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @IBAction func btnNotification(_ sender:UIButton) {
@@ -500,5 +505,39 @@ extension HomeViewController {
     @IBAction func btnShare(_ sender:UIButton) {
         print("SHARE TAPPED ,","\(self.selected?.joinCode ?? "")")
         self.shareInvite(self.selected?.joinCode ?? "")
+    }
+}
+
+import UIKit
+
+extension UIButton {
+
+    func applyGlassEffect() {
+
+        // Avoid duplicate blur views
+        subviews.forEach {
+            if $0 is UIVisualEffectView {
+                $0.removeFromSuperview()
+            }
+        }
+
+        let blurView = UIVisualEffectView(
+            effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
+        )
+
+        blurView.frame = bounds
+        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blurView.isUserInteractionEnabled = false
+
+        insertSubview(blurView, at: 0)
+
+        layer.cornerRadius = 16
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.white.withAlphaComponent(0.2).cgColor
+        clipsToBounds = true
+
+        backgroundColor = UIColor.white.withAlphaComponent(0.05)
+
+        setTitleColor(.white, for: .normal)
     }
 }

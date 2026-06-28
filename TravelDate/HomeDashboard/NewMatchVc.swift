@@ -202,6 +202,18 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.imageView_, url: url)
             }
+            
+            cell.membersView.configure(members: model.members ?? [], totalCount: (model.maxGroupSize ?? 0), completedCount: model.members?.count ?? 0)
+            
+            cell.membersView.onAvatarStackTapped = {
+                print("Avatar stack tapped — show members list")
+            }
+            cell.membersView.onProgressTapped = {
+                print("Progress bar tapped — show progress details")
+            }
+            cell.membersView.onContainerTapped = {
+                print("Container tapped — open group detail")
+            }
             cell.timeLabel.text = formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? "")
             cell.onStartChat = { self.openGroupChat(at: indexPath) }
             cell.onSaveGroup = { [weak self] in
@@ -236,6 +248,18 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) { vc in
                 vc.data = model 
             } }
+            
+            cell.membersView.configure(members: model?.members ?? [], totalCount: (model?.maxGroupSize ?? 0), completedCount: model?.members?.count ?? 0)
+            
+            cell.membersView.onAvatarStackTapped = {
+                print("Avatar stack tapped — show members list")
+            }
+            cell.membersView.onProgressTapped = {
+                print("Progress bar tapped — show progress details")
+            }
+            cell.membersView.onContainerTapped = {
+                print("Container tapped — open group detail")
+            }
             cell.onBookmark = { [weak self] in
                 guard let self = self else { return }
                 guard let groupId = model?._id else { return }

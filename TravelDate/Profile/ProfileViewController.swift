@@ -34,8 +34,12 @@ class ProfileViewController: BaseClassVc {
                 self.collectionVw.reloadData()
             })
         }
-        collectionVw.register(TravelStyleCell.self,
-                              forCellWithReuseIdentifier: TravelStyleCell.identifier)
+        
+        
+        
+                collectionVw.register(TravelStyleCell.self,
+                                      forCellWithReuseIdentifier: TravelStyleCell.identifier)
+            
     }
     
     
@@ -170,17 +174,10 @@ extension ProfileViewController : CollectionDelegate
 extension ProfileViewController{
     @IBAction func btnUpgrade(_ sender:UIButton){
         
-        // Screen 1 — Free Trial
-        let vm = SubscriptionViewModel()
-        vm.screenMode = .freeTrial
-        let vc = SubscriptionViewController(viewModel: vm, mode: .freeTrial)
-        
         // Screen 2 — Plans
-        //        let vm2 = SubscriptionViewModel()
-        //        vm2.screenMode = .plans
-        //        let vc2 = SubscriptionViewController(viewModel: vm2, mode: .plans)
-        
-        
+        let vm = SubscriptionViewModel()
+        vm.screenMode = .plans
+        let vc = SubscriptionViewController(viewModel: vm, mode: .plans)
         
         // Callback when purchase succeeds
         vm.onPurchaseSuccess = {

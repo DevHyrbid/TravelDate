@@ -27,10 +27,11 @@ final class SubscriptionViewController: UIViewController {
     var mode: SubscriptionScreenMode = .plans
 
     // MARK: - Constants
-    private let bgColor    = UIColor(hex: "#0B0B0F")
-    private let cardColor  = UIColor(hex: "#14161C")
+    private let bgColor    = UIColor(hex: "#0B0D0D")
+    private let cardColor  = UIColor(hex: "#111519")
     private let orangeColor = UIColor(hex: "#FF7A00")
     private static let buttonHeight: CGFloat = 58
+    private let bottomGlowLayer = CAGradientLayer()
 
     // MARK: - Scroll
     private lazy var scrollView: UIScrollView = {
@@ -69,7 +70,7 @@ final class SubscriptionViewController: UIViewController {
 
     private lazy var subtitleLabel: UILabel = {
         let l = UILabel()
-        l.textColor = UIColor(white: 1, alpha: 0.55)
+        l.textColor = UIColor(white: 1, alpha: 0.72)
         l.font = .systemFont(ofSize: 14, weight: .regular)
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -100,7 +101,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var featureSectionTitle: UILabel = {
         let l = UILabel()
         l.text = "Included with Trips"
-        l.font = .systemFont(ofSize: 17, weight: .bold)
+        l.font = .systemFont(ofSize: 18, weight: .bold)
         l.textColor = .white
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -147,8 +148,8 @@ final class SubscriptionViewController: UIViewController {
     private lazy var freeTrialLabel: UILabel = {
         let l = UILabel()
         l.text = "Free for 3 days, then 9.99 $per week"
-        l.font = .systemFont(ofSize: 12, weight: .regular)
-        l.textColor = UIColor(white: 1, alpha: 0.5)
+        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.textColor = UIColor(white: 1, alpha: 0.72)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -157,8 +158,8 @@ final class SubscriptionViewController: UIViewController {
     private lazy var recurringLabel: UILabel = {
         let l = UILabel()
         l.text = "Recurring billing for same price and duration, cancel anytime"
-        l.font = .systemFont(ofSize: 11, weight: .regular)
-        l.textColor = UIColor(white: 1, alpha: 0.4)
+        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.textColor = UIColor(white: 1, alpha: 0.72)
         l.textAlignment = .center
         l.numberOfLines = 2
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -207,30 +208,50 @@ final class SubscriptionViewController: UIViewController {
         Task { await viewModel.loadProducts() }
     }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        bottomGlowLayer.frame = view.bounds
+    }
+
     // MARK: - Navigation
     private func setupNavigation() {
-        title = "Manage Subscription"
-        navigationController?.navigationBar.titleTextAttributes = [
-            .foregroundColor: UIColor.white,
-            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
-        ]
-        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        navigationController?.navigationBar.shadowImage = UIImage()
-        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.setBackgroundImage(nil, for: .default)
+        navigationController?.navigationBar.shadowImage = nil
+        navigationController?.navigationBar.isTranslucent = false
+//        navigationController?.navigationBar.barTintColor = bgColor
+//        navigationController?.navigationBar.backgroundColor = bgColor
 
-        let backBtn = UIBarButtonItem(
-            image: UIImage(systemName: "arrow.left"),
-            style: .plain,
-            target: self,
-            action: #selector(backTapped)
-        )
-        backBtn.tintColor = .white
-        navigationItem.leftBarButtonItem = backBtn
+        let backButton = UIButton(type: .system)
+        backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
+        backButton.tintColor = .white
+        backButton.contentHorizontalAlignment = .leading
+        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+        backButton.frame = CGRect(x: 0, y: 0, width: 30, height: 44)
+
+        let titleLabel = UILabel()
+        titleLabel.text = "Manage Subscription"
+        titleLabel.textColor = .white
+        titleLabel.font = .systemFont(ofSize: 26, weight: .regular)
+        titleLabel.sizeToFit()
+
+        navigationItem.leftBarButtonItems = [
+            UIBarButtonItem(customView: backButton),
+            UIBarButtonItem(customView: titleLabel)
+        ]
     }
 
     // MARK: - Setup UI
     private func setupUI() {
         view.backgroundColor = bgColor
+        bottomGlowLayer.colors = [
+            UIColor.clear.cgColor,
+            orangeColor.withAlphaComponent(0.04).cgColor,
+            orangeColor.withAlphaComponent(0.12).cgColor
+        ]
+        bottomGlowLayer.locations = [0.0, 0.72, 1.0]
+        bottomGlowLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        bottomGlowLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        view.layer.insertSublayer(bottomGlowLayer, at: 0)
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
@@ -275,21 +296,23 @@ final class SubscriptionViewController: UIViewController {
         case .plans:
             titleLabel.text    = "Discover who's viewed your profile"
             subtitleLabel.text = "Upgrade to unlock"
+            titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
+            subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
         }
 
         NSLayoutConstraint.activate([
             // Orange bar: 4pt wide, ~52pt tall, left edge at 20
-            orangeBar.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            orangeBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            orangeBar.topAnchor.constraint(equalTo: contentView.topAnchor, constant: mode == .plans ? 31 : 20),
+            orangeBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 24 : 20),
             orangeBar.widthAnchor.constraint(equalToConstant: 4),
-            orangeBar.heightAnchor.constraint(equalToConstant: 52),
+            orangeBar.heightAnchor.constraint(equalToConstant: mode == .plans ? 21 : 52),
 
             // Title sits to the right of the bar
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: orangeBar.trailingAnchor, constant: 14),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: mode == .plans ? 30 : 20),
+            titleLabel.leadingAnchor.constraint(equalTo: orangeBar.trailingAnchor, constant: mode == .plans ? 11 : 14),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
 
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: mode == .plans ? 14 : 4),
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
         ])
     }
@@ -449,10 +472,10 @@ final class SubscriptionViewController: UIViewController {
         contentView.addSubview(plansRowStack)
 
         NSLayoutConstraint.activate([
-            plansRowStack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 24),
-            plansRowStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            plansRowStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            plansRowStack.heightAnchor.constraint(equalToConstant: 180),
+            plansRowStack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
+            plansRowStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
+            plansRowStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
+            plansRowStack.heightAnchor.constraint(equalToConstant: 193),
         ])
 
         for _ in 0..<3 {
@@ -465,14 +488,14 @@ final class SubscriptionViewController: UIViewController {
 
     // MARK: - Features Section
     private func buildFeaturesSection() {
-        contentView.addSubview(featureSectionTitle)
         contentView.addSubview(featuresCard)
+        featuresCard.addSubview(featureSectionTitle)
         featuresCard.addSubview(featuresStack)
 
         for feature in features {
             let row = FeatureRowView()
             row.configure(with: feature)
-            row.heightAnchor.constraint(greaterThanOrEqualToConstant: 56).isActive = true
+            row.heightAnchor.constraint(greaterThanOrEqualToConstant: mode == .plans ? 56 : 56).isActive = true
             featuresStack.addArrangedSubview(row)
         }
 
@@ -485,17 +508,17 @@ final class SubscriptionViewController: UIViewController {
         }
 
         NSLayoutConstraint.activate([
-            featureSectionTitle.topAnchor.constraint(equalTo: sectionTopAnchor, constant: 28),
-            featureSectionTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            featuresCard.topAnchor.constraint(equalTo: sectionTopAnchor, constant: mode == .plans ? 25 : 28),
+            featuresCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 24 : 16),
+            featuresCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: mode == .plans ? -24 : -16),
 
-            featuresCard.topAnchor.constraint(equalTo: featureSectionTitle.bottomAnchor, constant: 12),
-            featuresCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            featuresCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            featureSectionTitle.topAnchor.constraint(equalTo: featuresCard.topAnchor, constant: mode == .plans ? 26 : 24),
+            featureSectionTitle.leadingAnchor.constraint(equalTo: featuresCard.leadingAnchor, constant: mode == .plans ? 20 : 16),
 
-            featuresStack.topAnchor.constraint(equalTo: featuresCard.topAnchor, constant: 20),
-            featuresStack.leadingAnchor.constraint(equalTo: featuresCard.leadingAnchor, constant: 16),
-            featuresStack.trailingAnchor.constraint(equalTo: featuresCard.trailingAnchor, constant: -16),
-            featuresStack.bottomAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: -20),
+            featuresStack.topAnchor.constraint(equalTo: featureSectionTitle.bottomAnchor, constant: mode == .plans ? 27 : 20),
+            featuresStack.leadingAnchor.constraint(equalTo: featuresCard.leadingAnchor, constant: mode == .plans ? 40 : 16),
+            featuresStack.trailingAnchor.constraint(equalTo: featuresCard.trailingAnchor, constant: mode == .plans ? -28 : -16),
+            featuresStack.bottomAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: mode == .plans ? -29 : -20),
         ])
     }
 
@@ -508,9 +531,9 @@ final class SubscriptionViewController: UIViewController {
             loadingIndicator.centerXAnchor.constraint(equalTo: ctaButton.centerXAnchor),
             loadingIndicator.centerYAnchor.constraint(equalTo: ctaButton.centerYAnchor),
 
-            ctaButton.topAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: 24),
-            ctaButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            ctaButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            ctaButton.topAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: mode == .plans ? 25 : 24),
+            ctaButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 42 : 16),
+            ctaButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: mode == .plans ? -42 : -16),
             ctaButton.heightAnchor.constraint(equalToConstant: Self.buttonHeight),
         ])
     }
@@ -521,11 +544,11 @@ final class SubscriptionViewController: UIViewController {
         contentView.addSubview(recurringLabel)
 
         NSLayoutConstraint.activate([
-            freeTrialLabel.topAnchor.constraint(equalTo: ctaButton.bottomAnchor, constant: 14),
+            freeTrialLabel.topAnchor.constraint(equalTo: ctaButton.bottomAnchor, constant: mode == .plans ? 20 : 14),
             freeTrialLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             freeTrialLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
-            recurringLabel.topAnchor.constraint(equalTo: freeTrialLabel.bottomAnchor, constant: 6),
+            recurringLabel.topAnchor.constraint(equalTo: freeTrialLabel.bottomAnchor, constant: mode == .plans ? 22 : 6),
             recurringLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             recurringLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             recurringLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
@@ -613,7 +636,7 @@ final class SubscriptionViewController: UIViewController {
     }
 
     @objc private func backTapped() {
-//        navigationController?.popViewController(animated: true) ?? dismiss(animated: true)
+        self.dismiss(animated: true)
     }
 
     // MARK: - Alerts

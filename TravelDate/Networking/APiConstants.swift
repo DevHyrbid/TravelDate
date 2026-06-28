@@ -8,8 +8,8 @@ import UIKit
 class APiConstant : NSObject {
     
     static let port  = 9800
-    static let base = "http://187.124.251.134:\(port)"
-    static let baseUrl = "http://187.124.251.134:\(port)/api/v1/"
+    static let base = "https://api.tripsapp.io"
+    static let baseUrl = "https://api.tripsapp.io/api/v1/"
     //"http://187.124.251.134:\(port)/api/v1/"
     static let baseUrlImg = baseUrl + "uploads/"
     static let loginAPi = baseUrl + "users/login"

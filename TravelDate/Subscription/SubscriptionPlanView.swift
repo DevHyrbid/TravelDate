@@ -10,11 +10,11 @@ final class SubscriptionPlanView: UIView {
 
     // MARK: - Constants
     private enum C {
-        static let cardBg        = UIColor(hex: "#14161C")
+        static let cardBg        = UIColor(hex: "#111519")
         static let orangeAccent  = UIColor(hex: "#FF7A00")
         static let textPrimary   = UIColor.white
-        static let textSecondary = UIColor(white: 1, alpha: 0.55)
-        static let cornerRadius  : CGFloat = 16
+        static let textSecondary = UIColor(white: 1, alpha: 0.68)
+        static let cornerRadius  : CGFloat = 18
         static let borderWidth   : CGFloat = 2
     }
 
@@ -23,9 +23,9 @@ final class SubscriptionPlanView: UIView {
     // Figma: badge pill at very top of card — orange filled when "Popular", orange text when "30% Off"/"50% Off"
     private let badgeLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 12, weight: .bold)
+        l.font          = .systemFont(ofSize: 16, weight: .bold)
         l.textAlignment = .center
-        l.layer.cornerRadius = 10
+        l.layer.cornerRadius = 11
         l.clipsToBounds = true
         l.translatesAutoresizingMaskIntoConstraints = false
         l.isHidden = true
@@ -35,7 +35,7 @@ final class SubscriptionPlanView: UIView {
     // e.g. "1 Week", "1 Month", "1 Year"
     private let planTitleLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 16, weight: .bold)
+        l.font          = .systemFont(ofSize: 19, weight: .bold)
         l.textColor     = C.textPrimary
         l.textAlignment = .center
         l.numberOfLines = 1
@@ -46,7 +46,7 @@ final class SubscriptionPlanView: UIView {
     // e.g. "Perfect for a quick trip"
     private let descriptionLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 11, weight: .regular)
+        l.font          = .systemFont(ofSize: 14, weight: .regular)
         l.textColor     = C.textSecondary
         l.textAlignment = .center
         l.numberOfLines = 2
@@ -57,7 +57,7 @@ final class SubscriptionPlanView: UIView {
     // e.g. "9.99 $"
     private let priceLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 20, weight: .bold)
+        l.font          = .systemFont(ofSize: 17, weight: .bold)
         l.textColor     = C.textPrimary
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -67,7 +67,7 @@ final class SubscriptionPlanView: UIView {
     // e.g. "Per week"
     private let perPeriodLabel: UILabel = {
         let l = UILabel()
-        l.font          = .systemFont(ofSize: 11, weight: .regular)
+        l.font          = .systemFont(ofSize: 14, weight: .regular)
         l.textColor     = C.textSecondary
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -105,31 +105,31 @@ final class SubscriptionPlanView: UIView {
 
         NSLayoutConstraint.activate([
             // Badge pinned to top center
-            badgeLabel.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            badgeLabel.topAnchor.constraint(equalTo: topAnchor, constant: 14),
             badgeLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            badgeLabel.heightAnchor.constraint(equalToConstant: 24),
-            badgeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 64),
+            badgeLabel.heightAnchor.constraint(equalToConstant: 35),
+            badgeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 86),
 
             // Plan title below badge
-            planTitleLabel.topAnchor.constraint(equalTo: badgeLabel.bottomAnchor, constant: 10),
-            planTitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            planTitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            planTitleLabel.topAnchor.constraint(equalTo: badgeLabel.bottomAnchor, constant: 17),
+            planTitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            planTitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
 
             // Description below title
-            descriptionLabel.topAnchor.constraint(equalTo: planTitleLabel.bottomAnchor, constant: 6),
-            descriptionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            descriptionLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            descriptionLabel.topAnchor.constraint(equalTo: planTitleLabel.bottomAnchor, constant: 9),
+            descriptionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            descriptionLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
 
             // Price pinned toward bottom
-            priceLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10),
-            priceLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            priceLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            priceLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 15),
+            priceLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            priceLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
 
             // Per period below price, pinned to bottom
-            perPeriodLabel.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: 4),
-            perPeriodLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            perPeriodLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            perPeriodLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14),
+            perPeriodLabel.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: 10),
+            perPeriodLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            perPeriodLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            perPeriodLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -14),
         ])
     }
 

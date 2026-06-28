@@ -45,6 +45,9 @@ class BaseClassVc: UIViewController {
         
         addGradient()
         
+        
+        
+        
     }
     
     
