@@ -136,16 +136,18 @@ class User : Mappable {
     var arr : [String]?
     var arrStr : String?
     
-    
+    var front  : String?
+    var back  : String?
+    var selfie  : String?
     
     
    
     required init?(map: Map) {}
     
     func mapping(map: Map) {
-        
-        
-        
+        front <- map["front"]
+        back <- map["back"]
+        selfie <- map["selfie"]
         targetUserId <- map["targetUserId"]
         swipedId <- map["swipedId"]
         maxMembers  <- map["maxMembers"]

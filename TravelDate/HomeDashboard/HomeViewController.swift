@@ -150,6 +150,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        
+            
+        
         getDashboard()
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {

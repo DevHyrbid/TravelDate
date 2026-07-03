@@ -281,7 +281,7 @@ class NetworkManger {
     }
     
     static func getJSONHeaderWithAccessToken() -> [String: String] {
-        let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""
+        let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""//UserToken
         var headers = [String: String]()
         if !token.isEmpty {
             headers["Authorization"] = "Bearer \(token)"

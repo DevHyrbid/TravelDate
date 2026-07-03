@@ -17,4 +17,9 @@ class PrivacySecurityVc: BaseClassVc {
         super.backTapped()
     }
     
+    @IBAction func btnGetVerfued(_ sender:UIButton) {
+        let vc = GetVerifiedVc()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
 }

@@ -16,717 +16,491 @@ private extension UIFont {
     }
 }
 
-// MARK: - MatchCardView
+import UIKit
+import SDWebImage
+
+// MARK: - MatchCardView (Front + Flip to Members Grid)
 final class MatchCardView: UIView {
 
-    // MARK: Public API (read by SwipeViewController)
-    private(set) var isFlipped = false
-    var flipButtonFrame: CGRect { filterButton.frame }
+    // MARK: - Public
+    var isFlipped: Bool = false
+    var flipButtonFrame: CGRect { flipButton.convert(flipButton.bounds, to: self) }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Face containers
-    // ─────────────────────────────────────────────────────────
-    private let frontView: UIView = {
-        let v = UIView()
-        v.clipsToBounds = true
-        v.layer.cornerRadius = 24
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    var group: Group? { didSet { configure(with: group) } }
 
-    private let backView: UIView = {
-        let v = UIView()
-        v.clipsToBounds = true
-        v.layer.cornerRadius = 24
-        v.alpha = 0
-        // Pre-mirrored so it looks correct after the flip
-        v.layer.transform = CATransform3DMakeRotation(.pi, 0, 1, 0)
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    // MARK: - Face containers
+    private let frontView = UIView()
+    private let backView  = UIView()
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Front face elements
-    // ─────────────────────────────────────────────────────────
+    // ── FRONT ────────────────────────────────────────────────────
     private let coverImageView: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
+        let iv = UIImageView(); iv.contentMode = .scaleAspectFill; iv.clipsToBounds = true; return iv
+    }()
+    private let bottomGradientView = UIView()
+    private let topStripsContainer = UIView()
+    private var topGlassStrips: [UIVisualEffectView] = []
+
+    // Badge
+    private let badgeBlurView: UIVisualEffectView = {
+        let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        v.clipsToBounds = true; v.layer.cornerRadius = 21; return v
+    }()
+    private let badgeIconLabel: UILabel = { let l = UILabel(); l.text = "🏖"; l.font = .systemFont(ofSize: 16); return l }()
+    private let badgeTextLabel: UILabel = {
+        let l = UILabel(); l.text = "Leisure travelers"; l.textColor = .white
+        l.font = .systemFont(ofSize: 15, weight: .medium); return l
     }()
 
-    private let gradientOverlay: UIView = {
-        let v = UIView()
-        v.isUserInteractionEnabled = false
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
-    private var frontGradient: CAGradientLayer?
-
-    // Top-left travel style badge
-    private let travelStyleBadge: UIView = {
-        let v = UIView(); v.clipsToBounds = true
-        v.translatesAutoresizingMaskIntoConstraints = false; return v
-    }()
-    private let badgeBlur   = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
-    private let badgeEmoji  = MatchCardView.makeLabel(font: .systemFont(ofSize: 14))
-    private let badgeTitle  = MatchCardView.makeLabel(font: .poppins(.medium, size: 13), color: .white)
-
-    // Top-right flip button
-    private let filterButton: UIButton = {
+    // Flip button
+    private let flipButton: UIButton = {
         let b = UIButton(type: .system)
-        b.clipsToBounds = true
-        b.translatesAutoresizingMaskIntoConstraints = false; return b
+        b.setImage(UIImage(systemName: "rectangle.on.rectangle"), for: .normal)
+        b.tintColor = .white; b.clipsToBounds = true; b.layer.cornerRadius = 23; return b
     }()
-    private let filterBlur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
-
-    // Bottom info
-    private let groupIconCircle: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor.white.withAlphaComponent(0.18)
-        v.clipsToBounds = true
-        v.translatesAutoresizingMaskIntoConstraints = false; return v
+    private let flipButtonBlur: UIVisualEffectView = {
+        let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        v.clipsToBounds = true; v.layer.cornerRadius = 23; v.isUserInteractionEnabled = false; return v
     }()
-    private let groupIconLabel = MatchCardView.makeLabel(font: .systemFont(ofSize: 18), align: .center)
-    private let groupTitleLabel = MatchCardView.makeLabel(font: .poppins(.semibold, size: 20), color: .white, lines: 1)
 
-    // Pills
-    private let datePill      = MatchCardView.pill()
-    private let dateLabel     = MatchCardView.pillLabel()
-    private let locationPill  = MatchCardView.pill()
-    private let locationLabel = MatchCardView.pillLabel()
-    private let travelersPill  = MatchCardView.pill()
-    private let travelersLabel = MatchCardView.pillLabel()
-    private let agePill  = MatchCardView.pill()
-    private let ageLabel = MatchCardView.pillLabel()
+    // Category icon
+    private let categoryIconBlur: UIVisualEffectView = {
+        let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        v.clipsToBounds = true; v.layer.cornerRadius = 20; return v
+    }()
+    private let categoryIconLabel: UILabel = {
+        let l = UILabel(); l.text = "🏖"; l.font = .systemFont(ofSize: 20); l.textAlignment = .center; return l
+    }()
+
+    // Title + pills
+    private let titleLabel: UILabel = {
+        let l = UILabel(); l.text = "Tokyo Adventure Squad"; l.textColor = .white
+        l.font = .systemFont(ofSize: 28, weight: .bold); l.numberOfLines = 2; return l
+    }()
+    private let pill1 = GlassPill(), pill2 = GlassPill(), pill3 = GlassPill(), pill4 = GlassPill()
+    private let pillRow1 = UIStackView(), pillRow2 = UIStackView()
+
 
     // Stamps
-    private let likeStampView  = MatchCardView.stamp(color: .systemGreen, angle: -0.26)
-    private let nopeStampView  = MatchCardView.stamp(color: .systemRed,   angle:  0.26)
-    private let likeStampLabel = MatchCardView.stampLabel(text: "JOIN",  color: .systemGreen)
-    private let nopeStampLabel = MatchCardView.stampLabel(text: "NOPE",  color: .systemRed)
+    private let likeStampLabel = MatchCardView.makeStamp("LIKE", color: .systemGreen)
+    private let nopeStampLabel = MatchCardView.makeStamp("NOPE", color: .systemRed)
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Back face elements
-    // ─────────────────────────────────────────────────────────
-    private let backGradientLayer = CAGradientLayer()
+    // ── BACK ─────────────────────────────────────────────────────
+    private let backGradientView = UIView()
+    private var memberCells: [MemberCell] = []
 
-    private let backBadge      = UIView()
-    private let backBadgeBlur  = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
-    private let backBadgeEmoji = MatchCardView.makeLabel(font: .systemFont(ofSize: 14))
-    private let backBadgeTitle = MatchCardView.makeLabel(font: .poppins(.medium, size: 13), color: .white)
+    // MARK: - Init
+    override init(frame: CGRect) { super.init(frame: frame); buildUI() }
+    required init?(coder: NSCoder) { super.init(coder: coder); buildUI() }
+    static func make() -> MatchCardView { MatchCardView(frame: .zero) }
 
-    private let backFlipButton: UIButton = {
-        let b = UIButton(type: .system); b.clipsToBounds = true
-        b.translatesAutoresizingMaskIntoConstraints = false; return b
-    }()
-    private let backFlipBlur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+    // MARK: - Build UI
+    private func buildUI() {
+        layer.cornerRadius = 36
+        clipsToBounds = true
+        layer.borderWidth = 1
+        layer.borderColor = UIColor(red: 1, green: 0, blue: 0.4, alpha: 0.20).cgColor
 
-    // ── KEY: members collection view
-    // Cell sizing uses UICollectionViewDelegateFlowLayout sizeForItemAt —
-    // this is called at data-load time with the ACTUAL collection view bounds,
-    // not during the initial layout pass when backView may be hidden (alpha=0).
-    private lazy var membersCV: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection        = .vertical
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing     = 10
-        // Do NOT set itemSize here — delegate method handles it
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .clear
-        cv.isScrollEnabled = true
-        cv.showsVerticalScrollIndicator = false
-        cv.translatesAutoresizingMaskIntoConstraints = false
-        cv.register(MemberCell.self, forCellWithReuseIdentifier: MemberCell.reuseID)
-        cv.dataSource = self
-        cv.delegate   = self
-        return cv
-    }()
+        // ── FRONT ──
+        frontView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(frontView)
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Model
-    // ─────────────────────────────────────────────────────────
-    var group: Group? { didSet { configure() } }
-    private var members: [MemberGroup] = []
+        frontView.addSubview(coverImageView)
+        frontView.addSubview(bottomGradientView)
+        frontView.addSubview(topStripsContainer)
+        buildTopStrips()
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Init
-    // ─────────────────────────────────────────────────────────
-    override init(frame: CGRect)  { super.init(frame: frame);  setup() }
-    required init?(coder: NSCoder){ super.init(coder: coder); setup() }
+        frontView.addSubview(badgeBlurView)
+        badgeBlurView.contentView.addSubview(badgeIconLabel)
+        badgeBlurView.contentView.addSubview(badgeTextLabel)
+        addGlassBorder(to: badgeBlurView)
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — layoutSubviews  (CALayer frames only — NO cell sizing here)
-    // ─────────────────────────────────────────────────────────
+        frontView.addSubview(flipButtonBlur)
+        flipButtonBlur.contentView.addSubview(flipButton)
+        addGlassBorder(to: flipButtonBlur)
+        flipButton.addTarget(self, action: #selector(flipTapped), for: .touchUpInside)
+
+        frontView.addSubview(categoryIconBlur)
+        categoryIconBlur.contentView.addSubview(categoryIconLabel)
+        addGlassBorder(to: categoryIconBlur)
+
+        frontView.addSubview(titleLabel)
+
+        pillRow1.axis = .horizontal; pillRow1.spacing = 10; pillRow1.alignment = .center
+        pillRow1.addArrangedSubview(pill1); pillRow1.addArrangedSubview(pill2)
+        pillRow2.axis = .horizontal; pillRow2.spacing = 10; pillRow2.alignment = .center
+        pillRow2.addArrangedSubview(pill3); pillRow2.addArrangedSubview(pill4)
+        frontView.addSubview(pillRow1); frontView.addSubview(pillRow2)
+
+       
+
+        frontView.addSubview(likeStampLabel); frontView.addSubview(nopeStampLabel)
+        likeStampLabel.alpha = 0; nopeStampLabel.alpha = 0
+
+        pill1.setText("Apr 15 - Apr 25, 2026"); pill2.setText("Avg age: 25 - 30")
+        pill3.setText("4 travelers"); pill4.setText("Bali, Japan")
+
+        // ── BACK ──
+        backView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        backView.alpha = 0
+        // Start pre-flipped (hidden behind front)
+        backView.layer.transform = CATransform3DMakeRotation(-.pi / 2, 0, 1, 0)
+        addSubview(backView)
+
+        backView.addSubview(backGradientView)
+        backGradientView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        for _ in 0..<4 {
+            let cell = MemberCell()
+            backView.addSubview(cell)
+            memberCells.append(cell)
+        }
+    }
+
+    private func buildTopStrips() {
+        for _ in 0..<3 {
+            let s = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+            s.layer.cornerRadius = 6; s.clipsToBounds = true; s.alpha = 0.18
+            topStripsContainer.addSubview(s); topGlassStrips.append(s)
+        }
+    }
+
+    // MARK: - Layout
     override func layoutSubviews() {
         super.layoutSubviews()
-        frontGradient?.frame      = gradientOverlay.bounds
-        backGradientLayer.frame   = backView.bounds
+        let W = bounds.width, H = bounds.height
 
-        travelStyleBadge.layer.cornerRadius = travelStyleBadge.bounds.height / 2
-        backBadge.layer.cornerRadius        = backBadge.bounds.height / 2
-        filterButton.layer.cornerRadius     = filterButton.bounds.height / 2
-        backFlipButton.layer.cornerRadius   = backFlipButton.bounds.height / 2
-        groupIconCircle.layer.cornerRadius  = groupIconCircle.bounds.height / 2
+        frontView.frame = bounds
+        backView.frame  = bounds
+
+        // Cover
+        coverImageView.frame = frontView.bounds
+
+        // Bottom gradient
+        let gradH = H * 0.52
+        bottomGradientView.frame = CGRect(x: 0, y: H - gradH, width: W, height: gradH)
+        applyBottomGradient()
+
+        // Top strips
+        topStripsContainer.frame = CGRect(x: 0, y: 0, width: W, height: H * 0.18)
+        layoutTopStrips()
+
+        // Badge
+        let bW: CGFloat = 158, bH: CGFloat = 42
+        badgeBlurView.frame = CGRect(x: 16, y: 20, width: bW, height: bH)
+        badgeIconLabel.frame = CGRect(x: 10, y: (bH-22)/2, width: 22, height: 22)
+        badgeTextLabel.frame = CGRect(x: 38, y: 0, width: bW-48, height: bH)
+
+        // Flip btn
+        let btnSz: CGFloat = 46
+        flipButtonBlur.frame = CGRect(x: W - btnSz - 16, y: 20, width: btnSz, height: btnSz)
+        flipButton.frame = flipButtonBlur.contentView.bounds
+        flipButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 18), forImageIn: .normal)
+
+        // Pills (bottom up)
+        let pH: CGFloat = 36
+        let pRow2Y = H - 28 - pH
+        pillRow2.frame = CGRect(x: 16, y: pRow2Y, width: W * 0.65, height: pH)
+        let pRow1Y = pRow2Y - 10 - pH
+        pillRow1.frame = CGRect(x: 16, y: pRow1Y, width: W - 32, height: pH)
+
+        // Title
+        let tH: CGFloat = 68
+        let tY = pRow1Y - 8 - tH
+        titleLabel.frame = CGRect(x: 16, y: tY, width: W - 32, height: tH)
+
+        // Category icon
+        let cSz: CGFloat = 40
+        categoryIconBlur.frame = CGRect(x: 16, y: tY - 10 - cSz, width: cSz, height: cSz)
+        categoryIconLabel.frame = CGRect(x: 0, y: 0, width: cSz, height: cSz)
+
+        // Member pill
+       
+
+        // Stamps
+        likeStampLabel.frame = CGRect(x: 20, y: 80, width: 120, height: 44)
+        likeStampLabel.transform = CGAffineTransform(rotationAngle: -0.35)
+        nopeStampLabel.frame = CGRect(x: W - 140, y: 80, width: 120, height: 44)
+        nopeStampLabel.transform = CGAffineTransform(rotationAngle: 0.35)
+
+
+
+        // ── BACK layout ──
+        backGradientView.frame = backView.bounds
+        applyBackGradient()
+        layoutMemberGrid()
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Setup
-    // ─────────────────────────────────────────────────────────
-    private func setup() {
-        layer.cornerRadius = 24
-        clipsToBounds = true
-        backgroundColor = .black
-
-        for face in [frontView, backView] {
-            addSubview(face)
-            NSLayoutConstraint.activate([
-                face.topAnchor.constraint(equalTo: topAnchor),
-                face.leadingAnchor.constraint(equalTo: leadingAnchor),
-                face.trailingAnchor.constraint(equalTo: trailingAnchor),
-                face.bottomAnchor.constraint(equalTo: bottomAnchor)
-            ])
+    private func layoutTopStrips() {
+        let W = topStripsContainer.bounds.width
+        let widths: [CGFloat] = [W*0.92, W*0.76, W*0.60]
+        for (i, strip) in topGlassStrips.enumerated() {
+            strip.frame = CGRect(x: 8, y: CGFloat(i)*38 + 10, width: widths[i], height: 28)
         }
-
-        buildFront()
-        buildBack()
-        buildStamps()
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Front face
-    // ─────────────────────────────────────────────────────────
-    private func buildFront() {
-        // Cover image — full bleed
-        frontView.addSubview(coverImageView)
-        pin(coverImageView, to: frontView)
-
-        // Gradient overlay — full bleed, non-interactive
-        frontView.addSubview(gradientOverlay)
-        pin(gradientOverlay, to: frontView)
-
-        let gl = CAGradientLayer()
-        gl.colors     = [UIColor.black.withAlphaComponent(0.0).cgColor,
-                         UIColor(red: 247/255, green: 102/255, blue: 6/255, alpha: 0.72).cgColor]
-        gl.locations  = [0.45, 1.0]
-        gl.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gl.endPoint   = CGPoint(x: 0.5, y: 1.0)
-        gl.cornerRadius = 24
-        gradientOverlay.layer.insertSublayer(gl, at: 0)
-        frontGradient = gl
-
-        // Travel style badge (top-left)
-        frontView.addSubview(travelStyleBadge)
-        for v in [badgeBlur as UIView, badgeEmoji, badgeTitle] {
-            v.translatesAutoresizingMaskIntoConstraints = false
-            travelStyleBadge.addSubview(v)
+    private func layoutMemberGrid() {
+        let W = backView.bounds.width, H = backView.bounds.height
+        let gap: CGFloat = 12, pad: CGFloat = 16
+        let cW = (W - pad*2 - gap) / 2
+        let cH = (H - pad*2 - gap) / 2
+        let origins: [CGPoint] = [
+            CGPoint(x: pad,       y: pad),
+            CGPoint(x: pad+cW+gap,y: pad),
+            CGPoint(x: pad,       y: pad+cH+gap),
+            CGPoint(x: pad+cW+gap,y: pad+cH+gap)
+        ]
+        for (i, cell) in memberCells.enumerated() {
+            cell.frame = CGRect(origin: origins[i], size: CGSize(width: cW, height: cH))
+            cell.layer.cornerRadius = 20
         }
-        NSLayoutConstraint.activate([
-            travelStyleBadge.topAnchor.constraint(equalTo: frontView.topAnchor, constant: 18),
-            travelStyleBadge.leadingAnchor.constraint(equalTo: frontView.leadingAnchor, constant: 16),
-            travelStyleBadge.heightAnchor.constraint(equalToConstant: 34),
-
-            badgeBlur.topAnchor.constraint(equalTo: travelStyleBadge.topAnchor),
-            badgeBlur.leadingAnchor.constraint(equalTo: travelStyleBadge.leadingAnchor),
-            badgeBlur.trailingAnchor.constraint(equalTo: travelStyleBadge.trailingAnchor),
-            badgeBlur.bottomAnchor.constraint(equalTo: travelStyleBadge.bottomAnchor),
-
-            badgeEmoji.leadingAnchor.constraint(equalTo: travelStyleBadge.leadingAnchor, constant: 10),
-            badgeEmoji.centerYAnchor.constraint(equalTo: travelStyleBadge.centerYAnchor),
-            badgeTitle.leadingAnchor.constraint(equalTo: badgeEmoji.trailingAnchor, constant: 5),
-            badgeTitle.centerYAnchor.constraint(equalTo: travelStyleBadge.centerYAnchor),
-            badgeTitle.trailingAnchor.constraint(equalTo: travelStyleBadge.trailingAnchor, constant: -10)
-        ])
-
-        // Flip button (top-right)
-        filterBlur.translatesAutoresizingMaskIntoConstraints = false
-        filterBlur.isUserInteractionEnabled = false
-        frontView.addSubview(filterButton)
-        filterButton.insertSubview(filterBlur, at: 0)
-        let fIcon = iconView("rectangle.on.rectangle")
-        
-        filterButton.addSubview(fIcon)
-        NSLayoutConstraint.activate([
-            filterButton.topAnchor.constraint(equalTo: frontView.topAnchor, constant: 18),
-            filterButton.trailingAnchor.constraint(equalTo: frontView.trailingAnchor, constant: -16),
-            filterButton.widthAnchor.constraint(equalToConstant: 38),
-            filterButton.heightAnchor.constraint(equalToConstant: 38),
-            filterBlur.topAnchor.constraint(equalTo: filterButton.topAnchor),
-            filterBlur.leadingAnchor.constraint(equalTo: filterButton.leadingAnchor),
-            filterBlur.trailingAnchor.constraint(equalTo: filterButton.trailingAnchor),
-            filterBlur.bottomAnchor.constraint(equalTo: filterButton.bottomAnchor),
-            fIcon.centerXAnchor.constraint(equalTo: filterButton.centerXAnchor),
-            fIcon.centerYAnchor.constraint(equalTo: filterButton.centerYAnchor),
-            fIcon.widthAnchor.constraint(equalToConstant: 18),
-            fIcon.heightAnchor.constraint(equalToConstant: 18)
-        ])
-        filterButton.addTarget(self, action: #selector(flipCard), for: .touchUpInside)
-
-        // Bottom info: icon → title → row1 → row2
-        frontView.addSubview(groupIconCircle)
-        groupIconLabel.translatesAutoresizingMaskIntoConstraints = false
-        groupIconCircle.addSubview(groupIconLabel)
-
-        frontView.addSubview(groupTitleLabel)
-
-        let row1 = pillRow([(datePill, dateLabel), (locationPill, locationLabel)])
-        let row2 = pillRow([(travelersPill, travelersLabel), (agePill, ageLabel)])
-        frontView.addSubview(row1)
-        frontView.addSubview(row2)
-
-        NSLayoutConstraint.activate([
-            // Pin row2 to bottom
-            row2.leadingAnchor.constraint(equalTo: frontView.leadingAnchor, constant: 16),
-            row2.bottomAnchor.constraint(equalTo: frontView.bottomAnchor, constant: -20),
-            row2.trailingAnchor.constraint(lessThanOrEqualTo: frontView.trailingAnchor, constant: -16),
-            // row1 above row2
-            row1.leadingAnchor.constraint(equalTo: frontView.leadingAnchor, constant: 16),
-            row1.bottomAnchor.constraint(equalTo: row2.topAnchor, constant: -8),
-            row1.trailingAnchor.constraint(lessThanOrEqualTo: frontView.trailingAnchor, constant: -16),
-            // title above row1
-            groupTitleLabel.leadingAnchor.constraint(equalTo: frontView.leadingAnchor, constant: 16),
-            groupTitleLabel.trailingAnchor.constraint(equalTo: frontView.trailingAnchor, constant: -60),
-            groupTitleLabel.bottomAnchor.constraint(equalTo: row1.topAnchor, constant: -10),
-            // icon above title
-            groupIconCircle.leadingAnchor.constraint(equalTo: frontView.leadingAnchor, constant: 16),
-            groupIconCircle.bottomAnchor.constraint(equalTo: groupTitleLabel.topAnchor, constant: -8),
-            groupIconCircle.widthAnchor.constraint(equalToConstant: 40),
-            groupIconCircle.heightAnchor.constraint(equalToConstant: 40),
-            groupIconLabel.centerXAnchor.constraint(equalTo: groupIconCircle.centerXAnchor),
-            groupIconLabel.centerYAnchor.constraint(equalTo: groupIconCircle.centerYAnchor)
-        ])
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Back face
-    // ─────────────────────────────────────────────────────────
-    private func buildBack() {
-        // Orange → deep-red gradient
-        backGradientLayer.colors    = [UIColor(red: 1.0, green: 0.44, blue: 0.09, alpha: 1).cgColor,
-                                       UIColor(red: 0.82, green: 0.17, blue: 0.10, alpha: 1).cgColor]
-        backGradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        backGradientLayer.endPoint   = CGPoint(x: 1, y: 1)
-        backGradientLayer.cornerRadius = 24
-        backView.layer.insertSublayer(backGradientLayer, at: 0)
-
-        // Back badge (top-left)
-        backBadge.clipsToBounds = true
-        backBadge.translatesAutoresizingMaskIntoConstraints = false
-        backView.addSubview(backBadge)
-        for v in [backBadgeBlur as UIView, backBadgeEmoji, backBadgeTitle] {
-            v.translatesAutoresizingMaskIntoConstraints = false
-            backBadge.addSubview(v)
-        }
-        NSLayoutConstraint.activate([
-            backBadge.topAnchor.constraint(equalTo: backView.topAnchor, constant: 18),
-            backBadge.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 16),
-            backBadge.heightAnchor.constraint(equalToConstant: 34),
-            backBadgeBlur.topAnchor.constraint(equalTo: backBadge.topAnchor),
-            backBadgeBlur.leadingAnchor.constraint(equalTo: backBadge.leadingAnchor),
-            backBadgeBlur.trailingAnchor.constraint(equalTo: backBadge.trailingAnchor),
-            backBadgeBlur.bottomAnchor.constraint(equalTo: backBadge.bottomAnchor),
-            backBadgeEmoji.leadingAnchor.constraint(equalTo: backBadge.leadingAnchor, constant: 10),
-            backBadgeEmoji.centerYAnchor.constraint(equalTo: backBadge.centerYAnchor),
-            backBadgeTitle.leadingAnchor.constraint(equalTo: backBadgeEmoji.trailingAnchor, constant: 5),
-            backBadgeTitle.centerYAnchor.constraint(equalTo: backBadge.centerYAnchor),
-            backBadgeTitle.trailingAnchor.constraint(equalTo: backBadge.trailingAnchor, constant: -10)
-        ])
-
-        // Back flip button (top-right)
-        backFlipBlur.translatesAutoresizingMaskIntoConstraints = false
-        backFlipBlur.isUserInteractionEnabled = false
-        backView.addSubview(backFlipButton)
-        backFlipButton.insertSubview(backFlipBlur, at: 0)
-        let bIcon = iconView("rectangle.on.rectangle")
-        backFlipButton.addSubview(bIcon)
-        NSLayoutConstraint.activate([
-            backFlipButton.topAnchor.constraint(equalTo: backView.topAnchor, constant: 18),
-            backFlipButton.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -16),
-            backFlipButton.widthAnchor.constraint(equalToConstant: 38),
-            backFlipButton.heightAnchor.constraint(equalToConstant: 38),
-            backFlipBlur.topAnchor.constraint(equalTo: backFlipButton.topAnchor),
-            backFlipBlur.leadingAnchor.constraint(equalTo: backFlipButton.leadingAnchor),
-            backFlipBlur.trailingAnchor.constraint(equalTo: backFlipButton.trailingAnchor),
-            backFlipBlur.bottomAnchor.constraint(equalTo: backFlipButton.bottomAnchor),
-            bIcon.centerXAnchor.constraint(equalTo: backFlipButton.centerXAnchor),
-            bIcon.centerYAnchor.constraint(equalTo: backFlipButton.centerYAnchor),
-            bIcon.widthAnchor.constraint(equalToConstant: 18),
-            bIcon.heightAnchor.constraint(equalToConstant: 18)
-        ])
-        backFlipButton.addTarget(self, action: #selector(flipCard), for: .touchUpInside)
-
-        // ── Members collection view
-        // Constrained to fill the back face below the top bar.
-        // sizeForItemAt (delegate) computes cell size from cv.bounds at query time.
-        backView.addSubview(membersCV)
-        NSLayoutConstraint.activate([
-            membersCV.topAnchor.constraint(equalTo: backFlipButton.bottomAnchor, constant: 12),
-            membersCV.leadingAnchor.constraint(equalTo: backView.leadingAnchor, constant: 12),
-            membersCV.trailingAnchor.constraint(equalTo: backView.trailingAnchor, constant: -12),
-            membersCV.bottomAnchor.constraint(equalTo: backView.bottomAnchor, constant: -12)
-        ])
+    // MARK: - Gradients
+    private func applyBottomGradient() {
+        bottomGradientView.layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
+        let g = CAGradientLayer()
+        g.frame = bottomGradientView.bounds
+        g.colors = [UIColor.clear.cgColor,
+                    UIColor(red:1, green:0.35, blue:0, alpha:0.55).cgColor,
+                    UIColor(red:1, green:0.20, blue:0, alpha:0.82).cgColor]
+        g.locations = [0, 0.45, 1.0]
+        g.startPoint = CGPoint(x: 0.5, y: 0); g.endPoint = CGPoint(x: 0.5, y: 1)
+        bottomGradientView.layer.insertSublayer(g, at: 0)
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Stamps (above both faces)
-    // ─────────────────────────────────────────────────────────
-    private func buildStamps() {
-        addSubview(likeStampView);  likeStampView.addSubview(likeStampLabel)
-        addSubview(nopeStampView); nopeStampView.addSubview(nopeStampLabel)
-
-        for (stamp, label) in [(likeStampView, likeStampLabel), (nopeStampView, nopeStampLabel)] {
-            NSLayoutConstraint.activate([
-                label.topAnchor.constraint(equalTo: stamp.topAnchor, constant: 8),
-                label.bottomAnchor.constraint(equalTo: stamp.bottomAnchor, constant: -8),
-                label.leadingAnchor.constraint(equalTo: stamp.leadingAnchor, constant: 14),
-                label.trailingAnchor.constraint(equalTo: stamp.trailingAnchor, constant: -14)
-            ])
-        }
-        NSLayoutConstraint.activate([
-            likeStampView.topAnchor.constraint(equalTo: topAnchor, constant: 56),
-            likeStampView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            nopeStampView.topAnchor.constraint(equalTo: topAnchor, constant: 56),
-            nopeStampView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20)
-        ])
+    private func applyBackGradient() {
+        backGradientView.layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
+        let g = CAGradientLayer()
+        g.frame = backGradientView.bounds
+        // Orange-red → deep pink (matches screenshot)
+        g.colors = [UIColor(red:1.0, green:0.42, blue:0.0, alpha:1).cgColor,
+                    UIColor(red:1.0, green:0.18, blue:0.2, alpha:1).cgColor,
+                    UIColor(red:0.85,green:0.05, blue:0.3, alpha:1).cgColor]
+        g.locations = [0, 0.5, 1.0]
+        g.startPoint = CGPoint(x: 0.5, y: 0); g.endPoint = CGPoint(x: 0.5, y: 1)
+        backGradientView.layer.insertSublayer(g, at: 0)
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Configure
-    // ─────────────────────────────────────────────────────────
-    private func configure() {
+    // MARK: - Configure
+    private func configure(with group: Group?) {
         guard let group else { return }
+        titleLabel.text = group.title ?? "Travel Group"
+        print(group.coverImage,"sdhgbs")
+        
+        ImageLoader.setImageKing(coverImageView, urlString: APiConstant.base + "\(group.coverImage ?? "")")
+        let style = group.travelStyle?.first ?? "beach"
+        categoryIconLabel.text = iconEmoji(for: style)
+        badgeIconLabel.text    = iconEmoji(for: style)
+        badgeTextLabel.text    = badgeText(for: style)
 
-        groupTitleLabel.text = group.title ?? "Travel Group"
+        pill1.setText(formatDateRange(from: group.startDate, to: group.endDate))
+        pill2.setText("Avg age:\"25 - 30")
+        pill3.setText("\(group.members?.count ?? 0) travelers")
+        pill4.setText(group.destination ?? "Bali, Japan")
 
-        let style = group.travelStyle?.joined(separator: ",") ?? "Travelers"
-        let emoji = emojiForStyle(style)
-        badgeEmoji.text  = emoji;  badgeTitle.text  = style
-        backBadgeEmoji.text = emoji; backBadgeTitle.text = style
-        groupIconLabel.text = emoji
-
-        dateLabel.text      = formatDateRange(group.startDate, group.endDate)
-        locationLabel.text  = "📍 \(group.destination ?? "—")"
-        let count = group.members?.count ?? 0
-        travelersLabel.text = "👥 \(count) traveler\(count == 1 ? "" : "s")"
-        ageLabel.text       = "🎂 Avg age: \(group.preferences?.minAge ?? 0)– \((group.preferences?.maxAge ?? 0))"
-
-        if let urlStr = group.coverImage, let url = URL(string: "\(APiConstant.base)\(urlStr)") {
-            coverImageView.kf.setImage(with: url,
-                                       placeholder: UIImage(named: "User"),
-                                       options: [.transition(.fade(0.25)), .cacheOriginalImage])
+      
+        // Back face: fill member cells
+        let members = group.membersUser ?? []
+        for (i, cell) in memberCells.enumerated() {
+            if i < members.count { cell.configure(with: members[i]); cell.isHidden = false }
+            else { cell.isHidden = true }
         }
-
-        members = group.members ?? []
-        membersCV.reloadData()
-
-        // Reset to front on reuse
-        if isFlipped { flipCard() }
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Flip Animation
-    // ─────────────────────────────────────────────────────────
-    @objc func flipCard() {
-        isUserInteractionEnabled = false
+    // MARK: - Flip
+    @objc private func flipTapped() {
+        isFlipped.toggle()
+        let fromView = isFlipped ? frontView : backView
+        let toView   = isFlipped ? backView  : frontView
 
-        let fromView: UIView = isFlipped ? backView  : frontView
-        let toView:   UIView = isFlipped ? frontView : backView
-        let dir: CGFloat     = isFlipped ? -1.0 : 1.0
+        var p = CATransform3DIdentity; p.m34 = -1.0 / 800
 
-        // Phase 1: fold outgoing face to 90°
-        UIView.animate(withDuration: 0.22, delay: 0, options: .curveEaseIn) {
-            fromView.layer.transform = CATransform3DMakeRotation(.pi / 2 * dir, 0, 1, 0)
-        } completion: { _ in
-            fromView.alpha = 0
-            fromView.layer.transform = CATransform3DIdentity
-
-            // Phase 2: unfold incoming face from −90°
-            toView.layer.transform = CATransform3DMakeRotation(-.pi / 2 * dir, 0, 1, 0)
-            toView.alpha = 1
-
-            UIView.animate(withDuration: 0.22, delay: 0, options: .curveEaseOut) {
-                toView.layer.transform = CATransform3DIdentity
-            } completion: { _ in
-                self.isFlipped.toggle()
-                self.isUserInteractionEnabled = true
-                // Force a fresh layout pass so sizeForItemAt gets correct cv.bounds
-                self.membersCV.collectionViewLayout.invalidateLayout()
+        UIView.animateKeyframes(withDuration: 0.5, delay: 0, options: .calculationModeCubic) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.5) {
+                fromView.layer.transform = CATransform3DConcat(p, CATransform3DMakeRotation(.pi/2, 0, 1, 0))
+                fromView.alpha = 0
+            }
+            UIView.addKeyframe(withRelativeStartTime: 0.5, relativeDuration: 0.5) {
+                toView.layer.transform = CATransform3DConcat(p, CATransform3DMakeRotation(0, 0, 1, 0))
+                toView.alpha = 1
             }
         }
-    }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Stamp Control
-    // ─────────────────────────────────────────────────────────
-    func showLikeStamp(_ show: Bool, intensity: CGFloat = 1.0) {
-        UIView.animate(withDuration: 0.1) {
-            self.likeStampView.alpha  = show ? min(intensity * 2, 1.0) : 0
-            self.nopeStampView.alpha = 0
-        }
-    }
-    func showNopeStamp(_ show: Bool, intensity: CGFloat = 1.0) {
-        UIView.animate(withDuration: 0.1) {
-            self.nopeStampView.alpha = show ? min(intensity * 2, 1.0) : 0
-            self.likeStampView.alpha  = 0
-        }
-    }
-    func hideStamps() {
-        UIView.animate(withDuration: 0.15) {
-            self.likeStampView.alpha  = 0
-            self.nopeStampView.alpha = 0
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            fromView.layer.transform = CATransform3DConcat(p, CATransform3DMakeRotation(-.pi/2, 0, 1, 0))
         }
     }
 
-    // ─────────────────────────────────────────────────────────
-    // MARK: — Factory helpers
-    // ─────────────────────────────────────────────────────────
-    private static func makeLabel(font: UIFont,
-                                   color: UIColor = .white,
-                                   align: NSTextAlignment = .natural,
-                                   lines: Int = 0) -> UILabel {
-        let l = UILabel()
-        l.font = font; l.textColor = color
-        l.textAlignment = align; l.numberOfLines = lines
+    // MARK: - Stamps
+    func showLikeStamp(_ show: Bool, intensity: CGFloat) {
+        guard !isFlipped else { return }
+        likeStampLabel.alpha = show ? min(intensity * 2, 1) : 0; nopeStampLabel.alpha = 0
+    }
+    func showNopeStamp(_ show: Bool, intensity: CGFloat) {
+        guard !isFlipped else { return }
+        nopeStampLabel.alpha = show ? min(intensity * 2, 1) : 0; likeStampLabel.alpha = 0
+    }
+    func hideStamps() { likeStampLabel.alpha = 0; nopeStampLabel.alpha = 0 }
+
+    // MARK: - Helpers
+    private func addGlassBorder(to view: UIView) {
+        view.layer.borderWidth = 1
+        view.layer.borderColor = UIColor.white.withAlphaComponent(0.20).cgColor
+    }
+
+    static func makeGradientAvatar(letter: String) -> UIView {
+        let v = UIView(); v.clipsToBounds = true
+        let g = CAGradientLayer()
+        g.colors = [UIColor.systemPink.cgColor, UIColor.purple.cgColor]
+        g.startPoint = CGPoint(x: 0, y: 0); g.endPoint = CGPoint(x: 1, y: 1)
+        v.layer.addSublayer(g)
+        let l = UILabel(); l.text = letter; l.textColor = .white
+        l.font = .systemFont(ofSize: 11, weight: .bold); l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }
-
-    private static func pill() -> UIView {
-        let v = UIView()
-        v.backgroundColor  = UIColor.black.withAlphaComponent(0.28)
-        v.layer.cornerRadius = 14
-        v.layer.borderWidth  = 0.5
-        v.layer.borderColor  = UIColor.white.withAlphaComponent(0.30).cgColor
-        v.clipsToBounds = true
-        v.translatesAutoresizingMaskIntoConstraints = false
+        v.addSubview(l)
+        NSLayoutConstraint.activate([l.centerXAnchor.constraint(equalTo: v.centerXAnchor),
+                                     l.centerYAnchor.constraint(equalTo: v.centerYAnchor)])
         return v
     }
 
-    private static func pillLabel() -> UILabel {
-        makeLabel(font: .poppins(.regular, size: 12))
+  
+
+    private static func makeStamp(_ text: String, color: UIColor) -> UILabel {
+        let l = UILabel(); l.text = text; l.textColor = color
+        l.font = .systemFont(ofSize: 28, weight: .black)
+        l.layer.borderColor = color.cgColor; l.layer.borderWidth = 3
+        l.layer.cornerRadius = 6; l.textAlignment = .center; return l
     }
 
-    private func pillRow(_ pairs: [(UIView, UILabel)]) -> UIStackView {
-        let row = UIStackView()
-        row.axis = .horizontal; row.spacing = 8
-        row.alignment = .center; row.distribution = .fill
-        row.translatesAutoresizingMaskIntoConstraints = false
-        for (pill, label) in pairs {
-            pill.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.topAnchor.constraint(equalTo: pill.topAnchor, constant: 6),
-                label.bottomAnchor.constraint(equalTo: pill.bottomAnchor, constant: -6),
-                label.leadingAnchor.constraint(equalTo: pill.leadingAnchor, constant: 12),
-                label.trailingAnchor.constraint(equalTo: pill.trailingAnchor, constant: -12)
-            ])
-            row.addArrangedSubview(pill)
+    private func iconEmoji(for style: String) -> String {
+        switch style.lowercased() {
+        case "beach", "leisure": return "🏖"
+        case "adventure": return "🧗"
+        case "city", "urban": return "🏙"
+        default: return "✈️"
         }
-        return row
     }
-
-    private static func stamp(color: UIColor, angle: CGFloat) -> UIView {
-        let v = UIView()
-        v.alpha = 0
-        v.layer.cornerRadius = 10
-        v.layer.borderWidth  = 3.5
-        v.layer.borderColor  = color.cgColor
-        v.transform = CGAffineTransform(rotationAngle: angle)
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }
-
-    private static func stampLabel(text: String, color: UIColor) -> UILabel {
-        makeLabel(font: .poppins(.bold, size: 22), color: color)
-    }
-
-    private func iconView(_ systemName: String) -> UIImageView {
-        let iv = UIImageView(image: UIImage(systemName: systemName))
-        iv.tintColor = .white; iv.contentMode = .scaleAspectFit
-        iv.isUserInteractionEnabled = false
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
-    }
-
-    private func pin(_ v: UIView, to parent: UIView) {
-        NSLayoutConstraint.activate([
-            v.topAnchor.constraint(equalTo: parent.topAnchor),
-            v.leadingAnchor.constraint(equalTo: parent.leadingAnchor),
-            v.trailingAnchor.constraint(equalTo: parent.trailingAnchor),
-            v.bottomAnchor.constraint(equalTo: parent.bottomAnchor)
-        ])
-    }
-
-    private func emojiForStyle(_ s: String) -> String {
-        let l = s.lowercased()
-        if l.contains("party") || l.contains("partygoer") { return "🥂" }
-        if l.contains("adven")   { return "🏔️" }
-        if l.contains("beach")   { return "🏖️" }
-        if l.contains("food")    { return "🍜" }
-        if l.contains("hike")    { return "🥾" }
-        if l.contains("leisure") { return "🌴" }
-        if l.contains("cultur")  { return "🏛️" }
-        return "✈️"
-    }
-
-    private func formatDateRange(_ start: String?, _ end: String?) -> String {
-        let fmt = DateFormatter(); fmt.dateFormat = "MMM d, yyyy"
-        let iso = ISO8601DateFormatter()
-        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        func parse(_ raw: String?) -> String {
-            guard let raw, let d = iso.date(from: raw) else { return String((start ?? "").prefix(10)) }
-            return fmt.string(from: d)
+    private func badgeText(for style: String) -> String {
+        switch style.lowercased() {
+        case "beach", "leisure": return "Leisure travelers"
+        case "adventure": return "Adventure seekers"
+        default: return "Travel enthusiasts"
         }
-        return "\(parse(start)) – \(parse(end))"
     }
-
-    static func make() -> MatchCardView { MatchCardView(frame: .zero) }
-}
-
-// MARK: - UICollectionViewDataSource
-extension MatchCardView: UICollectionViewDataSource {
-    func collectionView(_ cv: UICollectionView, numberOfItemsInSection s: Int) -> Int { members.count }
-
-    func collectionView(_ cv: UICollectionView, cellForItemAt ip: IndexPath) -> UICollectionViewCell {
-        let cell = cv.dequeueReusableCell(withReuseIdentifier: MemberCell.reuseID, for: ip) as! MemberCell
-        cell.configure(with: members[ip.item])
-        return cell
+    private func formatDateRange(from start: String?, to end: String?) -> String {
+        guard let s = start, let e = end else { return "Apr 15 - Apr 25, 2026" }
+        return "\(s) - \(e)"
     }
 }
 
-// MARK: - UICollectionViewDelegateFlowLayout
-// ── THE FIX: size is computed here, called lazily when cells are actually needed.
-// By this time the collection view has been laid out and bounds are correct.
-extension MatchCardView: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ cv: UICollectionView,
-                        layout: UICollectionViewLayout,
-                        sizeForItemAt ip: IndexPath) -> CGSize {
-        let gap: CGFloat = 10   // same as minimumInteritemSpacing
-        let w = cv.bounds.width
-        guard w > 0 else {
-            // Fallback: estimate from card width (superview chain)
-            let cardW = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.width - 40
-            let side = floor((cardW - 24 - 10) / 2)   // 24 = 12+12 padding
-            return CGSize(width: side, height: side * 1.2)
-        }
-        let side = floor((w - gap) / 2)
-        return CGSize(width: side, height: side * 1.2)
+// MARK: - GlassPill
+final class GlassPill: UIView {
+    private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+    private let label: UILabel = {
+        let l = UILabel(); l.textColor = .white
+        l.font = .systemFont(ofSize: 13, weight: .medium); l.textAlignment = .center; return l
+    }()
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+    private func setup() {
+        backgroundColor = UIColor(white: 1, alpha: 0.08); clipsToBounds = true
+        layer.cornerRadius = 18; layer.borderWidth = 1
+        layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
+        addSubview(blur); blur.contentView.addSubview(label)
+    }
+    func setText(_ text: String) { label.text = text; invalidateIntrinsicContentSize() }
+    override var intrinsicContentSize: CGSize { CGSize(width: label.intrinsicContentSize.width + 28, height: 36) }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        blur.frame = bounds; blur.layer.cornerRadius = layer.cornerRadius
+        label.frame = bounds.insetBy(dx: 12, dy: 0)
     }
 }
 
 // MARK: - MemberCell
-final class MemberCell: UICollectionViewCell {
+final class MemberCell: UIView {
 
-    static let reuseID = "MemberCell"
-
-    private let photo: UIImageView = {
-        let iv = UIImageView()
-        iv.contentMode   = .scaleAspectFill
-        iv.clipsToBounds = true
-        iv.layer.cornerRadius = 16
-        iv.backgroundColor = UIColor.white.withAlphaComponent(0.10)
-        iv.translatesAutoresizingMaskIntoConstraints = false
-        return iv
+    private let imageView: UIImageView = {
+        let iv = UIImageView(); iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true; iv.backgroundColor = UIColor(white: 0.2, alpha: 1); return iv
     }()
-
-    private let scrim: CAGradientLayer = {
-        let l = CAGradientLayer()
-        l.colors    = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.72).cgColor]
-        l.locations = [0.45, 1.0]
-        return l
-    }()
-
+    private let scrimView  = UIView()
     private let nameLabel: UILabel = {
-        let l = UILabel()
-        l.textColor = .white
-        l.font = .poppins(.semibold, size: 13)
-        l.numberOfLines = 1
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
+        let l = UILabel(); l.textColor = .white
+        l.font = .systemFont(ofSize: 13, weight: .semibold); l.numberOfLines = 1; return l
     }()
-
-    private let iconBadge: UIView = {
-        let v = UIView()
-        v.backgroundColor = UIColor.white.withAlphaComponent(0.22)
-        v.layer.cornerRadius = 13
-        v.clipsToBounds = true
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
+    // Pink-purple gradient avatar badge
+    private let avatarBadge: UIView = MatchCardView.makeGradientAvatar(letter: "D")
+    // Small emoji icon circle
+    private let iconCircle: UIView = {
+        let v = UIView(); v.backgroundColor = UIColor(white: 0.15, alpha: 0.85)
+        v.layer.cornerRadius = 12; v.clipsToBounds = true; return v
     }()
     private let iconLabel: UILabel = {
-        let l = UILabel()
-        l.textAlignment = .center
-        l.font = .systemFont(ofSize: 12)
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
+        let l = UILabel(); l.font = .systemFont(ofSize: 11); l.textAlignment = .center; return l
     }()
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        contentView.layer.cornerRadius = 16
-        contentView.clipsToBounds = true
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
 
-        // Photo fills cell
-        contentView.addSubview(photo)
-        NSLayoutConstraint.activate([
-            photo.topAnchor.constraint(equalTo: contentView.topAnchor),
-            photo.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            photo.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            photo.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
-
-        photo.layer.addSublayer(scrim)
-
-        // Name label — bottom-left
-        contentView.addSubview(nameLabel)
-        NSLayoutConstraint.activate([
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -36),
-            nameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
-        ])
-
-        // Icon badge — bottom-right
-        iconBadge.addSubview(iconLabel)
-        contentView.addSubview(iconBadge)
-        NSLayoutConstraint.activate([
-            iconBadge.widthAnchor.constraint(equalToConstant: 26),
-            iconBadge.heightAnchor.constraint(equalToConstant: 26),
-            iconBadge.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            iconBadge.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            iconLabel.centerXAnchor.constraint(equalTo: iconBadge.centerXAnchor),
-            iconLabel.centerYAnchor.constraint(equalTo: iconBadge.centerYAnchor)
-        ])
+    private func setup() {
+        clipsToBounds = true; layer.cornerRadius = 20
+        addSubview(imageView); addSubview(scrimView)
+        addSubview(nameLabel); addSubview(avatarBadge)
+        addSubview(iconCircle); iconCircle.addSubview(iconLabel)
     }
-    required init?(coder: NSCoder) { fatalError() }
+
+    func configure(with member: UserMembers) {
+
+        
+        ImageLoader.setImageKing(imageView, urlString: APiConstant.base + "\(member.profile_image ?? "")")
+        nameLabel.text = member.name ?? "Traveler"
+        let letter = String((member.name ?? "D").prefix(1)).uppercased()
+        avatarBadge.subviews.compactMap { $0 as? UILabel }.first?.text = letter
+        iconLabel.text = styleEmoji(for: member.travelStyles?.first ?? "")
+    }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        scrim.frame = contentView.bounds
+        let W = bounds.width, H = bounds.height
+        imageView.frame = bounds
+
+        // Dark scrim bottom half
+        let sH = H * 0.50
+        scrimView.frame = CGRect(x: 0, y: H - sH, width: W, height: sH)
+        applyScrim()
+
+        // Name label
+        let nH: CGFloat = 18
+        nameLabel.frame = CGRect(x: 10, y: H - 44, width: W - 20, height: nH)
+
+        // Avatar badge (pink circle, D letter)
+        let avSz: CGFloat = 24
+        avatarBadge.frame = CGRect(x: 10, y: H - avSz - 10, width: avSz, height: avSz)
+        avatarBadge.layer.cornerRadius = avSz / 2
+        if let g = avatarBadge.layer.sublayers?.first as? CAGradientLayer { g.frame = avatarBadge.bounds }
+
+        // Icon circle next to avatar
+        let icSz: CGFloat = 24
+        iconCircle.frame = CGRect(x: 10 + avSz + 6, y: H - icSz - 10, width: icSz, height: icSz)
+        iconLabel.frame  = iconCircle.bounds
     }
 
-    func configure(with member: MemberGroup) {
-        nameLabel.text = member.name ??  "Traveler"
-        iconLabel.text = "" //emojiForStyle(member.travelStyle ?? "")
+    private func applyScrim() {
+        scrimView.layer.sublayers?.filter { $0 is CAGradientLayer }.forEach { $0.removeFromSuperlayer() }
+        let g = CAGradientLayer(); g.frame = scrimView.bounds
+        g.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.72).cgColor]
+        g.startPoint = CGPoint(x: 0.5, y: 0); g.endPoint = CGPoint(x: 0.5, y: 1)
+        scrimView.layer.addSublayer(g)
+    }
 
-        let urlStr = member.profileImage ?? ""
-        if let url = URL(string: urlStr) {
-            photo.kf.setImage(with: url,
-                              placeholder: UIImage(systemName: "person.fill"),
-                              options: [.transition(.fade(0.2)), .cacheOriginalImage])
-        } else {
-            photo.image = UIImage(systemName: "person.fill")
-            photo.tintColor = .white
+    private func styleEmoji(for style: String) -> String {
+        switch style.lowercased() {
+        case "beach": return "🏖"
+        case "adventure": return "🧗"
+        case "hiking": return "🥾"
+        case "city": return "🏙"
+        default: return "✈️"
         }
-    }
-
-    private func emojiForStyle(_ s: String) -> String {
-        let l = s.lowercased()
-        if l.contains("party")  { return "🥂" }
-        if l.contains("adven")  { return "🏔️" }
-        if l.contains("beach")  { return "🏖️" }
-        if l.contains("food")   { return "🍜" }
-        if l.contains("hike")   { return "🥾" }
-        if l.contains("cultur") { return "🏛️" }
-        return "✈️"
     }
 }

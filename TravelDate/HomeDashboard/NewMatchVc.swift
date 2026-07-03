@@ -166,9 +166,12 @@ class NewMatchVc: BaseClassVc {
         case .active:
             (btnActive as? GlassButton)?.setSelectedStyle()
         }
-        
+        print(btnNew is GlassButton)
+        print(btnSave is GlassButton)
+        print(btnActive is GlassButton)
         tblVw.reloadData()
     }
+    
 }
 
 // MARK: - TableViewDelegate
@@ -203,7 +206,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
                 loadImage(cell.imageView_, url: url)
             }
             
-            cell.membersView.configure(members: model.members ?? [], totalCount: (model.maxGroupSize ?? 0), completedCount: model.members?.count ?? 0)
+            cell.membersView.configure(members: model?.members ?? [], totalCount: (model?.maxGroupSize ?? 0), completedCount: model?.members?.count ?? 0)
             
             cell.membersView.onAvatarStackTapped = {
                 print("Avatar stack tapped — show members list")

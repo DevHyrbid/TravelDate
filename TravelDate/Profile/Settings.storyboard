@@ -611,13 +611,13 @@
                                 <rect key="frame" x="0.0" y="93" width="393" height="759"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GgD-hx-fdi">
-                                        <rect key="frame" x="0.0" y="0.0" width="393" height="1332.6666666666667"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="1338.3333333333333"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QH5-vo-XBt" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="393" height="601.33333333333337"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="393" height="607"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mqz-qy-Azx" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="10" y="241.33333333333331" width="5" height="20"/>
+                                                        <rect key="frame" x="10" y="247" width="5" height="20"/>
                                                         <color key="backgroundColor" red="0.91764706370000004" green="0.2588235438" blue="0.32549020649999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="20" id="i3d-C8-3UE"/>
@@ -633,18 +633,18 @@
                                                         </userDefinedRuntimeAttributes>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Account Privacy" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yoA-aB-Xvj">
-                                                        <rect key="frame" x="25" y="231.33333333333331" width="129" height="40"/>
+                                                        <rect key="frame" x="25" y="237" width="129" height="40"/>
                                                         <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="16"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="vy3-hP-Blj">
-                                                        <rect key="frame" x="10" y="281.33333333333331" width="368" height="269.99999999999994"/>
+                                                        <rect key="frame" x="10" y="287" width="368" height="270"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="K34-l0-Gtl" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="368" height="80"/>
                                                                 <subviews>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPushnoti" translatesAutoresizingMaskIntoConstraints="NO" id="MOA-ep-C4C">
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgProfileVisiblity" translatesAutoresizingMaskIntoConstraints="NO" id="MOA-ep-C4C">
                                                                         <rect key="frame" x="10" y="20" width="40" height="40"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="height" constant="40" id="7yW-3t-20Z"/>
@@ -664,7 +664,7 @@
                                                                         <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     </switch>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Visible to all Users" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NDE-fW-KqH">
-                                                                        <rect key="frame" x="60" y="44.333333333333371" width="123" height="17.666666666666671"/>
+                                                                        <rect key="frame" x="60" y="44.333333333333314" width="123" height="17.666666666666671"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
@@ -707,7 +707,7 @@
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qh1-6y-hAS" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="95" width="368" height="80"/>
                                                                 <subviews>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPushnoti" translatesAutoresizingMaskIntoConstraints="NO" id="XwV-9N-YCQ">
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgSeen" translatesAutoresizingMaskIntoConstraints="NO" id="XwV-9N-YCQ">
                                                                         <rect key="frame" x="10" y="20" width="40" height="40"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" constant="40" id="RkM-hk-691"/>
@@ -727,7 +727,7 @@
                                                                         <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     </switch>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Visible to all Users" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y5m-Ny-zk6">
-                                                                        <rect key="frame" x="60" y="44.333333333333314" width="123" height="17.666666666666671"/>
+                                                                        <rect key="frame" x="60" y="44.333333333333371" width="123" height="17.666666666666671"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
@@ -768,9 +768,9 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eby-nd-gEN" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="190.00000000000006" width="368" height="80"/>
+                                                                <rect key="frame" x="0.0" y="190" width="368" height="80"/>
                                                                 <subviews>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPushnoti" translatesAutoresizingMaskIntoConstraints="NO" id="rwy-Rb-k3N">
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgVerfiy" translatesAutoresizingMaskIntoConstraints="NO" id="rwy-Rb-k3N">
                                                                         <rect key="frame" x="10" y="20" width="40" height="40"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="width" constant="40" id="8Bq-1E-9bV"/>
@@ -784,38 +784,72 @@
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Visible to all Users" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VIg-7N-Q3q">
-                                                                        <rect key="frame" x="60" y="44.333333333333258" width="123" height="17.666666666666671"/>
+                                                                        <rect key="frame" x="60" y="44.333333333333371" width="123" height="17.666666666666671"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
                                                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="40%" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zDY-N6-VMe" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                                                        <rect key="frame" x="313" y="27.666666666666629" width="45" height="25"/>
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OVd-FZ-Gl1" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                        <rect key="frame" x="293" y="22.666666666666629" width="65" height="35"/>
+                                                                        <subviews>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0%" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zDY-N6-VMe" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                                                                <rect key="frame" x="10" y="5" width="45" height="25"/>
+                                                                                <constraints>
+                                                                                    <constraint firstAttribute="height" constant="25" id="0Ge-85-wEA"/>
+                                                                                    <constraint firstAttribute="width" constant="45" id="t9K-8i-Bsb"/>
+                                                                                </constraints>
+                                                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                                                                <color key="textColor" name="ThemeOrange"/>
+                                                                                <nil key="highlightedColor"/>
+                                                                                <userDefinedRuntimeAttributes>
+                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                                                                        <real key="value" value="12.5"/>
+                                                                                    </userDefinedRuntimeAttribute>
+                                                                                </userDefinedRuntimeAttributes>
+                                                                            </label>
+                                                                        </subviews>
+                                                                        <color key="backgroundColor" red="0.96862745098039216" green="0.40000000000000002" blue="0.023529411764705882" alpha="0.10000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
                                                                         <constraints>
-                                                                            <constraint firstAttribute="height" constant="25" id="0Ge-85-wEA"/>
-                                                                            <constraint firstAttribute="width" constant="45" id="t9K-8i-Bsb"/>
+                                                                            <constraint firstItem="zDY-N6-VMe" firstAttribute="centerY" secondItem="OVd-FZ-Gl1" secondAttribute="centerY" id="as1-Wf-04U"/>
+                                                                            <constraint firstAttribute="height" constant="35" id="edX-bm-NLF"/>
+                                                                            <constraint firstItem="zDY-N6-VMe" firstAttribute="centerX" secondItem="OVd-FZ-Gl1" secondAttribute="centerX" id="f6X-DE-BKw"/>
+                                                                            <constraint firstAttribute="width" constant="65" id="gW9-XY-zHk"/>
                                                                         </constraints>
-                                                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                                                        <color key="textColor" name="ThemeOrange"/>
-                                                                        <nil key="highlightedColor"/>
                                                                         <userDefinedRuntimeAttributes>
-                                                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                                                <real key="value" value="12.5"/>
+                                                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
+                                                                                <real key="value" value="17.5"/>
+                                                                            </userDefinedRuntimeAttribute>
+                                                                            <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
+                                                                                <color key="value" name="ThemeOrange"/>
+                                                                            </userDefinedRuntimeAttribute>
+                                                                            <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
+                                                                                <real key="value" value="1"/>
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
-                                                                    </label>
+                                                                    </view>
+                                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B55-wg-KID">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="368" height="80"/>
+                                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                                        <connections>
+                                                                            <action selector="btnGetVerfued:" destination="eGs-tA-cyH" eventType="touchUpInside" id="zRt-el-p0K"/>
+                                                                        </connections>
+                                                                    </button>
                                                                 </subviews>
                                                                 <color key="backgroundColor" name="ThemeTxt"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="80" id="0Du-ci-3Xd"/>
                                                                     <constraint firstItem="1Ew-S6-LjN" firstAttribute="top" secondItem="rwy-Rb-k3N" secondAttribute="top" id="0Jz-r8-R7N"/>
                                                                     <constraint firstItem="VIg-7N-Q3q" firstAttribute="leading" secondItem="1Ew-S6-LjN" secondAttribute="leading" id="EgF-75-DDv"/>
-                                                                    <constraint firstAttribute="trailing" secondItem="zDY-N6-VMe" secondAttribute="trailing" constant="10" id="IFq-AW-4N8"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="B55-wg-KID" secondAttribute="bottom" id="Fhi-0u-Ewa"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="OVd-FZ-Gl1" secondAttribute="trailing" constant="10" id="KsL-7S-uLx"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="B55-wg-KID" secondAttribute="trailing" id="LFi-Xs-dyT"/>
                                                                     <constraint firstItem="1Ew-S6-LjN" firstAttribute="leading" secondItem="rwy-Rb-k3N" secondAttribute="trailing" constant="10" id="bzq-Nd-z1b"/>
+                                                                    <constraint firstItem="OVd-FZ-Gl1" firstAttribute="centerY" secondItem="B55-wg-KID" secondAttribute="centerY" id="c6G-s0-kly"/>
                                                                     <constraint firstItem="VIg-7N-Q3q" firstAttribute="top" secondItem="1Ew-S6-LjN" secondAttribute="bottom" constant="5" id="d79-W8-znd"/>
+                                                                    <constraint firstItem="B55-wg-KID" firstAttribute="leading" secondItem="eby-nd-gEN" secondAttribute="leading" id="kdO-Xs-qVr"/>
                                                                     <constraint firstItem="rwy-Rb-k3N" firstAttribute="leading" secondItem="eby-nd-gEN" secondAttribute="leading" constant="10" id="mSJ-dm-J0v"/>
-                                                                    <constraint firstItem="zDY-N6-VMe" firstAttribute="centerY" secondItem="eby-nd-gEN" secondAttribute="centerY" id="us5-bn-omX"/>
                                                                     <constraint firstItem="rwy-Rb-k3N" firstAttribute="centerY" secondItem="eby-nd-gEN" secondAttribute="centerY" id="wE4-Pd-TVH"/>
+                                                                    <constraint firstItem="B55-wg-KID" firstAttribute="top" secondItem="eby-nd-gEN" secondAttribute="top" id="zxo-dP-H1a"/>
                                                                 </constraints>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
@@ -845,7 +879,7 @@
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </stackView>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="p0O-Xo-hOv" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="10" y="10" width="368" height="211.33333333333334"/>
+                                                        <rect key="frame" x="10" y="10" width="368" height="217"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPrivacy" translatesAutoresizingMaskIntoConstraints="NO" id="16w-yt-PRw">
                                                                 <rect key="frame" x="10" y="10" width="30" height="30"/>
@@ -861,17 +895,17 @@
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Enable location to discover nearby travel groups and let others see you're in the area" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gii-N6-1v6">
-                                                                <rect key="frame" x="10" y="79.666666666666657" width="348" height="33.666666666666657"/>
-                                                                <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="12"/>
-                                                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <rect key="frame" x="10" y="79.666666666666657" width="348" height="39.333333333333343"/>
+                                                                <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="14"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5Or-Sh-nAo" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                                <rect key="frame" x="10" y="133.33333333333334" width="348" height="68"/>
+                                                                <rect key="frame" x="10" y="139" width="348" height="68"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your exact location is never shown only your approximate area" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Uo-LS-OYJ">
                                                                         <rect key="frame" x="10" y="5" width="328" height="58"/>
-                                                                        <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="10"/>
+                                                                        <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="13"/>
                                                                         <color key="textColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
@@ -886,7 +920,7 @@
                                                                 </constraints>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
-                                                                        <real key="value" value="20"/>
+                                                                        <real key="value" value="12"/>
                                                                     </userDefinedRuntimeAttribute>
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
@@ -907,22 +941,16 @@
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
-                                                                <real key="value" value="20"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="shadowRadius">
-                                                                <real key="value" value="1"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="shadowOpacity">
-                                                                <real key="value" value="1"/>
+                                                                <real key="value" value="12"/>
                                                             </userDefinedRuntimeAttribute>
                                                             <userDefinedRuntimeAttribute type="size" keyPath="shadowOffset">
-                                                                <size key="value" width="1" height="1"/>
+                                                                <size key="value" width="0.0" height="0.0"/>
                                                             </userDefinedRuntimeAttribute>
                                                             <userDefinedRuntimeAttribute type="color" keyPath="shadowColor">
-                                                                <color key="value" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             </userDefinedRuntimeAttribute>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="borderWidth">
-                                                                <real key="value" value="1"/>
+                                                                <real key="value" value="0.0"/>
                                                             </userDefinedRuntimeAttribute>
                                                             <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
                                                                 <color key="value" red="0.10980392156862745" green="0.11764705882352941" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -930,7 +958,7 @@
                                                         </userDefinedRuntimeAttributes>
                                                     </view>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XF7-IU-qoG" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="10" y="571.33333333333337" width="5" height="20"/>
+                                                        <rect key="frame" x="10" y="577" width="5" height="20"/>
                                                         <color key="backgroundColor" red="0.91764706370000004" green="0.2588235438" blue="0.32549020649999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="20" id="LP3-ur-I2F"/>
@@ -946,7 +974,7 @@
                                                         </userDefinedRuntimeAttributes>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location Settings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nvw-bB-kZL">
-                                                        <rect key="frame" x="25" y="570" width="136.66666666666666" height="22.666666666666629"/>
+                                                        <rect key="frame" x="25" y="575.66666666666663" width="136.66666666666666" height="22.666666666666629"/>
                                                         <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="16"/>
                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <nil key="highlightedColor"/>
@@ -978,7 +1006,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1WW-Kr-6et" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                                <rect key="frame" x="10" y="611.33333333333337" width="368" height="100"/>
+                                                <rect key="frame" x="10" y="617" width="368" height="100"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPushnoti" translatesAutoresizingMaskIntoConstraints="NO" id="8Ty-ne-WMv">
                                                         <rect key="frame" x="10" y="30" width="40" height="40"/>
@@ -999,7 +1027,7 @@
                                                         <color key="thumbTintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </switch>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PUG-8Z-c5k">
-                                                        <rect key="frame" x="60" y="54.333333333333258" width="227" height="54.666666666666657"/>
+                                                        <rect key="frame" x="60" y="54.333333333333371" width="227" height="54.666666666666657"/>
                                                         <string key="text">Turn on to discover and connect with nearby travel groups.
 </string>
                                                         <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="13"/>
@@ -1045,19 +1073,19 @@
                                                 </userDefinedRuntimeAttributes>
                                             </view>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="msg" translatesAutoresizingMaskIntoConstraints="NO" id="gpC-NO-uZs">
-                                                <rect key="frame" x="10" y="752.66666666666663" width="373" height="279.99999999999989"/>
+                                                <rect key="frame" x="10" y="758.33333333333337" width="373" height="280.00000000000011"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="280" id="60T-8F-jUl"/>
                                                 </constraints>
                                             </imageView>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgDataProtect" translatesAutoresizingMaskIntoConstraints="NO" id="2R1-tD-ZJw">
-                                                <rect key="frame" x="10" y="1052.6666666666667" width="373" height="120"/>
+                                                <rect key="frame" x="10" y="1058.3333333333333" width="373" height="120"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="120" id="H1y-AP-Kyy"/>
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AUd-iH-1tR" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                                <rect key="frame" x="10" y="721.33333333333337" width="5" height="20"/>
+                                                <rect key="frame" x="10" y="727" width="5" height="20"/>
                                                 <color key="backgroundColor" red="0.91764706370000004" green="0.2588235438" blue="0.32549020649999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="5" id="bcc-Qr-PKX"/>
@@ -1073,13 +1101,13 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Message" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wgI-B0-3L5">
-                                                <rect key="frame" x="25" y="720" width="72" height="22.666666666666629"/>
+                                                <rect key="frame" x="25" y="725.66666666666663" width="72" height="22.666666666666629"/>
                                                 <fontDescription key="fontDescription" name="Poppins-Regular" family="Poppins" pointSize="16"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgDelete" translatesAutoresizingMaskIntoConstraints="NO" id="boN-gf-bz6">
-                                                <rect key="frame" x="0.0" y="1192.6666666666667" width="393" height="100"/>
+                                                <rect key="frame" x="0.0" y="1198.3333333333333" width="393" height="100"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="100" id="Knp-qO-Kw1"/>
                                                 </constraints>
@@ -2451,7 +2479,10 @@
         <image name="imgPlan" width="472" height="165.33332824707031"/>
         <image name="imgPlus" width="64" height="64"/>
         <image name="imgPrivacy" width="35" height="34"/>
+        <image name="imgProfileVisiblity" width="34" height="34"/>
         <image name="imgPushnoti" width="35" height="34"/>
+        <image name="imgSeen" width="34" height="34"/>
+        <image name="imgVerfiy" width="34" height="34"/>
         <image name="imgView" width="34" height="34"/>
         <image name="lock" catalog="system" width="111" height="128"/>
         <image name="msg" width="472" height="329.33334350585938"/>

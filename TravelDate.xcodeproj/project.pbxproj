@@ -24,6 +24,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Verification/VerificationViewModel.swift,
 			);
 			target = BC0DC08B2F7BCF4600C96E41 /* TravelDate */;
 		};
