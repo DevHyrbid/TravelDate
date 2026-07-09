@@ -115,13 +115,7 @@ struct TripsTheme {
     }
 
     // MARK: - Fonts (use .montserrat extensions)
-    struct Font {
-        static func heading(_ size: CGFloat = 22) -> UIFont { .montserrat(size, weight: .bold) }
-        static func subheading(_ size: CGFloat = 18) -> UIFont { .montserrat(size, weight: .semiBold) }
-        static func body(_ size: CGFloat = 14) -> UIFont { .montserrat(size) }
-        static func caption(_ size: CGFloat = 12) -> UIFont { .montserrat(size) }
-        static func button(_ size: CGFloat = 16) -> UIFont { .montserrat(size, weight: .semiBold) }
-    }
+    
 
     // MARK: - Radius
     struct Radius {
@@ -173,7 +167,7 @@ extension UIViewController {
         let lbl = UILabel()
         lbl.text = "Trips"
         lbl.textColor = .orange
-        lbl.font = .montserrat(size * 0.28, weight: .bold)
+        lbl.font = AppFont.semibold(22.0)
         lbl.textAlignment = .center
         lbl.translatesAutoresizingMaskIntoConstraints = false
         box.addSubview(lbl)
@@ -191,7 +185,7 @@ extension UIViewController {
         let b = UIButton(type: .system)
         b.setTitle(title, for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = TripsTheme.Font.button()
+        b.titleLabel?.font = AppFont.semibold(20.0)
         b.backgroundColor = TripsTheme.Color.primary
         b.layer.cornerRadius = TripsTheme.Radius.button
         b.translatesAutoresizingMaskIntoConstraints = false
@@ -203,7 +197,7 @@ extension UIViewController {
         let l = UILabel()
         l.text = text
         l.textColor = .white
-        l.font = TripsTheme.Font.subheading()
+        l.font = AppFont.semibold(20)
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }
@@ -266,7 +260,7 @@ extension UIViewController {
         toast.text = message
         toast.textColor = .white
         toast.backgroundColor = UIColor(white: 0.15, alpha: 0.95)
-        toast.font = .montserrat(13)
+        toast.font = AppFont.regular(13.0)
         toast.layer.cornerRadius = 12
         toast.clipsToBounds = true
         toast.textAlignment = .center
@@ -301,7 +295,7 @@ extension UIViewController {
     func makeAttributedText(full: String, highlight: String,
                              normalColor: UIColor = .white,
                              highlightColor: UIColor = .orange,
-                             font: UIFont = .montserrat(13)) -> NSAttributedString {
+                             font: UIFont = AppFont.semibold(22.0)) -> NSAttributedString {
         let attr = NSMutableAttributedString(
             string: full,
             attributes: [.foregroundColor: normalColor, .font: font]

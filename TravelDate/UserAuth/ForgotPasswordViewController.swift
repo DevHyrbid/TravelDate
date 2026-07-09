@@ -66,7 +66,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let l = UILabel()
         l.text = "Email"
         l.textColor = UIColor.white.withAlphaComponent(0.8)
-        l.font = .montserrat(13, weight: .medium)
+        l.font = AppFont.medium(13.0)
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
@@ -77,7 +77,7 @@ class ForgotPasswordViewController: BaseClassVc {
         let b = UIButton(type: .system)
         b.setTitle("Send", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .montserrat(16, weight: .semiBold)
+        b.titleLabel?.font = AppFont.medium(15.0)
         b.backgroundColor = .themeOrange
         b.layer.cornerRadius = 27
         b.translatesAutoresizingMaskIntoConstraints = false
@@ -98,7 +98,7 @@ class ForgotPasswordViewController: BaseClassVc {
                           range: (fullText as NSString).range(of: "Sign Up"))
         l.attributedText = attr
         l.textColor = .white
-        l.font = .montserrat(13)
+        l.font = AppFont.regular(13.0)
         l.textAlignment = .center
         l.isUserInteractionEnabled = true
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -234,7 +234,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let l = UILabel()
         l.text = "Trips"
         l.textColor = .themeOrange
-        l.font = .montserrat(24, weight: .bold)
+        l.font = AppFont.bold(24.0)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -244,7 +244,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let l = UILabel()
         l.text = "Email Verification"
         l.textColor = .white
-        l.font = .montserrat(22, weight: .semiBold)
+        l.font = AppFont.semibold(22.0)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -254,7 +254,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let l = UILabel()
         l.text = "A 4-digit PIN has been sent to your mail.\nEnter the code below to continue."
         l.textColor = UIColor.white.withAlphaComponent(0.55)
-        l.font = .montserrat(13)
+        l.font = AppFont.regular(13.0)
         l.numberOfLines = 2
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -280,7 +280,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
         let b = UIButton(type: .system)
         b.setTitle("Confirm", for: .normal)
         b.setTitleColor(.white, for: .normal)
-        b.titleLabel?.font = .montserrat(16, weight: .semiBold)
+        b.titleLabel?.font = AppFont.semibold(16.0)
         b.backgroundColor = .themeOrange
         b.layer.cornerRadius = 27
         b.translatesAutoresizingMaskIntoConstraints = false
@@ -295,7 +295,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
                           range: (fullText as NSString).range(of: "Resend Code?"))
         l.attributedText = attr
         l.textColor = .white
-        l.font = .montserrat(13)
+        l.font = AppFont.regular(14.0)
         l.textAlignment = .center
         l.isUserInteractionEnabled = true
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -310,7 +310,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
                           range: (fullText as NSString).range(of: "Log In"))
         l.attributedText = attr
         l.textColor = .white
-        l.font = .montserrat(13)
+        l.font = AppFont.regular(14.0)
         l.textAlignment = .center
         l.isUserInteractionEnabled = true
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -345,7 +345,7 @@ class EmailVerificationViewController: UIViewController, UITextFieldDelegate {
             let tf = UITextField()
             tf.backgroundColor = UIColor(white: 0.13, alpha: 1)
             tf.textAlignment = .center
-            tf.font = .montserrat(20, weight: .semiBold)
+            tf.font = AppFont.semibold(22.0)
             tf.textColor = .white
             tf.layer.cornerRadius = 16
             tf.layer.borderWidth = 1

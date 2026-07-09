@@ -68,7 +68,7 @@ final class ChatVc: BaseClassVc {
 
         guard let userInfo = notification.userInfo else { return }
 
-        guard let roomId = userInfo["roomId"] as? String else { return }
+        guard let _ = userInfo["roomId"] as? String else { return }
         
         fetchAllData()
     }
@@ -213,8 +213,63 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
-        guard selectedSegment == .groups else { return nil }
-        return makeGroupSwipeActions(at: indexPath)
+        if selectedSegment == .chats {
+            let block = UIContextualAction(
+                style: .destructive,
+                title: "Block", handler: {_,_,_ in
+                    self.didTapBlockOption()
+                }
+            )
+            let report = UIContextualAction(
+                style: .destructive,
+                title: "Report", handler: {_,_,_ in
+                    self.didTapReportOption()
+                }
+            )
+            let config = UISwipeActionsConfiguration(actions: [block,report])
+            config.performsFirstActionWithFullSwipe = false
+            return config
+        } else {
+            
+            
+            guard selectedSegment == .groups else { return nil }
+            return makeGroupSwipeActions(at: indexPath)
+        }
+    }
+    
+    @objc private func didTapBlockOption() {
+        let popup = BlockReportPopupViewController(mode: .block(username: "user.username"), delegate: self)
+        present(popup, animated: false)  // animated: false zaroori hai, popup khud animate karta hai
+    }
+
+    @objc private func didTapReportOption() {
+        let popup = BlockReportPopupViewController(mode: .report(username: "user.username"), delegate: self)
+        present(popup, animated: false)
+    }
+}
+extension ChatVc: BlockReportPopupDelegate {
+
+    func blockReportPopup(_ popup: BlockReportPopupViewController, didConfirmBlockUser username: String) {
+        // yahan apna block API call karo
+//        BlockService.blockUser(username: username) { success in
+//            if success {
+//                // UI update, navigate back, etc.
+//            }
+//        }
+    }
+
+    func blockReportPopup(_ popup: BlockReportPopupViewController, didSubmitReportForUser username: String, reason: String, otherText: String?) {
+        // yahan apna report API call karo
+//        ReportService.reportUser(username: username, reason: reason, details: otherText) { success in
+//            if success {
+//                self.showToast("Report submitted")
+//            }
+//        }
+    }
+
+    func blockReportPopupDidCancel(_ popup: BlockReportPopupViewController) {
+        // optional — cancel hone pe kuch karna ho to
+        popup.dismiss(animated: true)
     }
 }
 
@@ -246,7 +301,7 @@ private extension ChatVc {
             cell.lblTitle.text = matchGroup.name ?? ""
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
-            print(matchGroup.imageArr,"FGHJKL")
+            
 //            if let images = matchGroup.imageArr,
 //               images.count >= 2 {
 //
@@ -376,7 +431,7 @@ private extension ChatVc {
         let currentUserId = User.curentUser?.id ?? ""
 
         // Get all member ids
-        var participantIds = group.members?.compactMap { $0.id } ?? []
+        let participantIds = group.members?.compactMap { $0.id } ?? []
 
         // Ensure current user exists
 //        if !participantIds.contains(currentUserId) {

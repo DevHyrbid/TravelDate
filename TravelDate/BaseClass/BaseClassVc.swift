@@ -730,3 +730,60 @@ extension UIView {
         layer.insertSublayer(gradient, at: 0)
     }
 }
+
+import UIKit
+
+final class ProgressBorderView: UIView {
+
+    private let trackLayer = CAShapeLayer()
+    private let progressLayer = CAShapeLayer()
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        layer.sublayers?.removeAll(where: {
+            $0.name == "trackLayer" || $0.name == "progressLayer"
+        })
+
+        let lineWidth: CGFloat = 4
+
+        let radius = min(bounds.width, bounds.height) / 2 - lineWidth / 2
+
+        let path = UIBezierPath(
+            arcCenter: CGPoint(x: bounds.midX, y: bounds.midY),
+            radius: radius,
+            startAngle: -.pi / 2,
+            endAngle: .pi * 1.5,
+            clockwise: true
+        )
+
+        // Background Ring
+        trackLayer.name = "trackLayer"
+        trackLayer.path = path.cgPath
+        trackLayer.fillColor = UIColor.clear.cgColor
+        trackLayer.strokeColor = UIColor.systemGray5.cgColor
+        trackLayer.lineWidth = lineWidth
+
+        // Progress Ring
+        progressLayer.name = "progressLayer"
+        progressLayer.path = path.cgPath
+        progressLayer.fillColor = UIColor.clear.cgColor
+        progressLayer.strokeColor = UIColor.systemOrange.cgColor // Change color if needed
+        progressLayer.lineWidth = lineWidth
+        progressLayer.lineCap = .round
+        progressLayer.strokeEnd = 0
+
+        layer.addSublayer(trackLayer)
+        layer.addSublayer(progressLayer)
+    }
+
+    /// progress: 0.0 ... 1.0
+    func setProgress(_ progress: CGFloat) {
+        let value = max(0, min(progress, 1))
+
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.35)
+        progressLayer.strokeEnd = value
+        CATransaction.commit()
+    }
+}

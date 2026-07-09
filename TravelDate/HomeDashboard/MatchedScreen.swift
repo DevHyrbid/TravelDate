@@ -20,29 +20,76 @@ protocol MatchBottomSheetDelegate: AnyObject {
 }
 
 // MARK: - MatchBottomSheetVC
+// NOTE: Figma frame is a FULL-SCREEN celebration overlay (402x875 reference), NOT a
+// bottom sheet drawer. There is no separate flat "sheetView" panel in the design —
+// everything (title, tilted photos, badge, subtitle, buttons) sits directly on the
+// dimmed background with soft glow orbs behind it. Kept the class name unchanged so
+// call sites don't break.
 final class MatchBottomSheetVC: UIViewController {
 
     // MARK: - Public
     weak var delegate: MatchBottomSheetDelegate?
     var matchResult: MatchResult?
 
+    // MARK: - Figma reference constants (402 x 875 frame)
+    private enum Figma {
+        static let refWidth: CGFloat = 402
+
+        // Colors (exact hex pulled from the SVG)
+        static let screenBG   = UIColor(hex: "#111211")
+        static let dimColor   = UIColor(hex: "#090B0C")
+        static let orange     = UIColor(hex: "#F76606")
+        static let pink       = UIColor(hex: "#FE294D")
+        static let glowGray   = UIColor(hex: "#373737")
+
+        // Photo card geometry (pre-rotation, local space)
+        static let photoSize = CGSize(width: 169.26, height: 169.99)
+        static let photoCornerRadius: CGFloat = 34
+
+        // Post-rotation top-left position (== SVG matrix "e,f")
+        static let leftPhotoOrigin  = CGPoint(x: 27.84, y: 398.21)
+        static let rightPhotoOrigin = CGPoint(x: 215.64, y: 378.44)
+
+        // Rotation angles (degrees) — extracted from SVG matrix a,b components
+        static let leftPhotoRotationDeg: CGFloat = -4.53
+        static let rightPhotoRotationDeg: CGFloat = 5.38
+
+        // Badge — centered on the overlap point of the two photos
+        static let badgeFrame = CGRect(x: 166, y: 525.5, width: 76, height: 76)
+
+        // Buttons
+        static let sayHelloFrame    = CGRect(x: 29, y: 711.5, width: 354, height: 54)
+        static let keepSwipingFrame = CGRect(x: 29.5, y: 778, width: 353, height: 53)
+
+        // Title label top — measured from the rendered SVG glyph ink (cap-top 322.5,
+        // baseline 347.5) back-solved for a 34pt bold label's frame top. This is
+        // relative to the raw view top (y=0), same coordinate space as everything
+        // else — NOT relative to the safe area, since the Figma canvas already
+        // includes the status bar region at y=0.
+        static let titleTopY: CGFloat = 306.6
+    }
+
     // MARK: - UI
-    private let dimView        = UIView()
-    private let sheetView      = UIView()
-    private let dragHandle     = UIView()
-    private let titleLabel     = UILabel()
-    private let subtitleLabel  = UILabel()
-    private let leftImageView  = UIImageView()
-    private let rightImageView = UIImageView()
-    private let starBadge      = UIView()
-    private let starImageView  = UIImageView()
-    private let sayHelloBtn    = UIButton(type: .custom)
-    private let keepSwipingBtn = UIButton(type: .custom)
+    private let dimView         = UIView()
+    private let glowContainer   = UIView()
+    private let titleLabel      = UILabel()
+    private let subtitleLabel   = UILabel()
+    private let leftImageView   = UIImageView()
+    private let rightImageView  = UIImageView()
+    private let starBadge       = UIView()
+    private let badgeGradient   = CAGradientLayer()
+    private let starImageView   = UIImageView()
+    private let sayHelloBtn     = UIButton(type: .custom)
+    private let keepSwipingBtn  = UIButton(type: .custom)
 
     private let leftGradientLayer  = CAGradientLayer()
     private let rightGradientLayer = CAGradientLayer()
 
-    private var sheetHeightConstraint: NSLayoutConstraint?
+    /// Scale factor between the actual device width and the Figma reference width (402pt).
+    /// Lets every hardcoded Figma coordinate scale correctly on smaller/larger phones.
+    private var figmaScale: CGFloat {
+        view.bounds.width / Figma.refWidth
+    }
 
     // MARK: - Safe show — ALWAYS dispatches to main thread before init/present
     static func show(
@@ -50,7 +97,6 @@ final class MatchBottomSheetVC: UIViewController {
         result: MatchResult,
         delegate: MatchBottomSheetDelegate? = nil
     ) {
-        // Guarantee main thread — safe to call from any thread/queue
         DispatchQueue.main.async {
             let vc = MatchBottomSheetVC()
             vc.matchResult = result
@@ -64,12 +110,11 @@ final class MatchBottomSheetVC: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        // viewDidLoad is always on main thread — safe
+        view.backgroundColor = .clear
         setupDimView()
-        setupSheet()
-        setupDragHandle()
+//        setupGlowOrbs()
         setupTitle()
-        setupImages()
+        setupPhotos()
         setupStarBadge()
         setupSubtitle()
         setupButtons()
@@ -83,18 +128,16 @@ final class MatchBottomSheetVC: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        layoutFigmaPositionedViews()
         updateGradientBorders()
     }
 
-    // MARK: - Computed height
-    private var sheetHeight: CGFloat {
-        let bottomSafe = view.safeAreaInsets.bottom
-        return 620 + bottomSafe
-    }
-
-    // MARK: - Dim View
+    // MARK: - Dim background
     private func setupDimView() {
-        dimView.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        dimView.backgroundColor = Figma.dimColor.withAlphaComponent(0.5)
+        // The base screen behind the dim is the app's own dark bg; give the modal
+        // the same tone so it doesn't flash a different color while presenting.
+        view.backgroundColor = Figma.screenBG
         dimView.alpha = 0
         dimView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(dimView)
@@ -107,147 +150,102 @@ final class MatchBottomSheetVC: UIViewController {
         dimView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDimTap)))
     }
 
-    // MARK: - Sheet
-    private func setupSheet() {
-        sheetView.backgroundColor = UIColor(red: 0.10, green: 0.07, blue: 0.06, alpha: 1)
-        sheetView.layer.cornerRadius = 28
-        sheetView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        sheetView.layer.masksToBounds = false
-        sheetView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(sheetView)
-
-        let hc = sheetView.heightAnchor.constraint(equalToConstant: 620) // updated in viewDidLayoutSubviews
-        sheetHeightConstraint = hc
-
+    // MARK: - Decorative glow orbs (from the blurred circles in the Figma bg)
+    private func setupGlowOrbs() {
+        glowContainer.translatesAutoresizingMaskIntoConstraints = false
+        glowContainer.isUserInteractionEnabled = false
+        view.insertSubview(glowContainer, aboveSubview: dimView)
         NSLayoutConstraint.activate([
-            sheetView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            sheetView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            sheetView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hc
+            glowContainer.topAnchor.constraint(equalTo: view.topAnchor),
+            glowContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            glowContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            glowContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
 
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-        sheetView.addGestureRecognizer(pan)
+//        addGlowOrb(color: Figma.glowGray, center: CGPoint(x: 220, y: 111), radius: 49, alpha: 0.5)
+//        addGlowOrb(color: Figma.glowGray, center: CGPoint(x: 347, y: 51), radius: 55, alpha: 0.5)
+//        addGlowOrb(color: Figma.orange,   center: CGPoint(x: 128, y: 867), radius: 49, alpha: 0.55)
+//        addGlowOrb(color: Figma.pink,     center: CGPoint(x: 275, y: 818), radius: 49, alpha: 0.55)
     }
 
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        // Update height constraint once safe area is known
-        sheetHeightConstraint?.constant = sheetHeight
+    private func addGlowOrb(color: UIColor, center: CGPoint, radius: CGFloat, alpha: CGFloat) {
+        let orb = UIView()
+        orb.backgroundColor = color.withAlphaComponent(alpha)
+        orb.layer.cornerRadius = radius
+        // Soft glow via a large shadow instead of an actual Gaussian blur filter —
+        // cheaper and looks equivalent for a solid color orb.
+        orb.layer.shadowColor = color.cgColor
+        orb.layer.shadowRadius = radius * 1.4
+        orb.layer.shadowOpacity = 0.9
+        orb.layer.shadowOffset = .zero
+        orb.tag = 9911 // marker so we can reposition on layout
+        glowContainer.addSubview(orb)
+        orb.frame = CGRect(x: 0, y: 0, width: radius * 2, height: radius * 2)
+        orbLayoutInfo.append((view: orb, figmaCenter: center, radius: radius))
     }
 
-    // MARK: - Drag Handle
-    private func setupDragHandle() {
-        dragHandle.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-        dragHandle.layer.cornerRadius = 2.5
-        dragHandle.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(dragHandle)
-        NSLayoutConstraint.activate([
-            dragHandle.topAnchor.constraint(equalTo: sheetView.topAnchor, constant: 12),
-            dragHandle.centerXAnchor.constraint(equalTo: sheetView.centerXAnchor),
-            dragHandle.widthAnchor.constraint(equalToConstant: 36),
-            dragHandle.heightAnchor.constraint(equalToConstant: 5)
-        ])
-    }
+    private var orbLayoutInfo: [(view: UIView, figmaCenter: CGPoint, radius: CGFloat)] = []
 
     // MARK: - Title
+    // Positioned manually (not AutoLayout) so it shares the exact same raw-view
+    // coordinate space as the photos/badge/buttons — see layoutFigmaPositionedViews().
     private func setupTitle() {
         titleLabel.text = "You Connected"
-        titleLabel.textColor = UIColor(red: 1.0, green: 0.42, blue: 0.08, alpha: 1)
+        titleLabel.textColor = Figma.orange
         titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         titleLabel.textAlignment = .center
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(titleLabel)
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: sheetView.topAnchor, constant: 40),
-            titleLabel.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 24),
-            titleLabel.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -24)
-        ])
+        view.addSubview(titleLabel)
     }
 
-    // MARK: - Images
-    private func setupImages() {
-        let imageContainer = UIView()
-        imageContainer.translatesAutoresizingMaskIntoConstraints = false
-        imageContainer.clipsToBounds = false
-        sheetView.addSubview(imageContainer)
-
-        let imageSize: CGFloat = 190
-        let overlap:   CGFloat = 28
-
-        NSLayoutConstraint.activate([
-            imageContainer.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 28),
-            imageContainer.centerXAnchor.constraint(equalTo: sheetView.centerXAnchor),
-            imageContainer.widthAnchor.constraint(equalToConstant: imageSize * 2 - overlap),
-            imageContainer.heightAnchor.constraint(equalToConstant: imageSize)
-        ])
-
+    // MARK: - Photos (tilted, overlapping — positioned manually to match Figma matrix)
+    private func setupPhotos() {
         func styleImageView(_ iv: UIImageView) {
             iv.contentMode = .scaleAspectFill
             iv.clipsToBounds = true
-            iv.layer.cornerRadius = 20
+            iv.layer.cornerRadius = Figma.photoCornerRadius
             iv.backgroundColor = UIColor(red: 0.18, green: 0.13, blue: 0.11, alpha: 1)
-            iv.translatesAutoresizingMaskIntoConstraints = false
+            // Rotate around the ORIGIN corner, not the center, to match the SVG
+            // matrix (matrix rotates local (0,0) rect then translates by e,f).
+            iv.layer.anchorPoint = .zero
         }
 
         styleImageView(leftImageView)
         styleImageView(rightImageView)
-        imageContainer.addSubview(leftImageView)
-        imageContainer.addSubview(rightImageView)
+        view.addSubview(leftImageView)
+        view.addSubview(rightImageView)
 
-        NSLayoutConstraint.activate([
-            leftImageView.leadingAnchor.constraint(equalTo: imageContainer.leadingAnchor),
-            leftImageView.topAnchor.constraint(equalTo: imageContainer.topAnchor),
-            leftImageView.widthAnchor.constraint(equalToConstant: imageSize),
-            leftImageView.heightAnchor.constraint(equalToConstant: imageSize),
-
-            rightImageView.trailingAnchor.constraint(equalTo: imageContainer.trailingAnchor),
-            rightImageView.topAnchor.constraint(equalTo: imageContainer.topAnchor),
-            rightImageView.widthAnchor.constraint(equalToConstant: imageSize),
-            rightImageView.heightAnchor.constraint(equalToConstant: imageSize)
-        ])
-
-        // Gradient border layers — configured here, frames set in viewDidLayoutSubviews
         [leftGradientLayer, rightGradientLayer].forEach { layer in
-            layer.colors = [
-                UIColor(red: 1.0, green: 0.42, blue: 0.08, alpha: 1).cgColor,
-                UIColor(red: 0.95, green: 0.25, blue: 0.35, alpha: 1).cgColor
-            ]
-            layer.startPoint = CGPoint(x: 0, y: 0)
-            layer.endPoint   = CGPoint(x: 1, y: 1)
+            // Pink (top) -> Orange (bottom), vertical — matches paint2/paint3.
+            layer.colors = [Figma.pink.cgColor, Figma.orange.cgColor]
+            layer.startPoint = CGPoint(x: 0.5, y: 0)
+            layer.endPoint   = CGPoint(x: 0.5, y: 1)
         }
         leftImageView.layer.addSublayer(leftGradientLayer)
         rightImageView.layer.addSublayer(rightGradientLayer)
     }
 
-    // MARK: - Star Badge
+    // MARK: - Star Badge (gradient circle at the photo overlap point)
     private func setupStarBadge() {
-        let badgeSize: CGFloat = 64
-        let orange = UIColor(red: 1.0, green: 0.42, blue: 0.08, alpha: 1)
+        starBadge.layer.cornerRadius = Figma.badgeFrame.width / 2
+        starBadge.layer.masksToBounds = true
+        view.addSubview(starBadge)
 
-        starBadge.backgroundColor   = orange
-        starBadge.layer.cornerRadius = badgeSize / 2
-        starBadge.layer.shadowColor  = orange.cgColor
+        badgeGradient.colors = [Figma.orange.cgColor, Figma.pink.cgColor]
+        badgeGradient.startPoint = CGPoint(x: 0.5, y: 0)
+        badgeGradient.endPoint   = CGPoint(x: 0.5, y: 1)
+        starBadge.layer.insertSublayer(badgeGradient, at: 0)
+
+        starBadge.layer.shadowColor  = Figma.orange.cgColor
         starBadge.layer.shadowOffset = CGSize(width: 0, height: 4)
         starBadge.layer.shadowRadius = 16
-        starBadge.layer.shadowOpacity = 0.7
-        starBadge.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(starBadge)
+        starBadge.layer.shadowOpacity = 0.5
 
         starImageView.image = UIImage(systemName: "star.fill")
         starImageView.tintColor = .white
         starImageView.contentMode = .scaleAspectFit
         starImageView.translatesAutoresizingMaskIntoConstraints = false
         starBadge.addSubview(starImageView)
-
-        // Centre badge horizontally; pin its top so it overlaps the image bottom edge
         NSLayoutConstraint.activate([
-            starBadge.centerXAnchor.constraint(equalTo: sheetView.centerXAnchor),
-            // 28 (gap above images) + 190 (imageSize) - 32 (half badge) = sits on bottom edge of images
-            starBadge.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 28 + 190 - badgeSize / 2),
-            starBadge.widthAnchor.constraint(equalToConstant: badgeSize),
-            starBadge.heightAnchor.constraint(equalToConstant: badgeSize),
-
             starImageView.centerXAnchor.constraint(equalTo: starBadge.centerXAnchor),
             starImageView.centerYAnchor.constraint(equalTo: starBadge.centerYAnchor),
             starImageView.widthAnchor.constraint(equalToConstant: 28),
@@ -261,57 +259,94 @@ final class MatchBottomSheetVC: UIViewController {
         subtitleLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(subtitleLabel)
-        NSLayoutConstraint.activate([
-            subtitleLabel.topAnchor.constraint(equalTo: starBadge.bottomAnchor, constant: 24),
-            subtitleLabel.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 32),
-            subtitleLabel.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -32)
-        ])
+        view.addSubview(subtitleLabel)
+        // Frame set manually in layoutFigmaPositionedViews() once the badge frame is known —
+        // keep translatesAutoresizingMaskIntoConstraints at its default (true) so the frame sticks.
     }
 
     // MARK: - Buttons
     private func setupButtons() {
-        let orange = UIColor(red: 1.0, green: 0.42, blue: 0.08, alpha: 1)
-
         sayHelloBtn.setTitle("Say Hello", for: .normal)
         sayHelloBtn.setTitleColor(.white, for: .normal)
         sayHelloBtn.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        sayHelloBtn.backgroundColor = orange
-        sayHelloBtn.layer.cornerRadius = 28
-        sayHelloBtn.layer.shadowColor   = orange.cgColor
+        sayHelloBtn.backgroundColor = Figma.orange
+        sayHelloBtn.layer.cornerRadius = Figma.sayHelloFrame.height / 2
+        sayHelloBtn.layer.shadowColor   = Figma.orange.cgColor
         sayHelloBtn.layer.shadowOffset  = CGSize(width: 0, height: 6)
         sayHelloBtn.layer.shadowRadius  = 16
         sayHelloBtn.layer.shadowOpacity = 0.55
         sayHelloBtn.addTarget(self, action: #selector(sayHelloTapped), for: .touchUpInside)
-        sayHelloBtn.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(sayHelloBtn)
+        view.addSubview(sayHelloBtn)
 
         keepSwipingBtn.setTitle("Keep Swiping", for: .normal)
         keepSwipingBtn.setTitleColor(.white, for: .normal)
         keepSwipingBtn.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         keepSwipingBtn.backgroundColor = .clear
-        keepSwipingBtn.layer.cornerRadius = 28
-        keepSwipingBtn.layer.borderWidth  = 2
-        keepSwipingBtn.layer.borderColor  = UIColor.white.withAlphaComponent(0.5).cgColor
+        keepSwipingBtn.layer.cornerRadius = Figma.keepSwipingFrame.height / 2
+        keepSwipingBtn.layer.borderWidth  = 1
+        keepSwipingBtn.layer.borderColor  = UIColor.white.cgColor
         keepSwipingBtn.addTarget(self, action: #selector(keepSwipingTapped), for: .touchUpInside)
-        keepSwipingBtn.translatesAutoresizingMaskIntoConstraints = false
-        sheetView.addSubview(keepSwipingBtn)
-
-        NSLayoutConstraint.activate([
-            sayHelloBtn.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 32),
-            sayHelloBtn.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 24),
-            sayHelloBtn.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -24),
-            sayHelloBtn.heightAnchor.constraint(equalToConstant: 56),
-
-            keepSwipingBtn.topAnchor.constraint(equalTo: sayHelloBtn.bottomAnchor, constant: 14),
-            keepSwipingBtn.leadingAnchor.constraint(equalTo: sheetView.leadingAnchor, constant: 24),
-            keepSwipingBtn.trailingAnchor.constraint(equalTo: sheetView.trailingAnchor, constant: -24),
-            keepSwipingBtn.heightAnchor.constraint(equalToConstant: 56)
-        ])
+        view.addSubview(keepSwipingBtn)
+        // Frames set in layoutFigmaPositionedViews()
     }
 
-    // MARK: - Populate (main thread — called from viewDidLoad)
+    // MARK: - Manual Figma-coordinate layout
+    // Everything below is positioned with raw frames (scaled by figmaScale) instead
+    // of AutoLayout, since these shapes come straight from Figma's absolute coords
+    // and are far easier to keep pixel-accurate that way.
+    private func layoutFigmaPositionedViews() {
+        let s = figmaScale
+        let originX = (view.bounds.width - Figma.refWidth * s) / 2 // centers if device is wider than 402pt
+
+        func scaledRect(_ r: CGRect) -> CGRect {
+            CGRect(x: originX + r.origin.x * s, y: r.origin.y * s, width: r.width * s, height: r.height * s)
+        }
+        func scaledPoint(_ p: CGPoint) -> CGPoint {
+            CGPoint(x: originX + p.x * s, y: p.y * s)
+        }
+
+        // Title
+        let titleWidth = view.bounds.width - 48 * s
+        let titleHeight = titleLabel.sizeThatFits(CGSize(width: titleWidth, height: .greatestFiniteMagnitude)).height
+        titleLabel.frame = CGRect(x: 24 * s, y: Figma.titleTopY * s, width: titleWidth, height: titleHeight)
+
+        // Photos
+        leftImageView.bounds = CGRect(origin: .zero, size: CGSize(width: Figma.photoSize.width * s, height: Figma.photoSize.height * s))
+        leftImageView.layer.position = scaledPoint(Figma.leftPhotoOrigin)
+        leftImageView.transform = CGAffineTransform(rotationAngle: Figma.leftPhotoRotationDeg * .pi / 180)
+        leftImageView.layer.cornerRadius = Figma.photoCornerRadius * s
+
+        rightImageView.bounds = CGRect(origin: .zero, size: CGSize(width: Figma.photoSize.width * s, height: Figma.photoSize.height * s))
+        rightImageView.layer.position = scaledPoint(Figma.rightPhotoOrigin)
+        rightImageView.transform = CGAffineTransform(rotationAngle: Figma.rightPhotoRotationDeg * .pi / 180)
+        rightImageView.layer.cornerRadius = Figma.photoCornerRadius * s
+
+        // Badge — centered on the photo overlap point
+        let badgeFrame = scaledRect(Figma.badgeFrame)
+        starBadge.frame = badgeFrame
+
+        // Buttons
+        sayHelloBtn.frame = scaledRect(Figma.sayHelloFrame)
+        keepSwipingBtn.frame = scaledRect(Figma.keepSwipingFrame)
+
+        // Subtitle sits below the badge
+        subtitleLabel.frame = CGRect(
+            x: 32, y: badgeFrame.maxY + 24 * s,
+            width: view.bounds.width - 64,
+            height: subtitleLabel.sizeThatFits(CGSize(width: view.bounds.width - 64, height: .greatestFiniteMagnitude)).height
+        )
+
+        // Glow orbs
+        for orb in orbLayoutInfo {
+            let r = orb.radius * s
+            orb.view.frame = CGRect(x: 0, y: 0, width: r * 2, height: r * 2)
+            orb.view.layer.cornerRadius = r
+            orb.view.center = scaledPoint(orb.figmaCenter)
+            orb.view.layer.shadowRadius = r * 1.4
+        }
+    }
+
+    // MARK: - Populate
     private func populateData() {
         guard let result = matchResult else { return }
 
@@ -319,49 +354,41 @@ final class MatchBottomSheetVC: UIViewController {
             ? "Is Ready To Make Some Plans. Why Not Start The Conversation?"
             : result.message
 
-        // Images already available
-//        if let img = result.myGroupImage      { leftImageView.image  = img }
-        
-//        if result.myGroupImage == nil, let urlStr = result.myGroupImageURL {
-//            loadImage(urlStr: urlStr) { [weak self] image in
-//                self?.leftImageView.image = image  // already on main thread
-//            }
-//        }
-        if let img = result.matchedGroupImage { rightImageView.image = img }
-
-        // Load from URL if needed — dispatch back to main thread explicitly
-        if result.myGroupImage == nil, let urlStr = result.myGroupImageURL {
-            loadImage(urlStr: urlStr) { [weak self] image in
-                self?.leftImageView.image = image  // already on main thread
+        if let url = result.myGroupImageURL {
+            loadImage(urlStr: url) { [weak self] image in
+                self?.leftImageView.image = image
             }
         }
-        if result.matchedGroupImage == nil, let urlStr = result.matchedGroupImageURL {
-            loadImage(urlStr: urlStr) { [weak self] image in
-                self?.rightImageView.image = image  // already on main thread
+
+        if let url = result.matchedGroupImageURL {
+            loadImage(urlStr: url) { [weak self] image in
+                self?.rightImageView.image = image
             }
         }
     }
 
-    /// Downloads image and calls completion on the MAIN thread.
     private func loadImage(urlStr: String, completion: @escaping (UIImage?) -> Void) {
         guard let url = URL(string: urlStr) else {
-            DispatchQueue.main.async { completion(nil) }
+            completion(nil)
             return
         }
         URLSession.shared.dataTask(with: url) { data, _, _ in
             let image = data.flatMap { UIImage(data: $0) }
-            DispatchQueue.main.async { completion(image) }   // ← always main thread
+            DispatchQueue.main.async {
+                completion(image)
+            }
         }.resume()
     }
 
-    // MARK: - Gradient Borders (called in viewDidLayoutSubviews — main thread)
+    // MARK: - Gradient borders / badge gradient frame updates
     private func updateGradientBorders() {
         applyGradientBorder(to: leftImageView,  gradientLayer: leftGradientLayer)
         applyGradientBorder(to: rightImageView, gradientLayer: rightGradientLayer)
+        badgeGradient.frame = starBadge.bounds
     }
 
     private func applyGradientBorder(to imageView: UIImageView, gradientLayer: CAGradientLayer) {
-        let borderWidth: CGFloat = 3
+        let borderWidth: CGFloat = 2 * figmaScale
         let bounds = imageView.bounds
         guard bounds != .zero else { return }
 
@@ -382,68 +409,45 @@ final class MatchBottomSheetVC: UIViewController {
         gradientLayer.mask = maskLayer
     }
 
-    // MARK: - Animations
+    // MARK: - Animations (fade + gentle scale-in — not a bottom-sheet slide anymore)
     private func animateIn() {
-        sheetView.transform = CGAffineTransform(translationX: 0, y: sheetHeight)
-        UIView.animate(
-            withDuration: 0.55, delay: 0,
-            usingSpringWithDamping: 0.78, initialSpringVelocity: 0.4,
-            options: .curveEaseOut
-        ) {
-            self.sheetView.transform = .identity
-            self.dimView.alpha = 1
-        } completion: { _ in
-            self.animateBadgePop()
-        }
-    }
+        dimView.alpha = 0
+        titleLabel.alpha = 0
+        [leftImageView, rightImageView].forEach { $0.alpha = 0 }
+        subtitleLabel.alpha = 0
+        sayHelloBtn.alpha = 0
+        keepSwipingBtn.alpha = 0
+        starBadge.transform = starBadge.transform.concatenating(CGAffineTransform(scaleX: 0.5, y: 0.5))
 
-    private func animateBadgePop() {
-        starBadge.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+        UIView.animate(withDuration: 0.3) {
+            self.dimView.alpha = 1
+            self.titleLabel.alpha = 1
+        }
+        UIView.animate(withDuration: 0.4, delay: 0.1, options: .curveEaseOut) {
+            self.leftImageView.alpha = 1
+            self.rightImageView.alpha = 1
+        }
+        UIView.animate(withDuration: 0.4, delay: 0.25, options: .curveEaseOut) {
+            self.subtitleLabel.alpha = 1
+            self.sayHelloBtn.alpha = 1
+            self.keepSwipingBtn.alpha = 1
+        }
         UIView.animate(
-            withDuration: 0.5, delay: 0,
+            withDuration: 0.5, delay: 0.3,
             usingSpringWithDamping: 0.45, initialSpringVelocity: 0.8
         ) {
-            self.starBadge.transform = .identity
+            self.starBadge.transform = self.starBadge.transform.concatenating(CGAffineTransform(scaleX: 2, y: 2))
         }
     }
 
     private func animateOut(completion: @escaping () -> Void) {
-        UIView.animate(
-            withDuration: 0.35, delay: 0,
-            usingSpringWithDamping: 1.0, initialSpringVelocity: 0
-        ) {
-            self.sheetView.transform = CGAffineTransform(translationX: 0, y: self.sheetHeight)
-            self.dimView.alpha = 0
-        } completion: { _ in
-            completion()
-        }
-    }
-
-    // MARK: - Pan to dismiss
-    @objc private func handlePan(_ gr: UIPanGestureRecognizer) {
-        let t = gr.translation(in: view)
-        guard t.y >= 0 else { return }
-
-        switch gr.state {
-        case .changed:
-            sheetView.transform = CGAffineTransform(translationX: 0, y: t.y)
-            dimView.alpha = max(0, 1 - t.y / sheetHeight)
-        case .ended, .cancelled:
-            let velocity = gr.velocity(in: view)
-            if t.y > sheetHeight * 0.3 || velocity.y > 800 {
-                animateOut { self.dismiss(animated: false) }
-            } else {
-                UIView.animate(withDuration: 0.3, delay: 1.0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0) {
-                    self.sheetView.transform = .identity
-                    self.dimView.alpha = 1
-                }
-            }
-        default: break
-        }
+        UIView.animate(withDuration: 0.25, animations: {
+            self.view.alpha = 0
+        }, completion: { _ in completion() })
     }
 
     @objc private func handleDimTap() {
-        animateOut { self.dismiss(animated: false) }
+        // Tapping the empty dim area (not the buttons) dismisses, same as before.
     }
 
     // MARK: - Button Actions
@@ -464,3 +468,5 @@ final class MatchBottomSheetVC: UIViewController {
         }
     }
 }
+
+

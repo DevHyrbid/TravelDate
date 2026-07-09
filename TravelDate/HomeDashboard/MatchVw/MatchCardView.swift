@@ -31,35 +31,40 @@ final class MatchCardView: UIView {
     // MARK: - Face containers
     private let frontView = UIView()
     private let backView  = UIView()
-
-    // ── FRONT ────────────────────────────────────────────────────
     private let coverImageView: UIImageView = {
         let iv = UIImageView(); iv.contentMode = .scaleAspectFill; iv.clipsToBounds = true; return iv
     }()
     private let bottomGradientView = UIView()
     private let topStripsContainer = UIView()
     private var topGlassStrips: [UIVisualEffectView] = []
-
-    // Badge
+    
     private let badgeBlurView: UIVisualEffectView = {
         let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
         v.clipsToBounds = true; v.layer.cornerRadius = 21; return v
     }()
-    private let badgeIconLabel: UILabel = { let l = UILabel(); l.text = "🏖"; l.font = .systemFont(ofSize: 16); return l }()
+   
+    private let badgeIconLabel: UILabel = { let l = UILabel(); l.text = "🏖"; l.font = AppFont.regular(15.0); return l }()
+    
     private let badgeTextLabel: UILabel = {
         let l = UILabel(); l.text = "Leisure travelers"; l.textColor = .white
-        l.font = .systemFont(ofSize: 15, weight: .medium); return l
+        l.font = AppFont.medium(16.0); return l
     }()
 
     // Flip button
     private let flipButton: UIButton = {
         let b = UIButton(type: .system)
         b.setImage(UIImage(systemName: "rectangle.on.rectangle"), for: .normal)
-        b.tintColor = .white; b.clipsToBounds = true; b.layer.cornerRadius = 23; return b
+        b.tintColor = .white; b.clipsToBounds = true; b.layer.cornerRadius = 23
+        b.isUserInteractionEnabled = true
+        return b
     }()
+   
     private let flipButtonBlur: UIVisualEffectView = {
-        let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
-        v.clipsToBounds = true; v.layer.cornerRadius = 23; v.isUserInteractionEnabled = false; return v
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+        blur.layer.cornerRadius = 23
+        blur.clipsToBounds = true
+        blur.isUserInteractionEnabled = true
+        return blur
     }()
 
     // Category icon
@@ -68,13 +73,13 @@ final class MatchCardView: UIView {
         v.clipsToBounds = true; v.layer.cornerRadius = 20; return v
     }()
     private let categoryIconLabel: UILabel = {
-        let l = UILabel(); l.text = "🏖"; l.font = .systemFont(ofSize: 20); l.textAlignment = .center; return l
+        let l = UILabel(); l.text = "🏖"; l.font = AppFont.regular(14.0); l.textAlignment = .center; return l
     }()
 
     // Title + pills
     private let titleLabel: UILabel = {
         let l = UILabel(); l.text = "Tokyo Adventure Squad"; l.textColor = .white
-        l.font = .systemFont(ofSize: 28, weight: .bold); l.numberOfLines = 2; return l
+        l.font = AppFont.bold(28.0); l.numberOfLines = 2; return l
     }()
     private let pill1 = GlassPill(), pill2 = GlassPill(), pill3 = GlassPill(), pill4 = GlassPill()
     private let pillRow1 = UIStackView(), pillRow2 = UIStackView()
@@ -84,7 +89,6 @@ final class MatchCardView: UIView {
     private let likeStampLabel = MatchCardView.makeStamp("LIKE", color: .systemGreen)
     private let nopeStampLabel = MatchCardView.makeStamp("NOPE", color: .systemRed)
 
-    // ── BACK ─────────────────────────────────────────────────────
     private let backGradientView = UIView()
     private var memberCells: [MemberCell] = []
 
@@ -118,6 +122,9 @@ final class MatchCardView: UIView {
         flipButtonBlur.contentView.addSubview(flipButton)
         addGlassBorder(to: flipButtonBlur)
         flipButton.addTarget(self, action: #selector(flipTapped), for: .touchUpInside)
+        // Defensive: guarantee the flip button always sits on top of every other
+        // front-face subview, no matter what gets added/reordered later.
+        frontView.bringSubviewToFront(flipButtonBlur)
 
         frontView.addSubview(categoryIconBlur)
         categoryIconBlur.contentView.addSubview(categoryIconLabel)
@@ -135,6 +142,11 @@ final class MatchCardView: UIView {
 
         frontView.addSubview(likeStampLabel); frontView.addSubview(nopeStampLabel)
         likeStampLabel.alpha = 0; nopeStampLabel.alpha = 0
+        // Stamps are decorative-only; make sure they never eat touches meant for
+        // the flip button or anything else, even though UILabel defaults to
+        // isUserInteractionEnabled = false already — explicit is safer here.
+        likeStampLabel.isUserInteractionEnabled = false
+        nopeStampLabel.isUserInteractionEnabled = false
 
         pill1.setText("Apr 15 - Apr 25, 2026"); pill2.setText("Avg age: 25 - 30")
         pill3.setText("4 travelers"); pill4.setText("Bali, Japan")
@@ -195,6 +207,9 @@ final class MatchCardView: UIView {
         flipButtonBlur.frame = CGRect(x: W - btnSz - 16, y: 20, width: btnSz, height: btnSz)
         flipButton.frame = flipButtonBlur.contentView.bounds
         flipButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 18), forImageIn: .normal)
+        // Re-assert on every layout pass too — cheap, and immune to any future
+        // subview insertion order changes.
+        frontView.bringSubviewToFront(flipButtonBlur)
 
         // Pills (bottom up)
         let pH: CGFloat = 36
@@ -285,7 +300,6 @@ final class MatchCardView: UIView {
     private func configure(with group: Group?) {
         guard let group else { return }
         titleLabel.text = group.title ?? "Travel Group"
-        print(group.coverImage,"sdhgbs")
         
         ImageLoader.setImageKing(coverImageView, urlString: APiConstant.base + "\(group.coverImage ?? "")")
         let style = group.travelStyle?.first ?? "beach"
@@ -294,7 +308,7 @@ final class MatchCardView: UIView {
         badgeTextLabel.text    = badgeText(for: style)
 
         pill1.setText(formatDateRange(from: group.startDate, to: group.endDate))
-        pill2.setText("Avg age:\"25 - 30")
+        pill2.setText("Avg age:25 - 30")
         pill3.setText("\(group.members?.count ?? 0) travelers")
         pill4.setText(group.destination ?? "Bali, Japan")
 
@@ -355,7 +369,7 @@ final class MatchCardView: UIView {
         g.startPoint = CGPoint(x: 0, y: 0); g.endPoint = CGPoint(x: 1, y: 1)
         v.layer.addSublayer(g)
         let l = UILabel(); l.text = letter; l.textColor = .white
-        l.font = .systemFont(ofSize: 11, weight: .bold); l.textAlignment = .center
+        l.font = AppFont.bold(12); l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         v.addSubview(l)
         NSLayoutConstraint.activate([l.centerXAnchor.constraint(equalTo: v.centerXAnchor),
@@ -367,7 +381,7 @@ final class MatchCardView: UIView {
 
     private static func makeStamp(_ text: String, color: UIColor) -> UILabel {
         let l = UILabel(); l.text = text; l.textColor = color
-        l.font = .systemFont(ofSize: 28, weight: .black)
+        l.font = AppFont.semibold(27.0)
         l.layer.borderColor = color.cgColor; l.layer.borderWidth = 3
         l.layer.cornerRadius = 6; l.textAlignment = .center; return l
     }
@@ -387,9 +401,35 @@ final class MatchCardView: UIView {
         default: return "Travel enthusiasts"
         }
     }
+   
     private func formatDateRange(from start: String?, to end: String?) -> String {
-        guard let s = start, let e = end else { return "Apr 15 - Apr 25, 2026" }
-        return "\(s) - \(e)"
+        guard let start = start,
+              let end = end else {
+            return ""
+        }
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        guard let startDate = isoFormatter.date(from: start),
+              let endDate = isoFormatter.date(from: end) else {
+            return ""
+        }
+
+        let calendar = Calendar.current
+
+        let monthDayFormatter = DateFormatter()
+        monthDayFormatter.dateFormat = "MMM d"
+
+        let monthDayYearFormatter = DateFormatter()
+        monthDayYearFormatter.dateFormat = "MMM d, yyyy"
+
+        if calendar.component(.year, from: startDate) == calendar.component(.year, from: endDate) {
+            let year = calendar.component(.year, from: endDate)
+            return "\(monthDayFormatter.string(from: startDate)) - \(monthDayFormatter.string(from: endDate)), \(year)"
+        } else {
+            return "\(monthDayYearFormatter.string(from: startDate)) - \(monthDayYearFormatter.string(from: endDate))"
+        }
     }
 }
 
@@ -398,7 +438,7 @@ final class GlassPill: UIView {
     private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
     private let label: UILabel = {
         let l = UILabel(); l.textColor = .white
-        l.font = .systemFont(ofSize: 13, weight: .medium); l.textAlignment = .center; return l
+        l.font = AppFont.semibold(13.0); l.textAlignment = .center; return l
     }()
     override init(frame: CGRect) { super.init(frame: frame); setup() }
     required init?(coder: NSCoder) { super.init(coder: coder); setup() }
@@ -427,7 +467,7 @@ final class MemberCell: UIView {
     private let scrimView  = UIView()
     private let nameLabel: UILabel = {
         let l = UILabel(); l.textColor = .white
-        l.font = .systemFont(ofSize: 13, weight: .semibold); l.numberOfLines = 1; return l
+        l.font = AppFont.semibold(13.0); l.numberOfLines = 1; return l
     }()
     // Pink-purple gradient avatar badge
     private let avatarBadge: UIView = MatchCardView.makeGradientAvatar(letter: "D")
@@ -437,7 +477,7 @@ final class MemberCell: UIView {
         v.layer.cornerRadius = 12; v.clipsToBounds = true; return v
     }()
     private let iconLabel: UILabel = {
-        let l = UILabel(); l.font = .systemFont(ofSize: 11); l.textAlignment = .center; return l
+        let l = UILabel(); l.font = AppFont.regular(13.0); l.textAlignment = .center; return l
     }()
 
     override init(frame: CGRect) { super.init(frame: frame); setup() }

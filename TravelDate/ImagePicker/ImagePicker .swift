@@ -26,7 +26,7 @@ final class ImagePickerManager: NSObject {
 
     // MARK: - Public API
     func showImagePicker(
-        allowCamera: Bool = true,
+        allowCamera: Bool = true,allowonlyCamera: Bool = false,
         completion: @escaping (UIImage) -> Void
     ) {
         self.completion = completion
@@ -37,22 +37,33 @@ final class ImagePickerManager: NSObject {
             preferredStyle: .actionSheet
         )
 
-        if allowCamera, UIImagePickerController.isSourceTypeAvailable(.camera) {
+        if allowonlyCamera, UIImagePickerController.isSourceTypeAvailable(.camera) {
             alert.addAction(
                 UIAlertAction(title: "Camera", style: .default) { _ in
                     self.openCamera()
                 }
             )
-        }
-
-        alert.addAction(
-            UIAlertAction(title: "Gallery", style: .default) { _ in
-                self.openGallery()
+        
+            
+        } else {
+            if allowCamera, UIImagePickerController.isSourceTypeAvailable(.camera) {
+                alert.addAction(
+                    UIAlertAction(title: "Camera", style: .default) { _ in
+                        self.openCamera()
+                    }
+                )
             }
-        )
-
+            
+            alert.addAction(
+                UIAlertAction(title: "Gallery", style: .default) { _ in
+                    self.openGallery()
+                }
+            )
+            
+         
+            
+        }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-
         presentingVC?.present(alert, animated: true)
     }
 

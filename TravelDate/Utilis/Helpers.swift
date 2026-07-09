@@ -25,8 +25,7 @@ class DividerView: UIView {
         let label = UILabel()
         label.text = text
         label.textColor = UIColor.white.withAlphaComponent(0.65)
-        label.font = .montserrat(12, weight: .medium)
-
+        label.font = AppFont.semibold(14.0)
         let hStack = UIStackView(arrangedSubviews: [leftLine, label, rightLine])
         hStack.axis = .horizontal
         hStack.alignment = .center
@@ -56,7 +55,7 @@ class SocialButton: UIButton {
 
         setTitle("  \(title)", for: .normal)
         setImage(UIImage(systemName: icon), for: .normal)
-        titleLabel?.font = .montserrat(15, weight: .medium)
+        titleLabel?.font = AppFont.medium(15.0)
         layer.cornerRadius = 10
         layer.borderWidth = 1
 
@@ -80,61 +79,6 @@ class SocialButton: UIButton {
 
 import UIKit
 
-enum MontserratWeight: String {
-    case regular = "Montserrat-Regular"
-    case medium = "Montserrat-Medium"
-    case semiBold = "Montserrat-SemiBold"
-    case bold = "Montserrat-Bold"
-}
-
-extension UIFont {
-
-    /// Main method for getting Montserrat font
-    static func montserrat(_ size: CGFloat,
-                           weight: MontserratWeight = .regular) -> UIFont {
-
-        return UIFont(name: weight.rawValue, size: size)
-        ?? UIFont.systemFont(ofSize: size) // fallback (never crashes)
-    }
-
-    // MARK: - Frequently Used Styles
-
-    static var loginTitle: UIFont {
-        return .montserrat(24, weight: .semiBold)
-    }
-
-    static var loginSubtitle: UIFont {
-        return .montserrat(14, weight: .regular)
-    }
-
-    static var fieldTitle: UIFont {
-        return .montserrat(14, weight: .medium)
-    }
-
-    static var fieldPlaceholder: UIFont {
-        return .montserrat(14, weight: .regular)
-    }
-
-    static var forgotPassword: UIFont {
-        return .montserrat(14, weight: .medium)
-    }
-
-    static var loginButton: UIFont {
-        return .montserrat(16, weight: .semiBold)
-    }
-
-    static var socialButton: UIFont {
-        return .montserrat(15, weight: .medium)
-    }
-
-    static var signupText: UIFont {
-        return .montserrat(14, weight: .semiBold)
-    }
-
-    static var signupNormalText: UIFont {
-        return .montserrat(14, weight: .regular)
-    }
-}
 
 extension UIViewController {
      func showAlert(message: String) {

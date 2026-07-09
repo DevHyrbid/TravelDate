@@ -26,6 +26,8 @@ class SwipeViewController: BaseClassVc {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
         fetchGroups()
+        // showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
+        // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -389,6 +391,26 @@ class SwipeViewController: BaseClassVc {
         // Optional:
         // customView.isHidden = false
     }
+    private func showTestMatchBottomSheet() {
+
+        let baseURL = APiConstant.base
+
+        let result = MatchResult(
+            groupId: "b3d912d4-b666-45f4-82f7-a2a99802192e",
+            swipeId: "f63fdfea-4564-40f4-93d9-711349fbe21b",
+            groupTitle: "Weekend Trip",
+            matchedStyles: ["Partygoers", "Adventure travelers"],
+            message: "Is Ready To Make Some Plans. Why not start the conversation?",
+            myGroupImageURL: baseURL + "/uploads/1783600038080-56423482.jpg",
+            matchedGroupImageURL: baseURL + "/uploads/1783600182171-623694586.jpg"
+        )
+
+        MatchBottomSheetVC.show(
+            on: self,
+            result: result,
+            delegate: self
+        )
+    }
 
     // MARK: - Add card to back
     private func addCardToBack(groupIndex: Int) {
@@ -445,11 +467,29 @@ class SwipeViewController: BaseClassVc {
 // MARK: - UIGestureRecognizerDelegate
 extension SwipeViewController: UIGestureRecognizerDelegate {
 
+    // ── PRIMARY FIX: check the actual touched view, not a computed rect.
+    // This is consulted BEFORE the pan gesture even starts tracking the touch —
+    // far more reliable than a frame/convert()-based hit check, since it can't
+    // be thrown off by stale layout timing, rounding, or the card's flip
+    // transform. If the touch landed on a UIControl (the flip button, or any
+    // future button on the card), the pan gesture never sees it at all.
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard gestureRecognizer is UIPanGestureRecognizer else { return true }
+
+        var v: UIView? = touch.view
+        while let current = v {
+            if current is UIControl { return false }
+            if current is MatchCardView { break } // no need to walk past the card
+            v = current.superview
+        }
+        return true
+    }
+
     func gestureRecognizerShouldBegin(_ gr: UIGestureRecognizer) -> Bool {
         guard let pan = gr as? UIPanGestureRecognizer else { return true }
 
-        // ── Don't start pan if the touch started inside the flip button hit area.
-        // This ensures UIButton tap fires cleanly without the pan gesture stealing it.
+        // Kept as a second safety net — shouldReceive(touch:) above already
+        // filters out button taps, so this rarely needs to fire, but costs nothing.
         if let card = pan.view as? MatchCardView {
             let location = pan.location(in: card)
             if card.flipButtonFrame.contains(location) { return false }
@@ -494,17 +534,21 @@ extension SwipeViewController {
                 if errCode == 200 {
                     // Uncomment and use real model data:
                     // guard data.isMatch == 1 else { return }
-                    if match == "It is a match!" {
+                    let result = match
+                           
+                           
+                       
+                    if match?.message ?? "" == "It is a match!" {
                         let result = MatchResult(
                             groupId:             group.id ?? "",
                             swipeId:             "",
                             groupTitle:          group.title ?? "",
                             matchedStyles:       group.travelStyle ?? [""],
                             message:             "It's a Match!",
-                            myGroupImage:        User.curentUser?.profileImage ?? "",
+                            myGroupImage:        result?.myGroupImage ?? "",
                             matchedGroupImage:   nil,
                             myGroupImageURL:     nil,
-                            matchedGroupImageURL: group.coverImage
+                            matchedGroupImageURL: result?.matchedGroupImage ?? ""
                         )
                         MatchBottomSheetVC.show(on: self, result: result, delegate: self)
                     }
@@ -610,4 +654,3 @@ enum OverlayType {
         }
     }
 }
-

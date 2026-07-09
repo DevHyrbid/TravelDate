@@ -44,8 +44,8 @@ extension SettingsVc {
         case 102:
             self.blurVw.isHidden = true
 //            SessionManager.shared.clearSession()
-            
-            self.pushVC(LoginViewController.self, from: .Home)
+            User.resetCurrentUser()
+            self.pushVC(LoginViewController.self, from: .Main)
             break
         default:
             break 

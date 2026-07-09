@@ -3,7 +3,11 @@ import ObjectMapper
 import UIKit
 import Alamofire
 
-
+typealias SwipeResult = (
+    message: String,
+    myGroupImage: String,
+    matchedGroupImage: String
+)
 class User : Mappable {
     var day : String?
     var name : String?
@@ -880,21 +884,37 @@ class User : Mappable {
     }
     
     
-    func  swipeAPi(callBack:(( _ type:String?,_ errMsg:String,_ errCode:Int)->Void)!) {
-        
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, suces in
-            print(responseObject,"SWIPED")
-            if  responseObject["code"] as? Int == 200 {
-                print("USER")
-                
-                callBack((responseObject["data"] as? [String:Any] ?? [:])["message"] as? String ?? "0" ,["message"] as? String ?? "",200)
+    func swipeAPi(callBack: @escaping (_ result: SwipeResult?, _ errMsg: String, _ errCode: Int) -> Void) {
+
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, success in
+
+            if responseObject["code"] as? Int == 200 {
+
+                let data = responseObject["data"] as? [String: Any] ?? [:]
+
+                let myGroupImage = ((data["swiperGroup"] as? [String: Any])?["coverImage"] as? String) ?? ""
+
+                let matchedGroupImage = ((data["swipedGroup"] as? [String: Any])?["coverImage"] as? String) ?? ""
+
+                let message = data["message"] as? String ?? ""
+
+                callBack(
+                    (
+                        message: message,
+                        myGroupImage: myGroupImage,
+                        matchedGroupImage: matchedGroupImage
+                    ),
+                    "",
+                    200
+                )
+
             } else {
-                callBack(nil,responseObject["message"] as? String ?? "",404)
+                callBack(nil, responseObject["message"] as? String ?? "", 404)
             }
+
         } faliure: { errMsg, errCode in
-            callBack(nil,errMsg, errCode)
+            callBack(nil, errMsg, errCode)
         }
-        
     }
     
     func  saveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
@@ -909,6 +929,37 @@ class User : Mappable {
             }
         } faliure: { errMsg, errCode in
             callBack(errMsg, errCode)
+        }
+        
+    }
+    func  getHistoryTrips(callBack:((_ chat:[ChatRoomModel]?,_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.historyTrips , params: [:], method: "GET") { responseObject, success in
+            print(APiConstant.historyTrips,"JHEREEEE",responseObject)
+            if let code = responseObject["code"] as? Int, code == 200 {
+                
+                print("API RESPONSE:", responseObject)
+                
+                if let dataArray = responseObject["data"] as? [[String: Any]] {
+                    
+                    let data = Mapper<ChatRoomModel>().mapArray(JSONObject: dataArray)
+                    
+                    print("PARSED API FOR :::::", data ?? [])
+                    
+                    callBack(data, "Success", 200)
+                    
+                } else {
+                    
+                    callBack(nil, "Data parsing failed", 404)
+                }
+                
+            } else {
+                
+                let message = responseObject["message"] as? String ?? "Error"
+                callBack(nil, message, 404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(nil,errMsg, errCode)
         }
         
     }

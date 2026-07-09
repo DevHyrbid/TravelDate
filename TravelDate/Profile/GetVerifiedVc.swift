@@ -524,7 +524,7 @@ class GetVerifiedVc: BaseClassVc {
         let title = hasExisting ? "Replace Government ID" : "Upload Government ID"
         let sheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
 
-        sheet.addAction(UIAlertAction(title: "Take Photo",    style: .default) { _ in self.pickGovID(camera: true) })
+        sheet.addAction(UIAlertAction(title: "Take Photo",    style: .default) { _ in self.pickGovID(camera: false) })
         sheet.addAction(UIAlertAction(title: "Choose Photo",  style: .default) { _ in self.pickGovID(camera: false) })
         sheet.addAction(UIAlertAction(title: "Cancel",        style: .cancel))
 
@@ -533,7 +533,7 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     private func pickGovID(camera: Bool) {
-        imagePicker.showImagePicker(allowCamera: camera) { [weak self] img in
+        imagePicker.showImagePicker(allowCamera: camera,allowonlyCamera:false) { [weak self] img in
             guard let self else { return }
             self.frontImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
@@ -566,7 +566,7 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     private func pickBackID(camera: Bool) {
-        imagePicker.showImagePicker(allowCamera: camera) { [weak self] img in
+        imagePicker.showImagePicker(allowCamera: camera,allowonlyCamera:false) { [weak self] img in
             guard let self else { return }
             self.backImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
@@ -587,10 +587,10 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     @objc private func tappedSelfieUpload() {
-        let sourceType: UIImagePickerController.SourceType =
-            UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
+//        let sourceType: UIImagePickerController.SourceType =
+//            UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
 
-        imagePicker.showImagePicker(allowCamera: sourceType == .camera) { [weak self] img in
+        imagePicker.showImagePicker(allowCamera:true,allowonlyCamera:true) { [weak self] img in
             guard let self else { return }
             self.selfieImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }

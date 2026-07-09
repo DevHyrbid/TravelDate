@@ -78,8 +78,8 @@
             filePath = "TravelDate/HomeDashboard/ChatVc.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "461"
-            endingLineNumber = "461"
+            startingLineNumber = "516"
+            endingLineNumber = "516"
             landmarkName = "makeGroupSwipeActions(at:)"
             landmarkType = "7">
          </BreakpointContent>

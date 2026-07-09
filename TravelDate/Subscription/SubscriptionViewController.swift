@@ -62,7 +62,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var titleLabel: UILabel = {
         let l = UILabel()
         l.textColor = .white
-        l.font = .systemFont(ofSize: 22, weight: .bold)
+        l.font = AppFont.bold(22.0)
         l.numberOfLines = 2
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -71,7 +71,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var subtitleLabel: UILabel = {
         let l = UILabel()
         l.textColor = UIColor(white: 1, alpha: 0.72)
-        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.font = AppFont.regular(15.0)
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
@@ -101,7 +101,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var featureSectionTitle: UILabel = {
         let l = UILabel()
         l.text = "Included with Trips"
-        l.font = .systemFont(ofSize: 18, weight: .bold)
+        l.font = AppFont.bold(18.0)
         l.textColor = .white
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -127,7 +127,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var ctaButton: UIButton = {
         let btn = UIButton(type: .custom)
         btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = .systemFont(ofSize: 17, weight: .bold)
+        btn.titleLabel?.font = AppFont.bold(17.0)
         btn.backgroundColor = orangeColor
         btn.layer.cornerRadius = Self.buttonHeight / 2
         btn.clipsToBounds = true
@@ -148,7 +148,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var freeTrialLabel: UILabel = {
         let l = UILabel()
         l.text = "Free for 3 days, then 9.99 $per week"
-        l.font = .systemFont(ofSize: 14, weight: .regular)
+        l.font = AppFont.regular(16.0)
         l.textColor = UIColor(white: 1, alpha: 0.72)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -158,7 +158,7 @@ final class SubscriptionViewController: UIViewController {
     private lazy var recurringLabel: UILabel = {
         let l = UILabel()
         l.text = "Recurring billing for same price and duration, cancel anytime"
-        l.font = .systemFont(ofSize: 13, weight: .regular)
+        l.font = AppFont.regular(16.0)
         l.textColor = UIColor(white: 1, alpha: 0.72)
         l.textAlignment = .center
         l.numberOfLines = 2
@@ -231,7 +231,7 @@ final class SubscriptionViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Manage Subscription"
         titleLabel.textColor = .white
-        titleLabel.font = .systemFont(ofSize: 26, weight: .regular)
+        titleLabel.font = AppFont.medium(25.0)
         titleLabel.sizeToFit()
 
         navigationItem.leftBarButtonItems = [
@@ -296,8 +296,9 @@ final class SubscriptionViewController: UIViewController {
         case .plans:
             titleLabel.text    = "Discover who's viewed your profile"
             subtitleLabel.text = "Upgrade to unlock"
-            titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
-            subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+            titleLabel.font = AppFont.regular(20.0)
+            subtitleLabel.font = AppFont.regular(14.0)
+                
         }
 
         NSLayoutConstraint.activate([
@@ -400,12 +401,12 @@ final class SubscriptionViewController: UIViewController {
         // Text
         let dayLbl = UILabel()
         dayLbl.text      = day
-        dayLbl.font      = .systemFont(ofSize: 13, weight: .semibold)
+        dayLbl.font      = AppFont.medium(14.0)
         dayLbl.textColor = UIColor(white: 1, alpha: 0.55)
 
         let titleLbl = UILabel()
         titleLbl.text      = title
-        titleLbl.font      = .systemFont(ofSize: 15, weight: .bold)
+        titleLbl.font      = AppFont.bold(15.0)
         titleLbl.textColor = .white
 
         let dayTitleRow = UIStackView(arrangedSubviews: [dayLbl, titleLbl])
@@ -415,7 +416,7 @@ final class SubscriptionViewController: UIViewController {
 
         let subLbl = UILabel()
         subLbl.text          = sub
-        subLbl.font          = .systemFont(ofSize: 12, weight: .regular)
+        subLbl.font          = AppFont.regular(15.0)
         subLbl.textColor     = UIColor(white: 1, alpha: 0.5)
         subLbl.numberOfLines = 2
 

@@ -45,6 +45,7 @@ class APiConstant : NSObject {
     static let chatDirect = baseUrl + "chat/direct"
     
     static let dashboardAPi = baseUrl + "groups/dashboard"
+    static let historyTrips = baseUrl + "groups/my-trips"
 }
 
 

@@ -4,7 +4,12 @@
 //
 //  Created by Dev CodingZone on 14/04/26.
 //
-
+struct TravelItem {
+    let title: String
+    let month: String
+    let icon: UIImage?
+    let status: String
+}
 import UIKit
 
 class ProfileViewController: BaseClassVc {
@@ -16,11 +21,29 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var lblName: UILabel!
     @IBOutlet weak var collectionVw: UICollectionView!
     @IBOutlet weak var lblProfileTitle: UILabel!
+    @IBOutlet weak var tblVw:UITableView!
+    @IBOutlet weak var borderView: ProgressBorderView!
+
+    private let progressLayer = CAShapeLayer()
     
     // MARK: - Arr
     var arr = [String]()
     var selectedTravelStyle: TravelStyle = .partygoers
     var selectedTravelStyles: [TravelStyle] = []
+    let data: [TravelItem] = [
+        TravelItem(
+            title: "Italy",
+            month: "May 2026",
+            icon: UIImage(named: "travel_icon"),
+            status: "Upcoming"
+        ),
+        TravelItem(
+            title: "Japan",
+            month: "October 2026",
+            icon: UIImage(named: "travel_icon"),
+            status: "Completed"
+        )
+    ]
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,12 +60,24 @@ class ProfileViewController: BaseClassVc {
         
         
         
-                collectionVw.register(TravelStyleCell.self,
+        collectionVw.register(TravelStyleCell.self,
                                       forCellWithReuseIdentifier: TravelStyleCell.identifier)
             
     }
     
     
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+//        borderView.setProgress(25)x
+//        request.getProfile { loginUser, errMsg, errCode in
+//            print(loginUser?.front,loginUser?.back,loginUser?.selfie,"hejkruehwensmkoiu")
+//        }
+    }
+    
+    
+    
+   
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
@@ -60,12 +95,56 @@ class ProfileViewController: BaseClassVc {
         lblUserName.text = "@\(User.curentUser?.userName ?? "")"
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
+        } else {
+            imgProfile.image = UIImage(named: "User")
         }
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         
         imgProfile.contentMode = .scaleToFill
         
         tripsTabBarController?.showTabBar()
+        registerNib()
+        
+    }
+    
+    
+    
+    func updateProfileCompletion() {
+
+        var completedFields = 0
+        let totalFields = 4
+
+        if !(User.curentUser?.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            completedFields += 1
+        }
+
+        if !(User.curentUser?.userName ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            completedFields += 1
+        }
+
+        if !(User.curentUser?.short_bio ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            completedFields += 1
+        }
+
+        if !(User.curentUser?.profile_image ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            completedFields += 1
+        }
+
+        let progress = CGFloat(completedFields) / CGFloat(totalFields) * 100
+        print(progress)
+        borderView.setProgress(25) // 75%
+    }
+    
+    func registerNib() {
+        tblVw.register(TravelCell.self,
+                           forCellReuseIdentifier: TravelCell.identifier)
+        getHistoryTrips()
+    }
+    
+    func getHistoryTrips() {
+        request.getHistoryTrips { model, err, code in
+            
+        }
     }
     
     func saveAPi() {
@@ -188,5 +267,33 @@ extension ProfileViewController{
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
         
+    }
+}
+
+extension ProfileViewController:UITableViewDelegate,UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return data.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let item = data[indexPath.row]
+
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: TravelCell.identifier,
+            for: indexPath
+        ) as! TravelCell
+
+        cell.configure(
+            title: item.title,
+            month: item.month,
+            icon: item.icon,
+            status: item.status
+        )
+
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        116 // 110 (containerView height, measured from Figma) + 8 top + 8 bottom inset
     }
 }
