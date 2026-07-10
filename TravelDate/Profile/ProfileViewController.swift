@@ -7,7 +7,7 @@
 struct TravelItem {
     let title: String
     let month: String
-    let icon: UIImage?
+    let icon: String?
     let status: String
 }
 import UIKit
@@ -30,20 +30,7 @@ class ProfileViewController: BaseClassVc {
     var arr = [String]()
     var selectedTravelStyle: TravelStyle = .partygoers
     var selectedTravelStyles: [TravelStyle] = []
-    let data: [TravelItem] = [
-        TravelItem(
-            title: "Italy",
-            month: "May 2026",
-            icon: UIImage(named: "travel_icon"),
-            status: "Upcoming"
-        ),
-        TravelItem(
-            title: "Japan",
-            month: "October 2026",
-            icon: UIImage(named: "travel_icon"),
-            status: "Completed"
-        )
-    ]
+    var data = [TravelItem]()
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -143,7 +130,21 @@ class ProfileViewController: BaseClassVc {
     
     func getHistoryTrips() {
         request.getHistoryTrips { model, err, code in
-            
+            if code == 200 {
+                
+                for (index, item) in model!.enumerated() {
+                    self.data.append(TravelItem(
+                        title: item.title ?? "",
+                        month: "May 2026",
+                        icon: item.coverImage,
+                        status: item.status ?? ""
+                    ))
+                }
+                DispatchQueue.main.async {
+                    self.tblVw.reloadData()
+                }
+                
+            }
         }
     }
     

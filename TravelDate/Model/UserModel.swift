@@ -932,17 +932,15 @@ class User : Mappable {
         }
         
     }
-    func  getHistoryTrips(callBack:((_ chat:[ChatRoomModel]?,_ errMsg:String,_ errCode:Int)->Void)!) {
+    func  getHistoryTrips(callBack:((_ chat:[MyGroup]?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.historyTrips , params: [:], method: "GET") { responseObject, success in
             print(APiConstant.historyTrips,"JHEREEEE",responseObject)
             if let code = responseObject["code"] as? Int, code == 200 {
-                
-                print("API RESPONSE:", responseObject)
-                
+                        
                 if let dataArray = responseObject["data"] as? [[String: Any]] {
                     
-                    let data = Mapper<ChatRoomModel>().mapArray(JSONObject: dataArray)
+                    let data = Mapper<MyGroup>().mapArray(JSONObject: dataArray)
                     
                     print("PARSED API FOR :::::", data ?? [])
                     
@@ -1366,12 +1364,14 @@ class ChatRoomModel: Mappable {
     var participantsUser : [UserMembers]?
     var lastMessage: LastMessageModel?
     var unreadCount: Int?
+    var status : String?
     
     required init?(map: Map) {
         
     }
     
     func mapping(map: Map) {
+        status <- map["status"]
         id              <- map["id"]
         type            <- map["type"]
         groupName       <- map["groupName"]
@@ -1585,13 +1585,14 @@ struct MyGroup : Mappable {
     var joinCode : String?
     var members : [Members]?
     var preferences : Preferences?
+    var status : String?
 
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
-
+        status <- map["status"]
         id <- map["id"]
         title <- map["title"]
         description <- map["description"]

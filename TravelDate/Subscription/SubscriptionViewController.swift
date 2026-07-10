@@ -476,7 +476,7 @@ final class SubscriptionViewController: UIViewController {
             plansRowStack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
             plansRowStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
             plansRowStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
-            plansRowStack.heightAnchor.constraint(equalToConstant: 193),
+            plansRowStack.heightAnchor.constraint(equalToConstant: 210),
         ])
 
         for _ in 0..<3 {

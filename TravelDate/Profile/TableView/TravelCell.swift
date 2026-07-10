@@ -135,10 +135,12 @@ final class TravelCell: UITableViewCell {
             iconBackgroundView.heightAnchor.constraint(equalToConstant: 52),
 
             // Icon glyph — centered inside icon background
-            iconImageView.centerXAnchor.constraint(equalTo: iconBackgroundView.centerXAnchor),
-            iconImageView.centerYAnchor.constraint(equalTo: iconBackgroundView.centerYAnchor),
-            iconImageView.widthAnchor.constraint(equalToConstant: 26),
-            iconImageView.heightAnchor.constraint(equalToConstant: 26),
+            
+                iconImageView.topAnchor.constraint(equalTo: iconBackgroundView.topAnchor),
+                iconImageView.leadingAnchor.constraint(equalTo: iconBackgroundView.leadingAnchor),
+                iconImageView.trailingAnchor.constraint(equalTo: iconBackgroundView.trailingAnchor),
+                iconImageView.bottomAnchor.constraint(equalTo: iconBackgroundView.bottomAnchor),
+            
 
             // Title — leading 15 from icon, independent trailing constraint against
             // the pill so a long subtitle can't force extra truncation on this label.
@@ -165,16 +167,24 @@ final class TravelCell: UITableViewCell {
         ])
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        iconImageView.layer.cornerRadius = iconImageView.bounds.width / 2
+    }
+    
     // MARK: - Configure
 
     func configure(title: String,
                    month: String,
-                   icon: UIImage?,
+                   icon: String?,
                    status: String) {
 
         titleLabel.text = title
         subtitleLabel.text = month
-        iconImageView.image = icon
-        statusLabel.text = status
+        ImageLoader.setImageKing(iconImageView, urlString: APiConstant.base + "\(icon ?? "")")
+        print(APiConstant.base + "\(icon ?? "")","ddddd")
+        iconImageView.clipsToBounds   = true
+        iconImageView.contentMode = .scaleToFill
+        statusLabel.text = status.capitalized
     }
 }
