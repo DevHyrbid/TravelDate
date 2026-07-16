@@ -64,16 +64,7 @@ final class ChatVc: BaseClassVc {
                name: .didReceiveChatMessage,
                object: nil
            )
-        let gradient = CAGradientLayer()
-        gradient.frame = vwGlass.bounds
-        gradient.cornerRadius = 20
-        gradient.colors = [
-            UIColor.white.withAlphaComponent(0.20).cgColor,
-            UIColor.clear.cgColor
-        ]
-        gradient.locations = [0, 1]
-        vwGlass.layer.addSublayer(gradient)
-        applyGlassEffect(to: vwGlass)
+//     nvwGlass)
     }
     
     
@@ -229,22 +220,22 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
         if selectedSegment == .chats {
-            /*let block = UIContextualAction(
+            let block = UIContextualAction(
                 style: .destructive,
-                title: "Block", handler: {_,_,_ in
-                    let model = chatData[indexPath.row]
+                title: "Delete Chat", handler: {_,_,_ in
+//                    let model = chatData[indexPath.row]
                     
-                    self.didTapBlockOption()
+//                    self.didTapBlockOption()
                 }
             )
-             */
+             
             let report = UIContextualAction(
                 style: .destructive,
                 title: "Report", handler: {_,_,_ in
                     self.didTapReportOption(indexPath)
                 }
             )
-            let config = UISwipeActionsConfiguration(actions: [report])
+            let config = UISwipeActionsConfiguration(actions: [block,report])
             config.performsFirstActionWithFullSwipe = false
             return config
         } else {
