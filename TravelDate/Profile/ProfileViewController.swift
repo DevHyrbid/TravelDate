@@ -16,6 +16,7 @@ class ProfileViewController: BaseClassVc {
     
     // MARK: - IBoutlets
     @IBOutlet weak var txtAbout: UITextView!
+    @IBOutlet weak var btnVwHistory: UIButton!
     @IBOutlet weak var lblUserName: UILabel!
     @IBOutlet weak var imgProfile: UIImageView!
     @IBOutlet weak var lblName: UILabel!
@@ -23,7 +24,8 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var lblProfileTitle: UILabel!
     @IBOutlet weak var tblVw:UITableView!
     @IBOutlet weak var borderView: ProgressBorderView!
-
+    @IBOutlet weak var heightVw: NSLayoutConstraint!
+    @IBOutlet weak var imgMyTrips: UIImageView!
     private let progressLayer = CAShapeLayer()
     
     // MARK: - Arr
@@ -35,36 +37,20 @@ class ProfileViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
-        if User.curentUser?.travelStyles != nil {
-            for i  in 0..<User.curentUser!.travelStyles!.count {
-                arr.append(User.curentUser!.travelStyles?[i] ?? "")
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-                
-                self.collectionVw.reloadData()
+        DispatchQueue.main.async {
+            self.arr = User.curentUser?.travelStyles ?? []
+
+            self.collectionVw.performBatchUpdates({
+                self.collectionVw.reloadSections(IndexSet(integer: 0))
             })
         }
         
-        
-        
+//        let vc = TravelListViewController()
+//        navigationController?.pushViewController(vc, animated: true)
+//        
         collectionVw.register(TravelStyleCell.self,
                                       forCellWithReuseIdentifier: TravelStyleCell.identifier)
-            
     }
-    
-    
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-//        borderView.setProgress(25)x
-//        request.getProfile { loginUser, errMsg, errCode in
-//            print(loginUser?.front,loginUser?.back,loginUser?.selfie,"hejkruehwensmkoiu")
-//        }
-    }
-    
-    
-    
-   
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
@@ -75,11 +61,15 @@ class ProfileViewController: BaseClassVc {
         super.viewWillAppear(animated)
         
         txtAbout.setFont(.medium, size: 14.0)
-        lblName.setFont(.bold, size: 18.0)
-        lblUserName.setFont(.bold, size: 16.0)
+        lblName.setFont(.bold, size: 20.0)
+        lblUserName.setFont(.regular, size: 16.0)
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
-        lblUserName.text = "@\(User.curentUser?.userName ?? "")"
+        if User.curentUser?.userName != "" {
+            lblUserName.text = "@\(User.curentUser?.userName ?? "")"
+        } else {
+            lblUserName.text = ""
+        }
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
         } else {
@@ -87,11 +77,12 @@ class ProfileViewController: BaseClassVc {
         }
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         
-        imgProfile.contentMode = .scaleToFill
+        imgProfile.contentMode = .scaleAspectFill
+        imgProfile.clipsToBounds = true
         
         tripsTabBarController?.showTabBar()
         registerNib()
-        
+        updateProfileCompletion()
     }
     
     
@@ -99,27 +90,48 @@ class ProfileViewController: BaseClassVc {
     func updateProfileCompletion() {
 
         var completedFields = 0
-        let totalFields = 4
+        let totalFields = 5
 
-        if !(User.curentUser?.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !(User.curentUser?.name ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty {
             completedFields += 1
         }
 
-        if !(User.curentUser?.userName ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !(User.curentUser?.userName ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty {
             completedFields += 1
         }
 
-        if !(User.curentUser?.short_bio ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !(User.curentUser?.short_bio ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty {
             completedFields += 1
         }
 
-        if !(User.curentUser?.profile_image ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if !(User.curentUser?.profile_image ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty {
             completedFields += 1
         }
 
-        let progress = CGFloat(completedFields) / CGFloat(totalFields) * 100
-        print(progress)
-        borderView.setProgress(25) // 75%
+        if !(User.curentUser?.travelStyles?.isEmpty ?? true) {
+            completedFields += 1
+        }
+
+        let progress = CGFloat(completedFields) / CGFloat(totalFields)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.borderView.setProgress(progress)
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        imgProfile.layer.cornerRadius = imgProfile.bounds.width / 2
+        imgProfile.clipsToBounds = true
     }
     
     func registerNib() {
@@ -129,18 +141,34 @@ class ProfileViewController: BaseClassVc {
     }
     
     func getHistoryTrips() {
-        request.getHistoryTrips { model, err, code in
+        request.getHistoryTrips { [self] model, err, code in
             if code == 200 {
-                
-                for (index, item) in model!.enumerated() {
+                self.data.removeAll()
+//                if data.count == 0 {
+//                    imgMyTrips.isHidden = true
+//                } else {
+//                    imgMyTrips.isHidden = false
+//                }
+                for (_, item) in model!.enumerated() {
+                    
                     self.data.append(TravelItem(
                         title: item.title ?? "",
-                        month: "May 2026",
+                        month: updateDate(item.endDate ?? ""),
                         icon: item.coverImage,
                         status: item.status ?? ""
                     ))
                 }
                 DispatchQueue.main.async {
+                    let rowHeight: CGFloat = 116
+                    let count = min(data.count ?? 0, 3)
+
+                    heightVw.constant = CGFloat(count) * rowHeight
+                    if self.data.count > 3 {
+                        self.btnVwHistory.isHidden = false
+                } else {
+                    self.btnVwHistory.isHidden = true
+                }
+             
                     self.tblVw.reloadData()
                 }
                 
@@ -148,20 +176,24 @@ class ProfileViewController: BaseClassVc {
         }
     }
     
-    func saveAPi() {
+    func updateDate( _ isoString:String) -> String{
         
-        request.editProfileAPi {[self] msg, errCode in
-            if User.curentUser?.travelStyles != nil {
-                for i  in 0..<User.curentUser!.travelStyles!.count {
-                    arr.append(User.curentUser!.travelStyles?[i] ?? "")
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-                    
-                    self.collectionVw.reloadData()
-                })
-            }        }
-        
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let date = isoFormatter.date(from: isoString) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMMM yyyy"
+            formatter.timeZone = TimeZone(identifier: "UTC")
+            
+            let result = formatter.string(from: date)
+            print(result) // May 2026
+            return result
+        }
+        return ""
     }
+    
     
 }
 
@@ -181,12 +213,12 @@ extension ProfileViewController {
     
     @IBAction func btnAddStyles(_ sender: UIButton) {
 
-        let picker = TravelStylePickerView(
-            selectedStyles: selectedTravelStyles
-        )
+        selectedTravelStyles = (User.curentUser?.travelStyles ?? []).compactMap {
+            TravelStyle(title: $0)
+        }
 
+        let picker = TravelStylePickerView(selectedStyles: selectedTravelStyles)
         picker.delegate = self
-
         picker.present()
     }
     
@@ -212,24 +244,43 @@ extension ProfileViewController {
 
 extension ProfileViewController: TravelStylePickerDelegate {
     func travelStylePicker(_ picker: TravelStylePickerView, didSelect style: [TravelStyle]) {
-       
+
+        print("Selected count:", style.count)
+        print(style.map { $0.title })
+
         selectedTravelStyles = style
 
-        arr.removeAll()
+        arr = style.map { $0.title }
 
-        for item in style {
-
-            arr.append(item.title)
-        }
+        print(arr)
 
         request.travelStyles = arr
 
-        request.editProfileAPi { msg, errCode in
+        
+        request.editProfileAPi { [weak self] msg, errCode in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                print("After API:", User.curentUser?.travelStyles ?? [])
+                
+//                self.arr = User.curentUser?.travelStyles ?? []
+//              
+//                self.selectedTravelStyles = self.arr.compactMap {
+//                    TravelStyle(title: $0)
+//                }
+                print(self.arr,self.arr.count,self.selectedTravelStyle,"ANA IDAR DEKHO")
+                
+                DispatchQueue.main.async {
+                    self.arr = User.curentUser?.travelStyles ?? []
 
-            print(msg)
+                    self.collectionVw.performBatchUpdates({
+                        self.collectionVw.reloadSections(IndexSet(integer: 0))
+                    })
+                }
+            }
         }
 
-        self.collectionVw.reloadData()
+        
     }
 }
 extension ProfileViewController : CollectionDelegate
@@ -296,5 +347,12 @@ extension ProfileViewController:UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         116 // 110 (containerView height, measured from Figma) + 8 top + 8 bottom inset
+    }
+}
+
+extension ProfileViewController {
+    @IBAction func btnView(_ sender:UIButton) {
+        let vc = TravelListViewController()
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

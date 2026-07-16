@@ -69,7 +69,8 @@ final class MembersProgressView: UIView {
         backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.13, alpha: 1)
         layer.cornerRadius = 16
         layer.masksToBounds = true
-
+        self.layer.borderWidth = 1
+        self.layer.borderColor = UIColor.red as! CGColor
         setupAvatarSection()
         setupProgressSection()
         setupTapGestures()
@@ -177,8 +178,8 @@ final class MembersProgressView: UIView {
         for (i, member) in visible.enumerated() {
             let iv = makeAvatarImageView(image: nil, index: i) // ✅ nil pass karo
             
-            // URL se load karo (SDWebImage)
-            if let urlStr = member.userMembers?.profile_image, let url = URL(string: urlStr) {
+            
+            if let urlStr = member.userMembers?.profile_image, let url = URL(string: "\(APiConstant.base)\(urlStr)") {
                 iv.kf.setImage(with: url, placeholder: UIImage(named: "User"))
             }
             

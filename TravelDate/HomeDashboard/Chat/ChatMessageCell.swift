@@ -169,7 +169,7 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Attachment
 
     private func configureAttachment(_ item: ChatItem) {
-        print(item.imageURL,"lkjhgfdfghjklkjgfdfghj")
+        
         let hasImage = item.imageURL != nil || item.localImage != nil
         let hasText  = !(item.content ?? "").isEmpty
 

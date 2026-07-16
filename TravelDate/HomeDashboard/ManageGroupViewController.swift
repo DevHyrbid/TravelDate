@@ -17,7 +17,7 @@ struct GroupMember {
     var isCurrentUser: Bool
     var avatarColor: UIColor
     var initials: String
-    var profileImage: String?   // ← add this
+    var profileImage: String? = nil   // ✅ default value fixes compile error at call sites
 }
 
 // MARK: - Design Tokens
@@ -46,6 +46,7 @@ final class ManageGroupViewController: UIViewController {
 
     // MARK: Views
     private let scrollView   = UIScrollView()
+    private static let swipeActionWidth: CGFloat = 92
     private let contentStack = UIStackView()
     private let membersListStack = UIStackView()
 
@@ -78,6 +79,7 @@ final class ManageGroupViewController: UIViewController {
         view.backgroundColor = Theme.bg
         setupSheet()
         buildUI()
+        scrollView.delegate = self
     }
 
     private func setupSheet() {
@@ -230,6 +232,7 @@ final class ManageGroupViewController: UIViewController {
     private func buildMemberRow(member: GroupMember, index: Int) -> UIView {
         let container = UIView()
         container.tag = index
+        container.backgroundColor = Theme.card
 
         let avatarView = makeAvatar(for: member)
 
@@ -262,9 +265,23 @@ final class ManageGroupViewController: UIViewController {
         row.spacing = 12
         row.isLayoutMarginsRelativeArrangement = true
         row.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        row.backgroundColor = Theme.card
         row.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(row)
-        row.pinEdges(to: container)
+
+        // "You" can't block yourself — no swipe action on the current user's row.
+        guard !member.isCurrentUser else {
+            container.addSubview(row)
+            row.pinEdges(to: container)
+            return container
+        }
+
+        let swipeRow = SwipeableRow(content: row, actionWidth: Self.swipeActionWidth)
+        swipeRow.onBlock = { [weak self] in
+            self?.blockMemberTapped(memberId: member.id, memberName: member.name)
+        }
+        swipeRow.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(swipeRow)
+        swipeRow.pinEdges(to: container)
         return container
     }
 
@@ -335,23 +352,34 @@ final class ManageGroupViewController: UIViewController {
         }
 
         // Crown badge — always shown for admin regardless of avatar type
+        // ✅ Switched from emoji "👑" (device/font dependent rendering) to SF Symbol
+        // for a consistent, pixel-accurate vector match against the Figma badge.
         if member.isAdmin {
-            let crown = UILabel()
-            crown.text                = "👑"
-            crown.font                = .systemFont(ofSize: 9)
-            crown.backgroundColor     = Theme.accent
-            crown.textAlignment       = .center
-            crown.layer.cornerRadius  = 9
-            crown.layer.borderWidth   = 2
-            crown.layer.borderColor   = Theme.card.cgColor
-            crown.clipsToBounds       = true
-            crown.translatesAutoresizingMaskIntoConstraints = false
-            avatarView.addSubview(crown)
+            let crownBadge = UIView()
+            crownBadge.backgroundColor = Theme.accent
+            crownBadge.layer.cornerRadius = 9
+            crownBadge.layer.borderWidth = 2
+            crownBadge.layer.borderColor = Theme.card.cgColor
+            crownBadge.clipsToBounds = true
+            crownBadge.translatesAutoresizingMaskIntoConstraints = false
+
+            let crownIcon = UIImageView(image: UIImage(systemName: "crown.fill"))
+            crownIcon.tintColor = .white
+            crownIcon.contentMode = .scaleAspectFit
+            crownIcon.translatesAutoresizingMaskIntoConstraints = false
+            crownBadge.addSubview(crownIcon)
+
+            avatarView.addSubview(crownBadge)
             NSLayoutConstraint.activate([
-                crown.widthAnchor.constraint(equalToConstant: 18),
-                crown.heightAnchor.constraint(equalToConstant: 18),
-                crown.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 2),
-                crown.topAnchor.constraint(equalTo: avatarView.topAnchor, constant: -2),
+                crownBadge.widthAnchor.constraint(equalToConstant: 18),
+                crownBadge.heightAnchor.constraint(equalToConstant: 18),
+                crownBadge.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 2),
+                crownBadge.topAnchor.constraint(equalTo: avatarView.topAnchor, constant: -2),
+
+                crownIcon.centerXAnchor.constraint(equalTo: crownBadge.centerXAnchor),
+                crownIcon.centerYAnchor.constraint(equalTo: crownBadge.centerYAnchor),
+                crownIcon.widthAnchor.constraint(equalToConstant: 9),
+                crownIcon.heightAnchor.constraint(equalToConstant: 9),
             ])
         }
 
@@ -384,8 +412,10 @@ final class ManageGroupViewController: UIViewController {
 
         let label = UILabel()
         label.numberOfLines = 0
+        // ✅ Matched screenshot: plain hyphen separator "Trip Dates - <dates>",
+        // not an em dash "—".
         let attr = NSMutableAttributedString(
-            string: "Trip Dates — ",
+            string: "Trip Dates - ",
             attributes: [.font: UIFont.systemFont(ofSize: 16, weight: .medium),
                          .foregroundColor: Theme.textPrimary])
         attr.append(NSAttributedString(
@@ -466,6 +496,18 @@ final class ManageGroupViewController: UIViewController {
                                       message: "Remove this member from the group?",
                                       preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { [weak self] _ in
+            self?.members.removeAll { $0.id == memberId }
+            self?.animateMembersReload()
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func blockMemberTapped(memberId: String, memberName: String) {
+        let alert = UIAlertController(title: "Block \(memberName)?",
+                                      message: "They won't be able to see this trip or contact you. You can unblock them later from settings.",
+                                      preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Block", style: .destructive) { [weak self] _ in
             self?.members.removeAll { $0.id == memberId }
             self?.animateMembersReload()
         })
@@ -637,13 +679,200 @@ final class ManageGroupViewController: UIViewController {
     }
 }
 
+// MARK: - UIScrollViewDelegate
+
+extension ManageGroupViewController: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // Close any open swipe row before the list scrolls.
+        SwipeableRow.currentlyOpenRow?.close()
+    }
+}
+
+// MARK: - SwipeableRow (swipe-left-to-reveal "Block" action, members list only)
+
+final class SwipeableRow: UIView {
+
+    var onBlock: (() -> Void)?
+
+    /// Tracks the single currently-open row across the list so opening a new
+    /// one auto-closes the previous (standard swipe-list behavior).
+    static weak var currentlyOpenRow: SwipeableRow?
+
+    private let actionWidth: CGFloat
+    private let contentWrapper = UIView()
+    private let actionsView = UIView()
+    private var contentLeadingConstraint: NSLayoutConstraint!
+    private var panGesture: UIPanGestureRecognizer!
+    private var isOpen = false
+    private var directionLocked: Bool?   // nil = undetermined, true = horizontal, false = vertical
+
+    init(content: UIView, actionWidth: CGFloat) {
+        self.actionWidth = actionWidth
+        super.init(frame: .zero)
+        clipsToBounds = true
+        setup(content: content)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    private func setup(content: UIView) {
+        // Background "Block" action, pinned to the trailing edge, revealed on swipe.
+        actionsView.backgroundColor = Theme.danger
+        actionsView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(actionsView)
+        NSLayoutConstraint.activate([
+            actionsView.topAnchor.constraint(equalTo: topAnchor),
+            actionsView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            actionsView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            actionsView.widthAnchor.constraint(equalToConstant: actionWidth),
+        ])
+
+        let blockButton = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.title = "Block"
+        config.image = UIImage(systemName: "hand.raised.slash.fill")
+        config.imagePlacement = .top
+        config.imagePadding = 4
+        config.baseForegroundColor = .white
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var out = incoming
+            out.font = .systemFont(ofSize: 12.5, weight: .semibold)
+            return out
+        }
+        blockButton.configuration = config
+        blockButton.translatesAutoresizingMaskIntoConstraints = false
+        blockButton.addTarget(self, action: #selector(blockTapped), for: .touchUpInside)
+        actionsView.addSubview(blockButton)
+        NSLayoutConstraint.activate([
+            blockButton.centerXAnchor.constraint(equalTo: actionsView.centerXAnchor),
+            blockButton.centerYAnchor.constraint(equalTo: actionsView.centerYAnchor),
+        ])
+
+        // Foreground content, slides horizontally to reveal the action behind it.
+        contentWrapper.backgroundColor = Theme.card
+        contentWrapper.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(contentWrapper)
+
+        content.translatesAutoresizingMaskIntoConstraints = false
+        contentWrapper.addSubview(content)
+        content.pinEdges(to: contentWrapper)
+
+        contentLeadingConstraint = contentWrapper.leadingAnchor.constraint(equalTo: leadingAnchor)
+        NSLayoutConstraint.activate([
+            contentLeadingConstraint,
+            contentWrapper.topAnchor.constraint(equalTo: topAnchor),
+            contentWrapper.bottomAnchor.constraint(equalTo: bottomAnchor),
+            contentWrapper.widthAnchor.constraint(equalTo: widthAnchor),
+        ])
+
+        panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        panGesture.delegate = self
+        contentWrapper.addGestureRecognizer(panGesture)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(contentTapped))
+        tap.cancelsTouchesInView = false   // let taps still reach Remove/More buttons inside content
+        tap.delegate = self
+        contentWrapper.addGestureRecognizer(tap)
+    }
+
+    // MARK: Gesture handling
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: self)
+
+        switch gesture.state {
+        case .began:
+            directionLocked = nil
+
+        case .changed:
+            if directionLocked == nil {
+                if abs(translation.y) > abs(translation.x), abs(translation.y) > 8 {
+                    // Predominantly vertical — bail out so the scroll view can take over.
+                    directionLocked = false
+                    return
+                } else if abs(translation.x) > 8 {
+                    directionLocked = true
+                } else {
+                    return
+                }
+            }
+            guard directionLocked == true else { return }
+
+            let base: CGFloat = isOpen ? -actionWidth : 0
+            let newX = min(0, max(-actionWidth, base + translation.x))
+            contentLeadingConstraint.constant = newX
+
+        case .ended, .cancelled, .failed:
+            guard directionLocked == true else { directionLocked = nil; return }
+            let velocity = gesture.velocity(in: self).x
+            let shouldOpen: Bool
+            if abs(velocity) > 300 {
+                shouldOpen = velocity < 0
+            } else {
+                shouldOpen = contentLeadingConstraint.constant < -actionWidth / 2
+            }
+            setOpen(shouldOpen, animated: true)
+            directionLocked = nil
+
+        default:
+            break
+        }
+    }
+
+    @objc private func contentTapped() {
+        if isOpen { setOpen(false, animated: true) }
+    }
+
+    @objc private func blockTapped() {
+        setOpen(false, animated: true)
+        onBlock?()
+    }
+
+    // MARK: Open/close
+
+    func setOpen(_ open: Bool, animated: Bool) {
+        if open {
+            if SwipeableRow.currentlyOpenRow !== self {
+                SwipeableRow.currentlyOpenRow?.close()
+            }
+            SwipeableRow.currentlyOpenRow = self
+        } else if SwipeableRow.currentlyOpenRow === self {
+            SwipeableRow.currentlyOpenRow = nil
+        }
+        isOpen = open
+        contentLeadingConstraint.constant = open ? -actionWidth : 0
+
+        let animations = { self.layoutIfNeeded() }
+        if animated {
+            UIView.animate(withDuration: 0.28, delay: 0, usingSpringWithDamping: 0.85,
+                           initialSpringVelocity: 0.3, options: [.curveEaseOut], animations: animations)
+        } else {
+            animations()
+        }
+    }
+
+    func close() {
+        if isOpen { setOpen(false, animated: true) }
+    }
+}
+
+extension SwipeableRow: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        // Allow the scroll view's pan to run alongside ours; handlePan bails out
+        // to it as soon as the drag is determined to be vertical.
+        true
+    }
+}
+
 // MARK: - Present Helper
 
 extension ManageGroupViewController {
     static func present(from vc: UIViewController,
                         groupName: String = "Bali Adventure Crew",
                         groupSubtitle: String = "Bali Adventure Crew",
-                        tripDates: String = "Apr 15 – Apr 25, 2026",
+                        tripDates: String = "Apr 15 - Apr 25, 2026",
                         members: [GroupMember]? = nil,
                         onDelete: (() -> Void)? = nil) {
         let sheet = ManageGroupViewController()

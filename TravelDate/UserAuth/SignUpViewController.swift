@@ -132,17 +132,30 @@ class CustomButton: UIButton {
 
 
 var tuple: (title: String, lat: Double, lng: Double)?
+
 //
 //  LoginVc.swift
 //  TravelDate
 //
 //  Created by Dev CodingZone on 02/04/26.
+//  Fixed: scroll + keyboard avoidance, confirm password field + validation
 //
 
 import UIKit
 import GoogleSignIn
 
 class SignUpViewController: BaseClassVc {
+
+    // MARK: - Scroll
+
+    private let scrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.keyboardDismissMode = .interactive
+        sv.showsVerticalScrollIndicator = false
+        return sv
+    }()
+
+    private let contentView = UIView()
 
     // MARK: - UI Elements
 
@@ -171,16 +184,28 @@ class SignUpViewController: BaseClassVc {
         return label
     }()
 
-    private let nameField = CustomTextField(placeholder: "Enter name", icon: "envelope")
+    private let nameField = CustomTextField(placeholder: "Enter name", icon: "person")
     private let emailField = CustomTextField(placeholder: "Enter email", icon: "envelope")
     private let passwordField = CustomTextField(placeholder: "Enter your password", icon: "lock", isSecure: true)
+    private let confirmPasswordField = CustomTextField(placeholder: "Re-enter your password", icon: "lock", isSecure: true)
 
     private let locationField = CustomTextField(placeholder: "Enter your Location", icon: "location", isSecure: false)
 
     private lazy var nameTitle = makeFieldTitle("Full Name")
     private lazy var emailTitle = makeFieldTitle("Email")
     private lazy var passwordTitle = makeFieldTitle("Password")
+    private lazy var confirmPasswordTitle = makeFieldTitle("Confirm Password")
     private lazy var locationTitle = makeFieldTitle("Location")
+
+    private let errorLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .systemRed
+        label.setFont(.regular, size: 12)
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
 
     private let loginButton = CustomButton(title: "Sign Up", filled: true)
     private let googleButton = CustomButton(title: "Continue with Google", filled: false, hasIcon: true)
@@ -198,21 +223,90 @@ class SignUpViewController: BaseClassVc {
         label.textAlignment = .center
         return label
     }()
-    
+
     var locationView: LocationSearchView!
-    
+
+    // Track bottom-most active field for keyboard scroll math
+    private weak var activeTextField: UITextField?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleLoginTap))
         signupLabel.addGestureRecognizer(tap)
-        
+
         loginButton.addTarget(self, action: #selector(handleSignupTap), for: .touchUpInside)
         googleButton.addTarget(self, action: #selector(handleGoogleTap), for: .touchUpInside)
+
         setuplocationVw()
+        setupKeyboardHandling()
+        setupDismissKeyboardOnTap()
+        registerActiveFieldTracking()
     }
-    
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Keyboard handling (fixes "keyboard blocking everything")
+
+    private func setupKeyboardHandling() {
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification, object: nil
+        )
+    }
+
+    private func setupDismissKeyboardOnTap() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+
+    private func registerActiveFieldTracking() {
+        [nameField, emailField, passwordField, confirmPasswordField, locationField].forEach {
+            $0.textField.addTarget(self, action: #selector(fieldDidBeginEditing(_:)), for: .editingDidBegin)
+        }
+    }
+
+    @objc private func fieldDidBeginEditing(_ sender: UITextField) {
+        activeTextField = sender
+    }
+
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+
+        let keyboardHeight = keyboardFrame.cgRectValue.height
+        let bottomInset = keyboardHeight - view.safeAreaInsets.bottom + 16
+
+        scrollView.contentInset.bottom = bottomInset
+        scrollView.verticalScrollIndicatorInsets.bottom = bottomInset
+
+        // Scroll the active field just above the keyboard
+        if let field = activeTextField {
+            let fieldFrameInScroll = field.convert(field.bounds, to: scrollView)
+            let visibleRect = fieldFrameInScroll.insetBy(dx: 0, dy: -60)
+            scrollView.scrollRectToVisible(visibleRect, animated: true)
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        scrollView.contentInset.bottom = 0
+        scrollView.verticalScrollIndicatorInsets.bottom = 0
+    }
+
+    // MARK: - Location
+
     func setuplocationVw() {
         locationView = LocationSearchView()
         locationView.isHidden = true
@@ -223,8 +317,7 @@ class SignUpViewController: BaseClassVc {
             self?.locationView.isHidden = true
         }
 
-        view.addSubview(locationView)
-
+        contentView.addSubview(locationView)
         locationView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
@@ -234,87 +327,156 @@ class SignUpViewController: BaseClassVc {
             locationView.heightAnchor.constraint(equalToConstant: 250)
         ])
     }
-    
+
     @objc private func handleLoginTap() {
-        print("Log In tapped")
         self.backTapped()
     }
 
-    @objc private func handleSignupTap() {
-        print("Sign Up tapped")
+    // MARK: - Validation (fixes "add confirm password validation and fields")
 
-        request.email =  emailField.text ?? ""
-        request.name =  nameField.text ?? ""
-        request.profile_image =  ""
+    private func validateForm() -> String? {
+        let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let email = emailField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let password = passwordField.text ?? ""
+        let confirmPassword = confirmPasswordField.text ?? ""
+        let location = locationField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if name.isEmpty {
+            return "Please enter your name"
+        }
+        if email.isEmpty {
+            return "Please enter your email"
+        }
+        if !isValidEmail(email) {
+            return "Please enter a valid email address"
+        }
+        if location.isEmpty {
+            return "Please select your location"
+        }
+        if password.isEmpty {
+            return "Please enter a password"
+        }
+        if password.count < 6 {
+            return "Password must be at least 6 characters"
+        }
+        if confirmPassword.isEmpty {
+            return "Please confirm your password"
+        }
+        if password != confirmPassword {
+            return "Passwords do not match"
+        }
+        return nil
+    }
+
+    private func isValidEmail(_ email: String) -> Bool {
+        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: email)
+    }
+
+    private func showFieldError(_ message: String) {
+        errorLabel.text = message
+        errorLabel.isHidden = false
+    }
+
+    private func clearFieldError() {
+        errorLabel.isHidden = true
+        errorLabel.text = nil
+    }
+
+    @objc private func handleSignupTap() {
+        clearFieldError()
+
+        if let errorMessage = validateForm() {
+            showFieldError(errorMessage)
+//            showAlert(errorMessage)
+            return
+        }
+
+        request.email = emailField.text ?? ""
+        request.name = nameField.text ?? ""
+        request.profile_image = ""
         request.password = passwordField.text ?? ""
         request.deviceToken = Constants.device_Config.deviceToken
         request.deviceType = Constants.device_Config.deviceType
         request.latitude = tuple?.lat ?? 0.0
         request.longitude = tuple?.lng ?? 0.0
-        request.location_string = "\(String(describing:tuple?.title ?? ""))"
-        
+        request.location_string = "\(String(describing: tuple?.title ?? ""))"
+
         request.signUp { loginUser, errMsg, errCode in
             if errCode == 200 {
                 LocalNotificationManager.shared.scheduleNotification(
                     id: "welcome_user",
-                    title: "Hey \(self.nameField.text ?? "") Welcome to TravelDate ✈️",
+                    title: "Hey \(self.nameField.text ?? "") Welcome to Trips ✈️",
                     body: "You're all set! Let's find your perfect travel group.",
-                    timeInterval: 4 // small delay to avoid instant spam
+                    timeInterval: 4
                 )
-                
+
                 UserDefaults.standard.set(self.locationField.text, forKey: "user_loc")
                 self.pushVC(TripsTabBarController.self, from: .Home)
             } else {
-                self.showAlert(errMsg)
+//                self.showAlert(errMsg)
             }
         }
     }
-    
-    @objc private func handleGoogleTap() {
 
+    @objc private func handleGoogleTap() {
         GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
-            
             if let error = error {
                 print("Google Sign-In error:", error.localizedDescription)
                 return
             }
-            
+
             guard let user = result?.user else { return }
 
             let email = user.profile?.email ?? ""
             let name = user.profile?.name ?? ""
             let profileImage = user.profile?.imageURL(withDimension: 200)?.absoluteString ?? ""
-            let socialId = user.userID ?? ""   // 👈 IMPORTANT
+            let socialId = user.userID ?? ""
 
-            
-            self.request.email =  email
-            self.request.name =  name
-            self.request.profile_image =  profileImage
+            self.request.email = email
+            self.request.name = name
+            self.request.profile_image = profileImage
             self.request.deviceToken = Constants.device_Config.deviceToken
             self.request.deviceType = Constants.device_Config.deviceToken
             self.request.social_type = "google"
             self.request.social_id = socialId
-            
+
             self.request.socialLogin { loginUser, errMsg, errCode in
                 if errCode == 200 {
                     DispatchQueue.main.async {
                         self.pushVC(TripsTabBarController.self, from: .Home)
-                        
                     }
-                }  else {
+                } else {
                     self.showAlert(errMsg)
                 }
             }
-            
-
-            
-            
         }
     }
-    
+
+    // MARK: - Setup
+
     private func setupUI() {
         view.backgroundColor = .black
         addGradient()
+
+        view.addSubview(scrollView)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentView)
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            // pins content width to scroll view width so vertical-only scrolling works
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
 
         [
             titleBox, loginLabel,
@@ -322,10 +484,12 @@ class SignUpViewController: BaseClassVc {
             emailTitle, emailField,
             locationTitle, locationField,
             passwordTitle, passwordField,
+            confirmPasswordTitle, confirmPasswordField,
+            errorLabel,
             loginButton, googleButton,
             signupLabel
         ].forEach {
-            view.addSubview($0)
+            contentView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
 
@@ -338,8 +502,8 @@ class SignUpViewController: BaseClassVc {
     private func layout() {
         NSLayoutConstraint.activate([
 
-            titleBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
-            titleBox.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            titleBox.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 80),
+            titleBox.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             titleBox.widthAnchor.constraint(equalToConstant: 100),
             titleBox.heightAnchor.constraint(equalToConstant: 100),
 
@@ -347,14 +511,14 @@ class SignUpViewController: BaseClassVc {
             titleLabel.centerYAnchor.constraint(equalTo: titleBox.centerYAnchor),
 
             loginLabel.topAnchor.constraint(equalTo: titleBox.bottomAnchor, constant: 24),
-            loginLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loginLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
 
             nameTitle.topAnchor.constraint(equalTo: loginLabel.bottomAnchor, constant: 24),
-            nameTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            nameTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
 
             nameField.topAnchor.constraint(equalTo: nameTitle.bottomAnchor, constant: 6),
-            nameField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            nameField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+            nameField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
+            nameField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
             nameField.heightAnchor.constraint(equalToConstant: 50),
 
             emailTitle.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 16),
@@ -368,11 +532,11 @@ class SignUpViewController: BaseClassVc {
             locationTitle.topAnchor.constraint(equalTo: emailField.bottomAnchor, constant: 16),
             locationTitle.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
 
-            locationField.topAnchor.constraint(equalTo: locationTitle.bottomAnchor, constant: 6), // ✅ fix here
+            locationField.topAnchor.constraint(equalTo: locationTitle.bottomAnchor, constant: 6),
             locationField.leadingAnchor.constraint(equalTo: locationTitle.leadingAnchor),
             locationField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             locationField.heightAnchor.constraint(equalToConstant: 50),
-            
+
             passwordTitle.topAnchor.constraint(equalTo: locationField.bottomAnchor, constant: 16),
             passwordTitle.leadingAnchor.constraint(equalTo: locationField.leadingAnchor),
 
@@ -381,9 +545,19 @@ class SignUpViewController: BaseClassVc {
             passwordField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             passwordField.heightAnchor.constraint(equalToConstant: 50),
 
-            
-            
-            loginButton.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 24),
+            confirmPasswordTitle.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 16),
+            confirmPasswordTitle.leadingAnchor.constraint(equalTo: passwordField.leadingAnchor),
+
+            confirmPasswordField.topAnchor.constraint(equalTo: confirmPasswordTitle.bottomAnchor, constant: 6),
+            confirmPasswordField.leadingAnchor.constraint(equalTo: confirmPasswordTitle.leadingAnchor),
+            confirmPasswordField.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
+            confirmPasswordField.heightAnchor.constraint(equalToConstant: 50),
+
+            errorLabel.topAnchor.constraint(equalTo: confirmPasswordField.bottomAnchor, constant: 10),
+            errorLabel.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+            errorLabel.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
+
+            loginButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 14),
             loginButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             loginButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             loginButton.heightAnchor.constraint(equalToConstant: 50),
@@ -393,12 +567,9 @@ class SignUpViewController: BaseClassVc {
             googleButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             googleButton.heightAnchor.constraint(equalToConstant: 50),
 
-            signupLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            signupLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            signupLabel.topAnchor.constraint(equalTo: googleButton.bottomAnchor, constant: 20),
+            signupLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            signupLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
         ])
     }
-
-    
-
-   
 }

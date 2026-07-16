@@ -159,8 +159,7 @@ final class TravelCell: UITableViewCell {
             statusContainer.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -26),
             statusContainer.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
             statusContainer.heightAnchor.constraint(equalToConstant: 42),
-
-            // Status label — centered, driving the pill's width via its own padding
+            
             statusLabel.centerYAnchor.constraint(equalTo: statusContainer.centerYAnchor),
             statusLabel.leadingAnchor.constraint(equalTo: statusContainer.leadingAnchor, constant: 24),
             statusLabel.trailingAnchor.constraint(equalTo: statusContainer.trailingAnchor, constant: -24)
@@ -170,6 +169,7 @@ final class TravelCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         iconImageView.layer.cornerRadius = iconImageView.bounds.width / 2
+        statusContainer.backgroundColor = UIColor(hex: "219900")
     }
     
     // MARK: - Configure

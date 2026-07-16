@@ -87,7 +87,7 @@ final class ChatInputView: UIView {
         NSLayoutConstraint.activate([
             container.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             container.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            container.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -8),
+            container.bottomAnchor.constraint(equalTo: bottomAnchor),
             heightConstraint,
 
             textView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),

@@ -328,7 +328,7 @@ final class InviteVc: BaseClassVc {
     // MARK: - Actions
     @objc private func shareInvite() {
         let message = """
-        ✈️ Join my travel group on TravelDate!
+        ✈️ Join my travel group on Trips!
 
         Use this link to join:
         \(inviteLink)

@@ -40,6 +40,18 @@ class BaseClassVc: UIViewController {
     var request = User.new()
     private var lastOffset: CGFloat = 0
     private var isScrollingDown = false
+    
+    var hasPaidSubscription: Bool {
+        guard let plan = User.curentUser?.plan?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !plan.isEmpty,
+              plan.lowercased() != "free",
+              plan.lowercased() != "<null>" else {
+            return false
+        }
+
+        return true
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -51,45 +63,41 @@ class BaseClassVc: UIViewController {
     }
     
     
-    func applyGlassEffect(to button: UIButton) {
-        
-        // Background
-        button.backgroundColor = UIColor.white.withAlphaComponent(0.06)
-        
-        // Rounded
-        button.layer.cornerRadius = button.frame.height / 2
-        button.clipsToBounds = true
-        
-        // Border
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
-        
-        // Blur
-        let blur = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blurView = UIVisualEffectView(effect: blur)
-        
-        blurView.frame = button.bounds
-        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        blurView.isUserInteractionEnabled = false
-        blurView.layer.cornerRadius = button.frame.height / 2
-        blurView.clipsToBounds = true
-        
-        button.insertSubview(blurView, at: 0)
-        
-        // Shadow / Glow
-        button.layer.shadowColor = UIColor.white.withAlphaComponent(0.08).cgColor
-        button.layer.shadowOpacity = 1
-        button.layer.shadowRadius = 12
-        button.layer.shadowOffset = CGSize(width: 0, height: 4)
+    
+    func applyGlassEffect(to view: UIView) {
+
+        let blur = UIVisualEffectView(
+            effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
+        )
+
+        blur.frame = view.bounds
+        blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blur.layer.cornerRadius = 20
+        blur.clipsToBounds = true
+
+        blur.contentView.backgroundColor =
+            UIColor.white.withAlphaComponent(0.08)
+
+        blur.layer.borderWidth = 1
+        blur.layer.borderColor =
+            UIColor.white.withAlphaComponent(0.18).cgColor
+
+        view.insertSubview(blur, at: 0)
+
+        view.layer.cornerRadius = 20
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.2
+        view.layer.shadowRadius = 15
+        view.layer.shadowOffset = CGSize(width: 0, height: 8)
     }
     
     func addGradient() {
         let gradient = CAGradientLayer()
         gradient.colors = [
-            UIColor.black.cgColor,
+            UIColor(red: 0.0706, green: 0.0745, blue: 0.0706, alpha: 1.0).cgColor,
             UIColor(red: 0.2, green: 0.1, blue: 0.1, alpha: 1).cgColor
         ]
-        gradient.locations = [0.0, 1.5]
+        gradient.locations = [1.8, 0.2]
         gradient.frame = view.bounds
         view.layer.insertSublayer(gradient, at: 0)
     }
@@ -111,10 +119,10 @@ class BaseClassVc: UIViewController {
         }
         
         let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "d MMMM"
+        dayFormatter.dateFormat = "d MMM"
         
         let endFormatter = DateFormatter()
-        endFormatter.dateFormat = "d MMMM yyyy"
+        endFormatter.dateFormat = "d MMM yyyy"
         
         let startStr = dayFormatter.string(from: startDate)
         let endStr = endFormatter.string(from: endDate)
@@ -152,13 +160,13 @@ class BaseClassVc: UIViewController {
         
         switch hour {
         case 5..<12:
-            return "Good Morning"
+            return "Good morning"
         case 12..<17:
-            return "Good Afternoon"
+            return "Good afternoon"
         case 17..<21:
-            return "Good Evening"
+            return "Good evening"
         default:
-            return "Good Night"
+            return "Good night"
         }
     }
   
@@ -259,14 +267,14 @@ class BaseClassVc: UIViewController {
     
     func showAlert(_ message: String) {
        
-            let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
+            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             present(alert, animated: true)
         
     }
     
     func showAlertAction(_ message: String, onOk: (() -> Void)? = nil) {
-        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             onOk?()
         }))
@@ -731,59 +739,158 @@ extension UIView {
     }
 }
 
+//
+//  ProgressBorderView.swift
+//  TravelDate
+//
+
 import UIKit
 
 final class ProgressBorderView: UIView {
 
+    // MARK: Layers
+
     private let trackLayer = CAShapeLayer()
     private let progressLayer = CAShapeLayer()
+
+    // MARK: Percentage Badge
+
+    private let badgeView = UIView()
+    private let percentageLabel = UILabel()
+
+    // MARK: Values
+
+    private var currentProgress: CGFloat = 0
+
+    // MARK: Init
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    // MARK: Setup
+
+    private func setup() {
+
+        backgroundColor = .clear
+
+        layer.addSublayer(trackLayer)
+        layer.addSublayer(progressLayer)
+
+        badgeView.backgroundColor = UIColor(hex: "#FF6B00")
+        badgeView.layer.cornerRadius = 18
+        badgeView.layer.masksToBounds = true
+
+        percentageLabel.textAlignment = .center
+        percentageLabel.textColor = .white
+        percentageLabel.font = UIFont.boldSystemFont(ofSize: 12)
+
+        badgeView.addSubview(percentageLabel)
+
+        addSubview(badgeView)
+    }
+
+    // MARK: Layout
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        layer.sublayers?.removeAll(where: {
-            $0.name == "trackLayer" || $0.name == "progressLayer"
-        })
+        drawCircle()
 
-        let lineWidth: CGFloat = 4
+        percentageLabel.frame = badgeView.bounds
+    }
+
+    private func drawCircle() {
+
+        let lineWidth: CGFloat = 6
 
         let radius = min(bounds.width, bounds.height) / 2 - lineWidth / 2
 
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+
+        let startAngle = -CGFloat.pi / 2
+        let endAngle = startAngle + CGFloat.pi * 2
+
         let path = UIBezierPath(
-            arcCenter: CGPoint(x: bounds.midX, y: bounds.midY),
+            arcCenter: center,
             radius: radius,
-            startAngle: -.pi / 2,
-            endAngle: .pi * 1.5,
+            startAngle: startAngle,
+            endAngle: endAngle,
             clockwise: true
         )
 
-        // Background Ring
-        trackLayer.name = "trackLayer"
+        trackLayer.frame = bounds
         trackLayer.path = path.cgPath
         trackLayer.fillColor = UIColor.clear.cgColor
-        trackLayer.strokeColor = UIColor.systemGray5.cgColor
+        trackLayer.strokeColor = UIColor.darkGray.withAlphaComponent(0.25).cgColor
         trackLayer.lineWidth = lineWidth
+        trackLayer.lineCap = .round
 
-        // Progress Ring
-        progressLayer.name = "progressLayer"
+        progressLayer.frame = bounds
         progressLayer.path = path.cgPath
         progressLayer.fillColor = UIColor.clear.cgColor
-        progressLayer.strokeColor = UIColor.systemOrange.cgColor // Change color if needed
+        progressLayer.strokeColor = UIColor(hex: "#FF6B00").cgColor
         progressLayer.lineWidth = lineWidth
         progressLayer.lineCap = .round
-        progressLayer.strokeEnd = 0
+        progressLayer.strokeEnd = currentProgress
 
-        layer.addSublayer(trackLayer)
-        layer.addSublayer(progressLayer)
+        updateBadgePosition()
     }
 
-    /// progress: 0.0 ... 1.0
-    func setProgress(_ progress: CGFloat) {
-        let value = max(0, min(progress, 1))
+    // MARK: Public
 
-        CATransaction.begin()
-        CATransaction.setAnimationDuration(0.35)
-        progressLayer.strokeEnd = value
-        CATransaction.commit()
+    /// value between 0 and 1
+    func setProgress(_ value: CGFloat, animated: Bool = true) {
+
+        currentProgress = max(0, min(value, 1))
+
+        percentageLabel.text = "\(Int(currentProgress * 100))%"
+
+        if animated {
+
+            let animation = CABasicAnimation(keyPath: "strokeEnd")
+            animation.duration = 0.6
+            animation.fromValue = progressLayer.presentation()?.strokeEnd ?? 0
+            animation.toValue = currentProgress
+            animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+            progressLayer.strokeEnd = currentProgress
+            progressLayer.add(animation, forKey: "progress")
+
+        } else {
+
+            progressLayer.strokeEnd = currentProgress
+        }
+
+        updateBadgePosition()
+    }
+
+    // MARK: Badge Position
+
+    private func updateBadgePosition() {
+
+        let radius = min(bounds.width, bounds.height) / 2
+
+        let angle = (-CGFloat.pi / 2) + (currentProgress * CGFloat.pi * 2)
+
+        let x = bounds.midX + cos(angle) * radius
+        let y = bounds.midY + sin(angle) * radius
+
+        badgeView.frame = CGRect(
+            x: x - 30,
+            y: y - 30,
+            width: 0,
+            height: 0
+        )
+
+        badgeView.layer.cornerRadius = 18
+
+        percentageLabel.frame = badgeView.bounds
     }
 }

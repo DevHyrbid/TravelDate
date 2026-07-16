@@ -229,7 +229,7 @@
 				DEVELOPMENT_TEAM = SD35G2CVC5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Travel Trips";
+				INFOPLIST_KEY_CFBundleDisplayName = Trips;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -267,7 +267,7 @@
 				DEVELOPMENT_TEAM = SD35G2CVC5;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Travel Trips";
+				INFOPLIST_KEY_CFBundleDisplayName = Trips;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

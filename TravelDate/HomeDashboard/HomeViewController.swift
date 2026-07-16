@@ -52,6 +52,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     var timer: Timer?
     var targetDate: Date?
     var data: GroupsData? = nil
+    var dataArray: [Group]? = nil
     var pastData: [Group]? = nil
     var selected : Group? = nil
     let membersView = MembersProgressView()
@@ -127,9 +128,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         if let url = URL(string: res.coverImage ?? "") {
             self.loadImage(self.imgTrips, url: url)
         }
-       
+        
         membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
-
+        
         membersView.onAvatarStackTapped = {
             print("Avatar stack tapped — show members list")
         }
@@ -139,21 +140,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         membersView.onContainerTapped = {
             print("Container tapped — open group detail")
         }
-        
-        
-        
     }
-    
-   
-
-    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        
-            
-        
         getDashboard()
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
@@ -176,7 +166,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tripsTabBarController?.hideTabBar()
-        
     }
     
     
@@ -218,7 +207,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblMin.setFont(.bold, size: 16.0)
         lblSec.setFont(.bold, size: 16.0)
         lblDay.setFont(.bold, size: 16.0)
-        lblGreating.setFont(.regular, size: 14.0)
+        lblGreating.setFont(.regular, size: 16.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
        
@@ -301,6 +290,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
+                    self.dataArray = model?.dataGroup ?? []
                     if let res = model?.dataGroup?.first {
                         self.btnList.menu = makeTripMenu(trips: (model?.dataGroup!)!)
                         self.btnList.showsMenuAsPrimaryAction = true
@@ -358,9 +348,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         getGroups()
         getPastGroups()
         request.getDashBoardAPi { model, errMsg, errCode in
-            
-            
-            
             
             if errCode == 200 {
                 DispatchQueue.main.async {
@@ -467,8 +454,15 @@ extension HomeViewController {
     
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
+        
+//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+//            showAlert(message: "Upgrade to a subscription to create more than one group.")
+//            return
+//        }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
+    
+    
     
 }
 

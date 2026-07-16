@@ -24,6 +24,8 @@ enum ChatSegment: Int, CaseIterable {
 final class ChatVc: BaseClassVc {
 
     // MARK: - IBOutlets
+    @IBOutlet private weak var vwGlass:UIView!
+
     @IBOutlet private weak var tblVw:       UITableView!
     @IBOutlet private weak var btnSegment:  UISegmentedControl!
     @IBOutlet private weak var lblNoData:   UILabel!
@@ -62,7 +64,18 @@ final class ChatVc: BaseClassVc {
                name: .didReceiveChatMessage,
                object: nil
            )
+        let gradient = CAGradientLayer()
+        gradient.frame = vwGlass.bounds
+        gradient.cornerRadius = 20
+        gradient.colors = [
+            UIColor.white.withAlphaComponent(0.20).cgColor,
+            UIColor.clear.cgColor
+        ]
+        gradient.locations = [0, 1]
+        vwGlass.layer.addSublayer(gradient)
+        applyGlassEffect(to: vwGlass)
     }
+    
     
     @objc private func handleIncomingPush(_ notification: Notification) {
 
@@ -76,6 +89,7 @@ final class ChatVc: BaseClassVc {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tripsTabBarController?.showTabBar()
+        fetchAllData()
         // ✅ NO API or socket calls here
     }
 
@@ -133,7 +147,8 @@ final class ChatVc: BaseClassVc {
             guard let self else { return }
             DispatchQueue.main.async {
                 if code == 200 {
-                    self.groupsData = model?.data ?? []
+                    
+                    self.groupsData = (model?.data ?? []).filter { $0.isDeleted ?? 1 == 0 }
                     if self.selectedSegment == .groups {
                         self.refreshTableView()
                     }
@@ -214,19 +229,22 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
         if selectedSegment == .chats {
-            let block = UIContextualAction(
+            /*let block = UIContextualAction(
                 style: .destructive,
                 title: "Block", handler: {_,_,_ in
+                    let model = chatData[indexPath.row]
+                    
                     self.didTapBlockOption()
                 }
             )
+             */
             let report = UIContextualAction(
                 style: .destructive,
                 title: "Report", handler: {_,_,_ in
-                    self.didTapReportOption()
+                    self.didTapReportOption(indexPath)
                 }
             )
-            let config = UISwipeActionsConfiguration(actions: [block,report])
+            let config = UISwipeActionsConfiguration(actions: [report])
             config.performsFirstActionWithFullSwipe = false
             return config
         } else {
@@ -237,13 +255,17 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
-    @objc private func didTapBlockOption() {
-        let popup = BlockReportPopupViewController(mode: .block(username: "user.username"), delegate: self)
+    @objc private func didTapBlockOption(_ indx:IndexPath) {
+        let model = chatData[indx.row]
+        let popup = BlockReportPopupViewController(mode: .block(username: model.name ?? "",id:model.chatId ?? ""), delegate: self)
+        
+        
         present(popup, animated: false)  // animated: false zaroori hai, popup khud animate karta hai
     }
 
-    @objc private func didTapReportOption() {
-        let popup = BlockReportPopupViewController(mode: .report(username: "user.username"), delegate: self)
+    @objc private func didTapReportOption(_ indx:IndexPath) {
+        let model = chatData[indx.row]
+        let popup = BlockReportPopupViewController(mode: .report(username: model.name ?? "",id:model.chatId ?? ""), delegate: self)
         present(popup, animated: false)
     }
 }
@@ -512,8 +534,8 @@ private extension ChatVc {
             title: "Delete"
         ) { [weak self] _, _, completion in
             guard let self else { completion(false); return }
-
-            self.request.deleteGroupAPi(group.chatRoom?.groupId ?? "") { [weak self] _, code in
+            
+            self.request.deleteGroupAPi(group.groupDetails?.id ?? "") { [weak self] _, code in
                 DispatchQueue.main.async {
                     guard let self else { return }
                     if code == 200 {

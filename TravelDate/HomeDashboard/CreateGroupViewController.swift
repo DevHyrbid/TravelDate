@@ -14,7 +14,7 @@ class CreateGroupViewController: BaseClassVc {
     var maxAge = 35
     let minAgeLabel = UILabel()
     let maxAgeLabel = UILabel()
-    var groupSize = 4
+    var groupSize = 1
     let styles = ["Partygoers", "Adventure travelers", "Cultural travelers", "Leisure travelers"]
     var selectedStyles: Set<Int> = []
     var selectedImage: UIImage?
@@ -898,7 +898,7 @@ class CreateGroupViewController: BaseClassVc {
     }
 
     @objc func decrease() {
-        if groupSize > 2 {
+        if groupSize > 1 {
             groupSize -= 1
             sizeLabel.text = "\(groupSize) travelers"
         }

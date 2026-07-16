@@ -3,6 +3,7 @@
 //  TravelDate
 //
 //  Created by Dev CodingZone on 27/04/26.
+//  Fixed: results filtered to cities only (no POIs / businesses / street addresses)
 //
 
 import UIKit
@@ -10,8 +11,6 @@ import MapKit
 
 // MARK: - Reusable Location Search View
 class LocationSearchView: UIView {
-
-   
 
     private let tableView: UITableView = {
         let tv = UITableView()
@@ -24,6 +23,14 @@ class LocationSearchView: UIView {
     // MARK: - MapKit
     private let completer = MKLocalSearchCompleter()
     private var results: [MKLocalSearchCompletion] = []
+
+    // Words that indicate a street-level address rather than a city, filtered out below
+    private let streetKeywords = [
+        "street", "st.", " st ", "avenue", "ave.", " ave ", "road", " rd ", "rd.",
+        "boulevard", "blvd", "drive", " dr ", "dr.", "lane", " ln ", "way",
+        "court", " ct ", "circle", "highway", " hwy", "place", " pl ",
+        "suite", "floor", "apt", "unit"
+    ]
 
     // MARK: - Callback
     var onLocationSelected: ((String, CLLocationCoordinate2D) -> Void)?
@@ -40,6 +47,7 @@ class LocationSearchView: UIView {
     }
 
     weak var attachedTextField: UITextField?
+
     private func setup() {
         addSubview(tableView)
 
@@ -58,16 +66,19 @@ class LocationSearchView: UIView {
 
         completer.delegate = self
 
+        // MARK: - Cities-only filtering
+        // Excludes businesses, airports, landmarks, and other points of interest
+        completer.pointOfInterestFilter = .excludingAll
+        // Restricts to address-level results (no free-text query suggestions)
+        completer.resultTypes = .address
     }
-    
+
     func attach(to textField: UITextField) {
         self.attachedTextField = textField
-        
+
         textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
         textField.addTarget(self, action: #selector(beginEditing), for: .editingDidBegin)
     }
-    
-    
 
     @objc private func textChanged() {
         completer.queryFragment = attachedTextField?.text ?? ""
@@ -76,6 +87,25 @@ class LocationSearchView: UIView {
     @objc private func beginEditing() {
         self.isHidden = false
         self.superview?.bringSubviewToFront(self)
+    }
+
+    // Heuristic filter: keeps city/region-level completions, drops street addresses
+    private func isCityLevelResult(_ completion: MKLocalSearchCompletion) -> Bool {
+        let title = completion.title.lowercased()
+
+        // Street addresses almost always start with a house/building number
+        if let firstChar = title.first, firstChar.isNumber {
+            return false
+        }
+
+        // Drop anything containing a street-type keyword
+        for keyword in streetKeywords {
+            if title.contains(keyword) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 
@@ -104,12 +134,16 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
             guard let item = response?.mapItems.first else { return }
 
             let placemark = item.placemark
+
+            // Reject the pick if it isn't actually a locality (extra safety net
+            // beyond the completer-level filtering above)
+            guard placemark.locality != nil || placemark.administrativeArea != nil else { return }
+
             let coordinate = placemark.coordinate
 
             let address = [
-                placemark.name,
-//                placemark.locality,
-//                placemark.administrativeArea,
+                placemark.locality ?? placemark.name,
+                placemark.administrativeArea,
                 placemark.country
             ].compactMap { $0 }.joined(separator: ", ")
 
@@ -125,9 +159,15 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
 // MARK: - Completer
 extension LocationSearchView: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        results = completer.results
+        results = completer.results.filter { isCityLevelResult($0) }
         tableView.reloadData()
         tableView.isHidden = results.isEmpty
+    }
+
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+        results = []
+        tableView.reloadData()
+        tableView.isHidden = true
     }
 }
 

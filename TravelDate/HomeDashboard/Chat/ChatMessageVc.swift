@@ -136,7 +136,7 @@ final class ChatMessageVc: BaseClassVc {
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
-
+        
         let images = self.viewModel.participants
             .compactMap { $0.profile_image }
             .filter { !$0.isEmpty }
@@ -183,7 +183,7 @@ final class ChatMessageVc: BaseClassVc {
         inputBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(inputBar)
 
-        inputBottom = inputBar.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        inputBottom = inputBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
 
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: headerView.bottomAnchor),
@@ -269,6 +269,7 @@ final class ChatMessageVc: BaseClassVc {
         view.endEditing(true)
         
         if self.viewModel.roomType == .group {
+            
             didTapManageGroup()
         }
 
@@ -276,6 +277,7 @@ final class ChatMessageVc: BaseClassVc {
     
     
     @objc func didTapManageGroup() {
+        
         // Use raw members array from group data (has full user objects)
         //        viewModel.participants?.toJSON()
         let rawMembers = viewModel.participants.toJSON()
@@ -365,7 +367,7 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         cell.onImageTapped = { [weak self] image in
 //            let preview = ImagePreviewVC(image: image)
 //            self?.present(preview, animated: true)
-            print(image,"ssssss")
+//            print(image,"ssssss")
         }
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)
@@ -410,27 +412,40 @@ private extension ChatMessageVc {
         )
     }
 
-    @objc func keyboardWillChange(_ note: Notification) {
-        guard let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
-              let duration = note.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+//    private var inputBottom: NSLayoutConstraint!
+
+    @objc private func keyboardWillChange(_ notification: Notification) {
+
+        guard
+            let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+            let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+            let curve = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
         else { return }
 
-        let overlap = view.bounds.height - frame.origin.y
-        inputBottom.constant = overlap > 0 ? -(overlap - view.safeAreaInsets.bottom) : 0
+        let keyboard = view.convert(keyboardFrame, from: nil)
 
-        UIView.animate(withDuration: duration) { [weak self] in
-            self?.view.layoutIfNeeded()
-        } completion: { [weak self] _ in
-            self?.scrollToBottom(animated: true)
+        let bottomInset = max(0, view.bounds.maxY - keyboard.minY)
+
+        inputBottom.constant = -bottomInset
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: UIView.AnimationOptions(rawValue: curve << 16)
+        ) {
+            self.view.layoutIfNeeded()
         }
     }
 
-    @objc func keyboardWillHide() {
+    @objc private func keyboardWillHide(_ notification: Notification) {
         inputBottom.constant = 0
-        UIView.animate(withDuration: 0.25) { [weak self] in
-            self?.view.layoutIfNeeded()
+
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
         }
     }
+
+    
 }
 
 extension UIView {

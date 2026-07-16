@@ -16,8 +16,8 @@ import UIKit
 // MARK: - Mode
 
 enum BlockReportPopupMode {
-    case block(username: String)
-    case report(username: String)
+    case block(username: String,id:String)
+    case report(username: String,id:String)
 }
 
 // MARK: - Report Reason Model
@@ -42,7 +42,7 @@ extension BlockReportPopupDelegate {
     func blockReportPopupDidCancel(_ popup: BlockReportPopupViewController) {}
 }
 
-final class BlockReportPopupViewController: UIViewController {
+final class BlockReportPopupViewController: BaseClassVc {
 
     // MARK: - Public
 
@@ -382,10 +382,15 @@ final class BlockReportPopupViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func didTapBlock() {
-        guard case .block(let username) = mode else { return }
-        dismissPopup {
-            self.delegate?.blockReportPopup(self, didConfirmBlockUser: username)
-        }
+//        guard case .block(let username) = mode else { return }
+//        dismissPopup {
+//            self.request.blockGroupAPi { err, code in
+//                if  code == 200 {
+//                    self.delegate?.blockReportPopup(self, didConfirmBlockUser: username,id:"")
+//                }
+//            }
+           
+//        }/
     }
 
     @objc private func didTapCancel() {
@@ -405,7 +410,7 @@ final class BlockReportPopupViewController: UIViewController {
         let reason = reportReasons[index].title
         let otherText = reportReasons[index].isOtherOption ? otherTextView.text : nil
         dismissPopup {
-            self.delegate?.blockReportPopup(self, didSubmitReportForUser: username, reason: reason, otherText: otherText)
+//            self.delegate?.blockReportPopup(self, didSubmitReportForUser: username, reason: reason, otherText: otherText)
         }
     }
 }

@@ -9,6 +9,7 @@ typealias SwipeResult = (
     matchedGroupImage: String
 )
 class User : Mappable {
+    var blockedId : String?
     var day : String?
     var name : String?
     var userName : String?
@@ -144,11 +145,50 @@ class User : Mappable {
     var back  : String?
     var selfie  : String?
     
-    
+    var token: String?
+
+    // User fields
+    var allMuted: Int?
+    var enableGroupMatching: Int?
+
+    var emailOtp: String?
+    var emailOtpExpiry: String?
+
+    var governmentIdUrl: String?
+
+    var idVerificationDate: String?
+    var idVerificationNotes: String?
+    var idVerificationStatus: String?
+    var idVerificationType: String?
+
+    var isVerified: Int?
+    var maxDistance: Double?        // max_distance
+
+    var plan: String?
+    var planStartDate: String?      // plan_start_date
+    var planEndDate: String?        // plan_end_date
+
+    var platform: String?
+    var productId: String?
+
+    var pwdResetAt: String?         // pwd_reset_at
+    var pwdResetToken: String?      // pwd_reset_token
+
+    var selfieUrl: String?
+
+    var showLastSeen: Int?
+
+    var subscriptionExpiresAt: String?
+
+    var verificationStatus: String?
+
+    var whoCanMessage: String?
    
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        
+        blockedId <- map["blockedId"]
         front <- map["front"]
         back <- map["back"]
         selfie <- map["selfie"]
@@ -280,7 +320,45 @@ class User : Mappable {
         email <- map["email"]
         deviceType <- map["device_type"]
         deviceToken <- map["device_token"]
-        
+        // NEW ONE ADDED TODAY
+        token <- map["token"]
+
+        allMuted <- map["allMuted"]
+        enableGroupMatching <- map["enableGroupMatching"]
+
+        emailOtp <- map["emailOtp"]
+        emailOtpExpiry <- map["emailOtpExpiry"]
+
+        governmentIdUrl <- map["governmentIdUrl"]
+
+        idVerificationDate <- map["idVerificationDate"]
+        idVerificationNotes <- map["idVerificationNotes"]
+        idVerificationStatus <- map["idVerificationStatus"]
+        idVerificationType <- map["idVerificationType"]
+
+        isVerified <- map["isVerified"]
+
+        maxDistance <- map["max_distance"]
+
+        plan <- map["plan"]
+        planStartDate <- map["plan_start_date"]
+        planEndDate <- map["plan_end_date"]
+
+        platform <- map["platform"]
+        productId <- map["productId"]
+
+        pwdResetAt <- map["pwd_reset_at"]
+        pwdResetToken <- map["pwd_reset_token"]
+
+        selfieUrl <- map["selfieUrl"]
+
+        showLastSeen <- map["showLastSeen"]
+
+        subscriptionExpiresAt <- map["subscriptionExpiresAt"]
+
+        verificationStatus <- map["verificationStatus"]
+
+        whoCanMessage <- map["whoCanMessage"]
     }
     
     
@@ -869,7 +947,38 @@ class User : Mappable {
     func  deleteGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")?type=hard", params: [:], method: "DELETE") { responseObject, suces in
-            print("\(APiConstant.createGroup)/\(id ?? "")","JSON")
+            print(responseObject,"FGHJKLFGHJKFGHJ")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  reportGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")?type=hard", params: [:], method: "DELETE") { responseObject, suces in
+            print(responseObject,"FGHJKLFGHJKFGHJ")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  blockGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.blockURl, params: self.toJSON(), method: "POST") { responseObject, suces in
             print(responseObject,"FGHJKLFGHJKFGHJ")
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
@@ -935,7 +1044,7 @@ class User : Mappable {
     func  getHistoryTrips(callBack:((_ chat:[MyGroup]?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.historyTrips , params: [:], method: "GET") { responseObject, success in
-            print(APiConstant.historyTrips,"JHEREEEE",responseObject)
+            
             if let code = responseObject["code"] as? Int, code == 200 {
                         
                 if let dataArray = responseObject["data"] as? [[String: Any]] {
@@ -1703,12 +1812,15 @@ struct ChatData : Mappable {
     var lastMessage : LastMessage?
     var members : [UserMembers]?
     var chatRoom : ChatRoom?
-    
+    var groupDetails : ChatRoom?
+    var isDeleted : Int?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
+        isDeleted <- map["isDeleted"]
+        groupDetails <- map["groupDetails"]
         chatRoom <- map["chatRoom"]
         imageArr <- map["image"]
         members <- map["members"]

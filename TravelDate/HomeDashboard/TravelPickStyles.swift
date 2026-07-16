@@ -15,35 +15,27 @@ enum TravelStyle: Int, CaseIterable {
     case culturalTravelers
     case leisureTravelers
 
-    var title: String {
-        switch self {
-        case .partygoers:
-            return "Partygoers"
-
-        case .adventureTravelers:
-            return "Adventure travelers"
-
-        case .culturalTravelers:
-            return "Cultural travelers"
-
-        case .leisureTravelers:
-            return "Leisure travelers"
+    init?(title: String) {
+        switch title.lowercased() {
+        case "partygoers":
+            self = .partygoers
+        case "adventure travelers":
+            self = .adventureTravelers
+        case "cultural travelers":
+            self = .culturalTravelers
+        case "leisure travelers":
+            self = .leisureTravelers
+        default:
+            return nil
         }
     }
 
-    var icon: String {
+    var title: String {
         switch self {
-        case .partygoers:
-            return ""
-
-        case .adventureTravelers:
-            return ""
-
-        case .culturalTravelers:
-            return ""
-
-        case .leisureTravelers:
-            return ""
+        case .partygoers: return "Partygoers"
+        case .adventureTravelers: return "Adventure travelers"
+        case .culturalTravelers: return "Cultural travelers"
+        case .leisureTravelers: return "Leisure travelers"
         }
     }
 }
