@@ -33,6 +33,7 @@ class ProfileViewController: BaseClassVc {
     var selectedTravelStyle: TravelStyle = .partygoers
     var selectedTravelStyles: [TravelStyle] = []
     var data = [TravelItem]()
+    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -160,9 +161,9 @@ class ProfileViewController: BaseClassVc {
                 }
                 DispatchQueue.main.async {
                     let rowHeight: CGFloat = 116
-                    let count = min(data.count ?? 0, 3)
+                    let count = min(data.count, 3)
 
-                    heightVw.constant = CGFloat(count) * rowHeight
+                    self.heightVw.constant = CGFloat(count) * rowHeight
                     if self.data.count > 3 {
                         self.btnVwHistory.isHidden = false
                 } else {
@@ -346,7 +347,7 @@ extension ProfileViewController:UITableViewDelegate,UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        116 // 110 (containerView height, measured from Figma) + 8 top + 8 bottom inset
+        100 // 110 (containerView height, measured from Figma) + 8 top + 8 bottom inset
     }
 }
 

@@ -11,6 +11,7 @@ class NotificationVc: BaseClassVc {
    
     @IBOutlet weak var tblVw:UITableView!
     @IBOutlet weak var lblTitle:UILabel!
+    @IBOutlet weak var lblNoData:UILabel!
     
     var notifications: [NotificationItem]?
     
@@ -31,7 +32,12 @@ class NotificationVc: BaseClassVc {
         request.getNotifications { [self] model, errMsg, errCode in
             DispatchQueue.main.async {
                 if errCode == 200 {
-                    notifications = model?.data?.notifications ?? []
+                    self.notifications = model?.data?.notifications ?? []
+                    if self.notifications?.count ?? 0 == 0 {
+                        self.lblNoData.isHidden = false
+                    } else {
+                        self.lblNoData.isHidden = true
+                    }
                     self.tblVw.reloadData()
                     
                 } else {
@@ -40,6 +46,8 @@ class NotificationVc: BaseClassVc {
             }
         }
     }
+    
+    
 }
 
 // MARK: - TableViewDelegate
@@ -78,13 +86,54 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
         return UITableView.automaticDimension
     }
     
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration {
+
+        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
+
+            guard let self = self,
+                  let id = self.notifications?[indexPath.row].id else {
+                completion(false)
+                return
+            }
+
+            self.deleteNotifications(ids: [id])
+            completion(true)
+        }
+
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
     
+
+    
+    func deleteNotifications(ids: [String]) {
+//.joined(separator: ",")
+        request.deleteNotifications(ids: ids) { [weak self] errMsg, errCode in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+
+                if errCode == 200 {
+                    self.getNotification()
+                } else {
+                    self.showAlert(errMsg)
+                }
+            }
+        }
+    }
 }
 
 
 extension NotificationVc {
     @IBAction func btnBack(_ sender:UIButton) {
         super.backTapped()
+    }
+    
+    @IBAction func btnDeleteAll(_ sender: UIButton) {
+        guard let ids = notifications?.compactMap({ $0.id }), !ids.isEmpty else {
+            return
+        }
+
+        deleteNotifications(ids: ids)
     }
 }
 

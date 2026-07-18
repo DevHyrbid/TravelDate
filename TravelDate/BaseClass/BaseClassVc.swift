@@ -266,12 +266,16 @@ class BaseClassVc: UIViewController {
     
     
     func showAlert(_ message: String) {
-       
-            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+        DispatchQueue.main.async {
+            self.showToast(message)
+        }
+//            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+//            alert.addAction(UIAlertAction(title: "OK", style: .default))
+//            present(alert, animated: true)
         
     }
+    
+    
     
     func showAlertAction(_ message: String, onOk: (() -> Void)? = nil) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
@@ -894,3 +898,5 @@ final class ProgressBorderView: UIView {
         percentageLabel.frame = badgeView.bounds
     }
 }
+
+

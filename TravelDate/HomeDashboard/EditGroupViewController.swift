@@ -313,13 +313,13 @@ class EditGroupViewController: CreateGroupViewController {
     // MARK: - Save (PATCH)
     @objc private func handleSave() {
         guard selectedImage != nil else {
-            showAlert(message: "Please select a cover photo"); return
+            showAlert("Please select a cover photo"); return
         }
         guard let title = groupNameField.text, !title.isEmpty else {
-            showAlert(message: "Enter group title"); return
+            showAlert("Enter group title"); return
         }
         guard let dest = destinationTF.text, !dest.isEmpty else {
-            showAlert(message: "Enter destination"); return
+            showAlert("Enter destination"); return
         }
         guard let m = groupModel else { return }
 
@@ -419,7 +419,7 @@ class EditGroupViewController: CreateGroupViewController {
                 guard let self else { return }
 
                 if let error = error {
-                    self.showAlert(message: error.localizedDescription)
+                    self.showAlert(error.localizedDescription)
                     return
                 }
 
@@ -432,7 +432,7 @@ class EditGroupViewController: CreateGroupViewController {
                 guard let data,
                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
                 else {
-                    self.showAlert(message: "Invalid response from server")
+                    self.showAlert("Invalid response from server")
                     return
                 }
 
@@ -443,7 +443,7 @@ class EditGroupViewController: CreateGroupViewController {
 
                 guard code == 200 else {
                     let msg = json["message"] as? String ?? "Failed to update group"
-                    self.showAlert(message: msg)
+                    self.showAlert(msg)
                     return
                 }
 

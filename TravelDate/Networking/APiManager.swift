@@ -280,14 +280,29 @@ class NetworkManger {
         return data.joined(separator: "&")
     }
     
+//    static func getJSONHeaderWithAccessToken() -> [String: String] {
+//        let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""//UserToken
+//        var headers = [String: String]()
+//        if !token.isEmpty {
+//            headers["Authorization"] = "Bearer \(token)"
+//        }
+//        
+//        print(token,"HEADWE_______---_____")
+//        return headers
+//    }
     static func getJSONHeaderWithAccessToken() -> [String: String] {
-        let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""//UserToken
-        var headers = [String: String]()
+        let token = UserDefaults.standard.string(forKey: "UserToken") ?? ""
+
+        var headers: [String: String] = [
+//            "Content-Type": "application/json",
+            "Accept": "application/json"
+        ]
+
         if !token.isEmpty {
             headers["Authorization"] = "Bearer \(token)"
         }
-        
-        print(token,"HEADWE_______---_____")
+
+        print(token, "HEADWE_______---_____")
         return headers
     }
 }

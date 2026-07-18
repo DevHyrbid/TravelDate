@@ -170,22 +170,22 @@ class LoginViewController: BaseClassVc {
 
         // Validation
         if email.isEmpty {
-            showAlert(message: "Please enter email")
+            showAlert("Please enter email")
             return
         }
 
         if !isValidEmail(email) {
-            showAlert(message: "Please enter valid email")
+            showAlert("Please enter valid email")
             return
         }
 
         if password.isEmpty {
-            showAlert(message: "Please enter password")
+            showAlert("Please enter password")
             return
         }
 
         if password.count < 6 {
-            showAlert(message: "Password must be at least 6 characters")
+            showAlert("Password must be at least 6 characters")
             return
         }
 

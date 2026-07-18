@@ -27,10 +27,11 @@ final class ChatVc: BaseClassVc {
     @IBOutlet private weak var vwGlass:UIView!
 
     @IBOutlet private weak var tblVw:       UITableView!
-    @IBOutlet private weak var btnSegment:  UISegmentedControl!
+    @IBOutlet private weak var btnLeft:       UIButton!
+    @IBOutlet private weak var btnRight:       UIButton!
     @IBOutlet private weak var lblNoData:   UILabel!
     @IBOutlet private weak var lblTitle:    UILabel!
-
+    @IBOutlet private weak var txtSearch:    UITextField!
     // MARK: - Data
     private var groupsData: [ChatData]         = []
     private var chatData:   [ChatData] = []
@@ -64,6 +65,13 @@ final class ChatVc: BaseClassVc {
                name: .didReceiveChatMessage,
                object: nil
            )
+        txtSearch.attributedPlaceholder = NSAttributedString(
+            string: "Search by group name",
+            attributes: [
+                .foregroundColor: UIColor.white.withAlphaComponent(0.6)
+            ]
+        )
+        txtSearch.font = AppFont.medium(14.0)
 //     nvwGlass)
     }
     
@@ -83,10 +91,30 @@ final class ChatVc: BaseClassVc {
         fetchAllData()
         // ✅ NO API or socket calls here
     }
+    
+    func setupBtn(_ sender: UIButton) {
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        setupSegmentUI()
+        if sender == btnLeft {
+
+            // My Group Selected
+            btnLeft.setImage(UIImage(named: "1-1"), for: .normal)
+            btnRight.setImage(UIImage(named: "1-2"), for: .normal)
+
+            selectedSegment = .groups
+
+        } else {
+
+            // Match Groups Selected
+            btnLeft.setImage(UIImage(named: "2-2"), for: .normal)
+            btnRight.setImage(UIImage(named: "2-1"), for: .normal)
+
+            selectedSegment = .chats
+        }
+        self.tblVw.reloadData()
+    }
+    
+    @IBAction func btnSegmentTapped(_ sender: UIButton) {
+        setupBtn(sender)
     }
 
     // MARK: - UI Setup
@@ -94,26 +122,11 @@ final class ChatVc: BaseClassVc {
     private func configureUI() {
         lblTitle.setFont(.medium, size: 18.0)
         addGradient()
-        configureSegmentControl()
+//        configureSegmentControl()
+        
     }
-
-    private func configureSegmentControl() {
-        btnSegment.setTitleTextAttributes([
-            .font:            UIFont(name: "Poppins-SemiBold", size: 14)!,
-            .foregroundColor: UIColor.gray
-        ], for: .normal)
-
-        btnSegment.setTitleTextAttributes([
-            .font:            UIFont(name: "Poppins-SemiBold", size: 14)!,
-            .foregroundColor: UIColor.white
-        ], for: .selected)
-
-        btnSegment.addTarget(self,
-                             action: #selector(segmentChanged(_:)),
-                             for: .valueChanged)
-    }
-
-    private func registerNibs() {
+    
+    func registerNibs() {
         tblVw.register(ChatTableViewCell.self)
         tblVw.delegate   = self
         tblVw.dataSource = self
@@ -223,9 +236,14 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
             let block = UIContextualAction(
                 style: .destructive,
                 title: "Delete Chat", handler: {_,_,_ in
-//                    let model = chatData[indexPath.row]
-                    
-//                    self.didTapBlockOption()
+                    let model = self.chatData[indexPath.row]
+                    print("Chat ID:", model.chatId ?? "nil")
+                    self.request.type = "MATCH"
+                    self.request.leaveGroupAPi(model.chatId ?? "") { err, code in
+                        if code == 200 {
+                            self.fetchAllData()
+                        }
+                    }
                 }
             )
              
@@ -238,9 +256,7 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
             let config = UISwipeActionsConfiguration(actions: [block,report])
             config.performsFirstActionWithFullSwipe = false
             return config
-        } else {
-            
-            
+        } else {            
             guard selectedSegment == .groups else { return nil }
             return makeGroupSwipeActions(at: indexPath)
         }
@@ -256,7 +272,7 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
 
     @objc private func didTapReportOption(_ indx:IndexPath) {
         let model = chatData[indx.row]
-        let popup = BlockReportPopupViewController(mode: .report(username: model.name ?? "",id:model.chatId ?? ""), delegate: self)
+        let popup = BlockReportPopupViewController(mode: .report(username: model.name ?? "",id:model.groupDetails?.id ?? ""), delegate: self)
         present(popup, animated: false)
     }
 }
@@ -549,76 +565,6 @@ private extension ChatVc {
         let config = UISwipeActionsConfiguration(actions: [deleteAction])
         config.performsFirstActionWithFullSwipe = false
         return config
-    }
-}
-
-// MARK: - Segment UI
-
-private extension ChatVc {
-
-    func setupSegmentUI() {
-        guard btnSegment.tag == 0 else { return }
-        btnSegment.tag = 1
-
-        let inset: CGFloat = 4
-
-        btnSegment.backgroundColor    = UIColor.white.withAlphaComponent(0.06)
-        btnSegment.layer.cornerRadius = 25.5
-        btnSegment.layer.cornerCurve  = .continuous
-        btnSegment.clipsToBounds      = true
-
-        btnSegment.setBackgroundImage(UIImage(), for: .normal,      barMetrics: .default)
-        btnSegment.setBackgroundImage(UIImage(), for: .selected,    barMetrics: .default)
-        btnSegment.setBackgroundImage(UIImage(), for: .highlighted, barMetrics: .default)
-        btnSegment.setDividerImage(
-            UIImage(),
-            forLeftSegmentState: .normal,
-            rightSegmentState:   .normal,
-            barMetrics:          .default
-        )
-
-        let pillSize = CGSize(
-            width:  (btnSegment.frame.width / CGFloat(btnSegment.numberOfSegments)) - (inset * 2),
-            height: btnSegment.frame.height - (inset * 2)
-        )
-
-        let pillImage = UIGraphicsImageRenderer(size: pillSize).image { _ in
-            UIColor.themeOrange.setFill()
-            UIBezierPath(
-                roundedRect:  CGRect(origin: .zero, size: pillSize),
-                cornerRadius: pillSize.height / 2
-            ).fill()
-        }
-
-        let stretchable = pillImage.resizableImage(
-            withCapInsets: UIEdgeInsets(
-                top: 0, left: pillSize.height / 2,
-                bottom: 0, right: pillSize.height / 2
-            ),
-            resizingMode: .stretch
-        )
-        btnSegment.setBackgroundImage(stretchable, for: .selected, barMetrics: .default)
-
-        btnSegment.setTitleTextAttributes([
-            .foregroundColor: UIColor.white.withAlphaComponent(0.5),
-            .font:            UIFont(name: "Poppins-Medium", size: 15.0)!
-        ], for: .normal)
-
-        btnSegment.setTitleTextAttributes([
-            .foregroundColor: UIColor.white,
-            .font:            UIFont(name: "Poppins-SemiBold", size: 15.0)!
-        ], for: .selected)
-
-        btnSegment.selectedSegmentIndex = 0
-
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            for subview in self.btnSegment.subviews {
-                subview.layer.cornerRadius = (self.btnSegment.frame.height - (inset * 2)) / 2
-                subview.layer.cornerCurve  = .continuous
-                subview.clipsToBounds      = true
-            }
-        }
     }
 }
 

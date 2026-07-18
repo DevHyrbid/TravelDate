@@ -12,7 +12,7 @@ final class InviteVc: BaseClassVc {
 
     var inviteLink = ""
     var joinCode   = ""
-
+    private var contactEmails = Set<String>()
     // MARK: - UI
     private let customHeaderView = UIView()
     private let searchContainer  = UIView()

@@ -123,16 +123,15 @@ class User : Mappable {
     var groupId : String?
     var swipedId : String?
     var action : String?
-    
+    var reason : String?
     var latitude :  Double?
     var longitude : Double?
     var location_string :  String?
     var minAge : Int?
     var maxAge : Int?
-    
-    
-    
-    
+    var reportType : String?
+    var matchId : String?
+     
     var maxMembers : Int?
     var preferredGender : String?
     
@@ -183,11 +182,15 @@ class User : Mappable {
     var verificationStatus: String?
 
     var whoCanMessage: String?
-   
+    var type : String?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        reportType <- map["reportType"]
+        matchId <- map["matchId"]
         
+        type <- map["type"]
+        reason <- map["reason"]
         blockedId <- map["blockedId"]
         front <- map["front"]
         back <- map["back"]
@@ -884,6 +887,32 @@ class User : Mappable {
         
     }
     
+    func deleteNotifications(ids: [String], callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
+
+        let params: [String: Any] = [
+            "ids": ids
+        ]
+        print(params,APiConstant.bulkDeleteNotifications)
+
+        NetworkManger.sendRequestUrlSession(
+            url: APiConstant.bulkDeleteNotifications,
+            params: params,
+            method: "DELETE"
+        ) { responseObject, success in
+
+            print(responseObject)
+
+            if responseObject["code"] as? Int == 200 {
+                callBack(responseObject["message"] as? String ?? "", 200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "", 404)
+            }
+
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+    }
+    
     
     func getGroups(_ type:Int?,callBack:(( _ res:GroupsResponse?, _ errMsg:String,_ errCode:Int)->Void)!) {
         var url = ""
@@ -960,11 +989,29 @@ class User : Mappable {
         
     }
     
-    func  reportGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
-        
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.createGroup)/\(id ?? "")?type=hard", params: [:], method: "DELETE") { responseObject, suces in
-            print(responseObject,"FGHJKLFGHJKFGHJ")
+    func  leaveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+       
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.leaveChat)\(id ?? "")/leave", params: self.toJSON(), method: "POST") { responseObject, suces in
+            print("\(APiConstant.leaveChat)\(id ?? "")/leave","GHJKGH")
+            
+            print(responseObject,"sdhjksdjhjskdjhjskdjs",self.toJSON())
             if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  reportGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        print(APiConstant.reportGroup,"GHJKGH")
+        NetworkManger.sendRequestUrlSession(url: APiConstant.reportGroup, params: self.toJSON(), method: "POST") { responseObject, suces in
+            print(responseObject,"sdhjksdjhjskdjhjskdjs",self.toJSON())
+            if  responseObject["code"] as? Int == 201 {
                 print("USER")
                 callBack(responseObject["message"] as? String ?? "",200)
             } else {

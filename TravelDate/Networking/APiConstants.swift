@@ -46,10 +46,13 @@ class APiConstant : NSObject {
     
     static let dashboardAPi = baseUrl + "groups/dashboard"
     static let historyTrips = baseUrl + "groups/my-trips"
+    static let leaveChat = baseUrl + "chat/"
     
-    static let reportUser = baseUrl + "user/block"
+    static let reportGroup = baseUrl + "report/group"
     static let blockURl = baseUrl + "user/block"
     static let unblockURl = baseUrl + "user/unblock"
+    
+    static let bulkDeleteNotifications = baseUrl + "notifications/bulk-delete"
 }
 
 

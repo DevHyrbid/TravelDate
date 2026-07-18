@@ -42,7 +42,7 @@ final class TravelCell: UITableViewCell {
 
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 20, weight: .bold) // measured cap-height ≈ 20pt
+        label.font = AppFont.medium(14.0) // measured cap-height ≈ 20pt
         label.textColor = .white
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -52,7 +52,7 @@ final class TravelCell: UITableViewCell {
 
     private let subtitleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 15, weight: .medium) // measured cap-height ≈ 15-16pt
+        label.font = AppFont.medium(13.0) // measured cap-height ≈ 15-16pt
         label.textColor = UIColor.white.withAlphaComponent(0.6)
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -63,7 +63,7 @@ final class TravelCell: UITableViewCell {
     private let statusContainer: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(red: 30/255, green: 34/255, blue: 36/255, alpha: 1) // same tint as icon bg
-        view.layer.cornerRadius = 21 // 42/2 — fully rounded pill
+        view.layer.cornerRadius = 15 // 42/2 — fully rounded pill
         view.setContentCompressionResistancePriority(.required, for: .horizontal)
         view.setContentHuggingPriority(.required, for: .horizontal)
         return view
@@ -71,7 +71,7 @@ final class TravelCell: UITableViewCell {
 
     private let statusLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 15, weight: .medium) // measured "U" height ≈ 14-15pt
+        label.font = AppFont.medium(13.0)
         label.textColor = .white
         label.textAlignment = .center
         label.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -158,7 +158,7 @@ final class TravelCell: UITableViewCell {
             // hugs its own label content padded 24pt each side.
             statusContainer.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -26),
             statusContainer.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            statusContainer.heightAnchor.constraint(equalToConstant: 42),
+            statusContainer.heightAnchor.constraint(equalToConstant: 30),
             
             statusLabel.centerYAnchor.constraint(equalTo: statusContainer.centerYAnchor),
             statusLabel.leadingAnchor.constraint(equalTo: statusContainer.leadingAnchor, constant: 24),
@@ -169,7 +169,12 @@ final class TravelCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         iconImageView.layer.cornerRadius = iconImageView.bounds.width / 2
-        statusContainer.backgroundColor = UIColor(hex: "219900")
+        if statusLabel.text == "Upcoming" {
+            statusContainer.backgroundColor = UIColor(hex: "1E2224")
+        } else {
+            statusContainer.backgroundColor = UIColor(hex: "219900")
+        }
+        
     }
     
     // MARK: - Configure

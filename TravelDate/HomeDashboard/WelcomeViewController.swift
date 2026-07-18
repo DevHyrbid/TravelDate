@@ -367,7 +367,7 @@ class WelcomeViewController: BaseClassVc {
 
     @objc func btnJoin(_ sender: UIButton) {
         guard let code = linkField.text, !code.isEmpty else {
-            showAlert(message: "Please add the link"); return
+            showAlert("Please add the link"); return
         }
         request.joinCode = code
         request.joinGroupAPi { errMsg, errCode in

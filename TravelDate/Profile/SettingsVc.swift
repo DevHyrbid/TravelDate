@@ -10,10 +10,24 @@ import UIKit
 class SettingsVc: BaseClassVc {
     
     @IBOutlet weak var blurVw: UIVisualEffectView!
-    
+    @IBOutlet weak var vwSwitch: UIView!
     override func viewDidLoad() {
         super.viewDidLoad()
         self.blurVw.isHidden  = true
+        let customSwitch = CustomSwitch(frame: CGRect(x: 0, y: 0, width: 56, height: 32))
+
+        customSwitch.isOn = true
+        customSwitch.addTarget(self,
+                               action: #selector(switchChanged(_:)),
+                               for: .valueChanged)
+        customSwitch.onColor = UIColor(hex: "#FF6B00")   // Orange
+        customSwitch.offColor = UIColor(hex: "#2A2A2A")  // Dark Gray
+        customSwitch.thumbColor = .black                 // Black Thumb
+        vwSwitch.addSubview(customSwitch)
+    }
+    
+    @objc func switchChanged(_ sender: CustomSwitch) {
+        print(sender.isOn)
     }
 }
 
@@ -53,4 +67,95 @@ extension SettingsVc {
     }
     
     
+}
+
+import UIKit
+
+final class CustomSwitch: UIControl {
+
+    private let trackView = UIView()
+    private let thumbView = UIView()
+
+    var isOn: Bool = false {
+        didSet {
+            animateSwitch()
+            sendActions(for: .valueChanged)
+        }
+    }
+
+    var onColor: UIColor = .systemOrange
+    var offColor: UIColor = UIColor(white: 0.25, alpha: 1)
+    var thumbColor: UIColor = .black
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+
+    private func setupUI() {
+
+        backgroundColor = .clear
+
+        trackView.isUserInteractionEnabled = false
+        trackView.backgroundColor = offColor
+        addSubview(trackView)
+
+        thumbView.isUserInteractionEnabled = false
+        thumbView.backgroundColor = thumbColor
+        thumbView.layer.shadowColor = UIColor.black.cgColor
+        thumbView.layer.shadowOpacity = 0.2
+        thumbView.layer.shadowRadius = 3
+        thumbView.layer.shadowOffset = CGSize(width: 0, height: 1)
+        addSubview(thumbView)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(toggle))
+        addGestureRecognizer(tap)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        trackView.frame = bounds
+        trackView.layer.cornerRadius = bounds.height / 2
+
+        let size = bounds.height - 6
+        let y = (bounds.height - size) / 2
+
+        thumbView.frame = CGRect(x: 3, y: y, width: size, height: size)
+        thumbView.layer.cornerRadius = size / 2
+
+        animateSwitch(animated: false)
+    }
+
+    @objc private func toggle() {
+        isOn.toggle()
+    }
+
+    private func animateSwitch(animated: Bool = true) {
+
+        let size = bounds.height - 6
+        let x = isOn ? bounds.width - size - 3 : 3
+
+        let changes = {
+            self.trackView.backgroundColor = self.isOn ? self.onColor : self.offColor
+            self.thumbView.frame.origin.x = x
+        }
+
+        if animated {
+            UIView.animate(withDuration: 0.25,
+                           delay: 0,
+                           usingSpringWithDamping: 0.8,
+                           initialSpringVelocity: 0,
+                           options: [.curveEaseInOut]) {
+                changes()
+            }
+        } else {
+            changes()
+        }
+    }
 }

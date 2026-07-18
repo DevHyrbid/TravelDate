@@ -26,7 +26,7 @@ class SwipeViewController: BaseClassVc {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
         fetchGroups()
-        // showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
+         //showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
         // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
 
@@ -544,10 +544,10 @@ extension SwipeViewController {
                             swipeId:             "",
                             groupTitle:          group.title ?? "",
                             matchedStyles:       group.travelStyle ?? [""],
-                            message:             "It's a Match!",
+                            message:             "Ready to make some plans? Start a conversation now!",
                             myGroupImage:        result?.myGroupImage ?? "",
                             matchedGroupImage:   nil,
-                            myGroupImageURL:     nil,
+                            myGroupImageURL:    result?.myGroupImage ?? "",
                             matchedGroupImageURL: result?.matchedGroupImage ?? ""
                         )
                         MatchBottomSheetVC.show(on: self, result: result, delegate: self)
@@ -569,7 +569,58 @@ extension SwipeViewController {
 // MARK: - MatchBottomSheetDelegate
 extension SwipeViewController: MatchBottomSheetDelegate {
     func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
-/*
+        /*   let currentUserId = User.curentUser?.id ?? ""
+        let viewModel = ChatViewModel(
+            currentUserId: currentUserId
+        )
+
+        // Open existing room directly if available
+        let vc = ChatMessageVc(
+            viewModel: viewModel,
+            participants: group.members ?? [],
+            roomId: group.chatId,
+            roomTitle: group.name ?? "",
+            type: .group
+        )
+        vc.roomImageURL =  group.image ?? ""
+        vc.memberCount = participantIds.count
+
+        navigationController?.pushViewController(vc, animated: true)
+
+ {
+
+     let group = groupsData[indexPath.row]
+
+     let currentUserId = User.curentUser?.id ?? ""
+
+     // Get all member ids
+     let participantIds = group.members?.compactMap { $0.id } ?? []
+
+     // Ensure current user exists
+//        if !participantIds.contains(currentUserId) {
+//            participantIds.append(currentUserId)
+//        }
+//
+//        // Remove duplicates
+//        participantIds = Array(Set(participantIds))
+
+     let viewModel = ChatViewModel(
+         currentUserId: currentUserId
+     )
+
+     // Open existing room directly if available
+     let vc = ChatMessageVc(
+         viewModel: viewModel,
+         participants: group.members ?? [],
+         roomId: group.chatId,
+         roomTitle: group.name ?? "",
+         type: .group
+     )
+     vc.roomImageURL =  group.image ?? ""
+     vc.memberCount = participantIds.count
+
+     navigationController?.pushViewController(vc, animated: true)
+ }
         guard let group = groups.first(where: { $0.id == groupId }) else {
             print("Group not found")
             return

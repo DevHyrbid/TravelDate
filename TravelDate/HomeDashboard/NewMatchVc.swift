@@ -89,7 +89,9 @@ class NewMatchVc: BaseClassVc {
         request.newMatches { [self] res, errMsg, errCode in
             if errCode == 200 {
                 DispatchQueue.main.async {
+                   
                     self.data = res?.dataMatch ?? nil
+                    lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
                     self.tblVw.reloadData()
                     if self.data?.count == 0 {
                         self.lblNoData.isHidden = false
@@ -229,11 +231,11 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
 
                         if errCode == 200 {
 
-                            self.showAlert(message: "Group saved successfully")
+                            self.showAlert("Group saved successfully")
 
                         } else {
 
-                            self.showAlert(message: errMsg)
+                            self.showAlert(errMsg)
                         }
                     }
                 }
@@ -273,11 +275,11 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
 
                         if errCode == 200 {
 
-                            self.showAlert(message: "Group Removed successfully")
+                            self.showAlert("Group Removed successfully")
                             self.getGroups(2)
                         } else {
 
-                            self.showAlert(message: errMsg)
+                            self.showAlert(errMsg)
                         }
                     }
                 }

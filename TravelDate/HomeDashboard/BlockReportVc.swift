@@ -269,7 +269,7 @@ final class BlockReportPopupViewController: BaseClassVc {
             subtitleLabel.text = "Are you sure you want to block this user? They won't be able to message you or see your profile."
             setupBlockUI()
         case .report(let username):
-            titleLabel.text = "Report @\(username)"
+            titleLabel.text = "Report"
             subtitleLabel.text = "Select a reason. Your report is anonymous."
             setupReportUI()
         }
@@ -406,17 +406,33 @@ final class BlockReportPopupViewController: BaseClassVc {
     }
 
     @objc private func didTapSubmit() {
-        guard case .report(let username) = mode, let index = selectedReasonIndex else { return }
+        guard let index = selectedReasonIndex else { return }
         let reason = reportReasons[index].title
         let otherText = reportReasons[index].isOtherOption ? otherTextView.text : nil
-        dismissPopup {
-//            self.delegate?.blockReportPopup(self, didSubmitReportForUser: username, reason: reason, otherText: otherText)
+        guard case let .report(username, groupId) = mode else { return }
+            self.request.reason = reason
+            self.request.reportType = "match"
+            self.request.matchId = groupId
+            self.request.reportGroupAPi { err, code in
+                if code == 201 {
+                    self.showAlert("Report Submitted")
+                    self.delegate?.blockReportPopup(
+                        self,
+                        didSubmitReportForUser: username,
+                        reason: reason,
+                        otherText: otherText
+                    )
+                } else {
+                    DispatchQueue.main.async {
+                        self.showAlert(err)
+                        self.dismissPopup()
+                    }
+                }
         }
     }
 }
 
 // MARK: - UITableViewDataSource / Delegate (Report reasons)
-
 extension BlockReportPopupViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

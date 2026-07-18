@@ -937,13 +937,13 @@ class CreateGroupViewController: BaseClassVc {
     @objc private func continueTapped() {
         guard let image = selectedImage,
               let data  = image.jpegData(compressionQuality: 0.7) else {
-            showAlert(message: "Please select a cover photo"); return
+            showAlert("Please select a cover photo"); return
         }
         guard let title = groupNameField.text, !title.isEmpty else {
-            showAlert(message: "Enter group title"); return
+            showAlert("Enter group title"); return
         }
         guard let dest = destinationTF.text, !dest.isEmpty else {
-            showAlert(message: "Enter destination"); return
+            showAlert("Enter destination"); return
         }
 
         AppLoader.show()
