@@ -14,8 +14,10 @@ class EditProfileVc: BaseClassVc {
     @IBOutlet weak var txtLocation:UITextField!
     @IBOutlet weak var txtDob:UITextField!
     @IBOutlet weak var txtGender:UITextField!
+    @IBOutlet weak var txtPhone:UITextField!
     @IBOutlet weak var imgProfile:UIImageView!
     @IBOutlet weak var btnSave:UIButton!
+    @IBOutlet weak var btnVerify:UIButton!
     
     var locationView: LocationSearchView!
     
@@ -262,5 +264,49 @@ extension EditProfileVc {
     
     @IBAction func btnBack(_ sender:UIButton){
         super.backTapped()
+    }
+    
+    @IBAction func btnVerifyFirebase(_ sender: UIButton) {
+
+        guard let phone = txtPhone.text,
+              !phone.isEmpty else {
+            showAlert("Enter phone number")
+            return
+        }
+
+        showLoader()
+
+        FirebaseManager.shared.sendOTP(phone: phone) { success, message in
+
+            DispatchQueue.main.async {
+
+                self.hideLoader()
+
+                if success {
+
+                   
+                    let otpVC = OTPBottomSheetVC()
+                    otpVC.modalPresentationStyle = .pageSheet
+
+                    if let sheet = otpVC.sheetPresentationController {
+                        sheet.detents = [.medium()]
+                        sheet.prefersGrabberVisible = true
+                        sheet.preferredCornerRadius = 24
+                    }
+
+                    otpVC.onVerified = {
+
+                        self.btnVerify.setTitle("Verified", for: .normal)
+                        self.btnVerify.backgroundColor = .systemGreen
+                        self.btnVerify.isEnabled = false
+                    }
+
+                    present(otpVC, animated: true)
+                    
+                } else {
+                    self.showAlert(message)
+                }
+            }
+        }
     }
 }
