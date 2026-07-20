@@ -9,12 +9,12 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.628163874965-9796g15m06gn41p5cquiuiblkctutb5a</string>
+				<string>com.googleusercontent.apps.628163874965-0skvgfr8lq3fonk0n8d2qh70b0sf5v4v</string>
 			</array>
 		</dict>
 	</array>
 	<key>GIDClientID</key>
-	<string>628163874965-9796g15m06gn41p5cquiuiblkctutb5a.apps.googleusercontent.com</string>
+	<string>628163874965-0skvgfr8lq3fonk0n8d2qh70b0sf5v4v.apps.googleusercontent.com</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>google</string>

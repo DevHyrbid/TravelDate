@@ -57,8 +57,10 @@ class EditProfileVc: BaseClassVc {
         txtDob.text = User.curentUser?.dob ?? ""
         
         btnSave.setFont(.bold, size: 18.0)
+        btnVerify.setFont(.medium, size: 15.0)
         
         customSet(txtLocation)
+        customSet(txtPhone)
         customSet(txtName)
         customSet(txtUserName)
         customSet(txtDob)
@@ -301,9 +303,10 @@ extension EditProfileVc {
                         self.btnVerify.isEnabled = false
                     }
 
-                    present(otpVC, animated: true)
+                    self.present(otpVC, animated: true)
                     
                 } else {
+                    print(message,"HERE OTP NOT SENT")
                     self.showAlert(message)
                 }
             }
