@@ -275,13 +275,13 @@ final class ManageGroupViewController: UIViewController {
             return container
         }
 
-        let swipeRow = SwipeableRow(content: row, actionWidth: Self.swipeActionWidth)
-        swipeRow.onBlock = { [weak self] in
-            self?.blockMemberTapped(memberId: member.id, memberName: member.name)
-        }
-        swipeRow.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(swipeRow)
-        swipeRow.pinEdges(to: container)
+//        let swipeRow = SwipeableRow(content: row, actionWidth: Self.swipeActionWidth)
+//        swipeRow.onBlock = { [weak self] in
+//            self?.blockMemberTapped(memberId: member.id, memberName: member.name)
+//        }
+//        swipeRow.translatesAutoresizingMaskIntoConstraints = false
+//        container.addSubview(swipeRow)
+//        swipeRow.pinEdges(to: container)
         return container
     }
 

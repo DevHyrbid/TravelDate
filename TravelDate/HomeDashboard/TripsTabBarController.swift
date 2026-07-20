@@ -263,10 +263,18 @@ class TripsTabBarController: UIViewController {
     }
 
     // MARK: - Tab Switch
+//    @objc private func tabTapped(_ sender: UIButton) {
+//        switchTo(index: sender.tag)
+//    }
+
     @objc private func tabTapped(_ sender: UIButton) {
+        let feedback = UIImpactFeedbackGenerator(style: .heavy)
+        feedback.prepare()
+        feedback.impactOccurred()
+        
         switchTo(index: sender.tag)
     }
-
+    
     func switchTo(index: Int) {
         // Remove current child
         if let current = children.first {

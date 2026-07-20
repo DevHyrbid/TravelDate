@@ -9,6 +9,9 @@ typealias SwipeResult = (
     matchedGroupImage: String
 )
 class User : Mappable {
+    var phone_number : String?
+    var phone_verify : Bool?
+    var countryIso : String?
     var blockedId : String?
     var day : String?
     var name : String?
@@ -186,6 +189,9 @@ class User : Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        phone_verify <- map["phone_verify"]
+        countryIso <- map["countryIso"]
+        phone_number <- map["phone_number"]
         reportType <- map["reportType"]
         matchId <- map["matchId"]
         

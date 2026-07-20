@@ -10,6 +10,7 @@ import UIKit
 class EditProfileVc: BaseClassVc {
     
     @IBOutlet weak var txtUserName:UITextField!
+    @IBOutlet weak var txtEmail:UITextField!
     @IBOutlet weak var txtName:UITextField!
     @IBOutlet weak var txtLocation:UITextField!
     @IBOutlet weak var txtDob:UITextField!
@@ -20,6 +21,9 @@ class EditProfileVc: BaseClassVc {
     @IBOutlet weak var btnVerify:UIButton!
     
     var locationView: LocationSearchView!
+    
+    // MARK: - Phone / Country Picker
+    var phoneField: PhoneNumberField!
     
     // MARK: - Gender
     let genderArray = ["male", "female"]
@@ -48,6 +52,13 @@ class EditProfileVc: BaseClassVc {
             loadImage(imgProfile, url: url)
         }
         
+        if User.curentUser?.phone_verify == true {
+            self.btnVerify.setTitle("Verified", for: .normal)
+            self.btnVerify.setTitleColor(.green, for: .normal)
+            self.btnVerify.isEnabled = false
+            self.txtPhone.isUserInteractionEnabled = false 
+        }
+        
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode  = .scaleToFill
         txtName.text = User.curentUser?.name ?? ""
@@ -55,10 +66,12 @@ class EditProfileVc: BaseClassVc {
         txtLocation.text = User.curentUser?.locationString ?? ""
         txtGender.text = User.curentUser?.gender ?? ""
         txtDob.text = User.curentUser?.dob ?? ""
+        txtEmail.text = User.curentUser?.email ?? ""
         
         btnSave.setFont(.bold, size: 18.0)
         btnVerify.setFont(.medium, size: 15.0)
         
+        customSet(txtEmail)
         customSet(txtLocation)
         customSet(txtPhone)
         customSet(txtName)
@@ -69,6 +82,7 @@ class EditProfileVc: BaseClassVc {
         setuplocationVw()
         setupGenderPicker()
         setupDobPicker()
+        setupPhoneField()
     }
     
     // MARK: - Location
@@ -81,6 +95,25 @@ class EditProfileVc: BaseClassVc {
             self?.txtLocation.text = address
             self?.locationView.isHidden = true
         }
+    }
+    
+    // MARK: - Phone Country Picker
+    // NOTE: call this AFTER customSet(txtPhone) — it overrides the
+    // blank spacer leftView set by customSet with the tappable
+    // flag + dial-code selector.
+    func setupPhoneField() {
+        
+        phoneField = PhoneNumberField(textField: txtPhone, presentingVC: self)
+        
+        // Restore the user's saved country if we have an ISO code on file,
+        // otherwise it defaults to India (+91).
+        if let isoCode = User.curentUser?.countryIso, !isoCode.isEmpty {
+            phoneField.setCountry(isoCode: isoCode)
+        }
+        
+        
+        // Pre-fill the digits only (dial code lives in the picker button).
+        txtPhone.text = User.curentUser?.phone_number ?? ""
     }
     
     // MARK: - Gender Picker
@@ -172,6 +205,9 @@ class EditProfileVc: BaseClassVc {
         
         request.name = txtName.text ?? ""
         request.userName = txtUserName.text ?? ""
+        request.countryIso = phoneField.countryDialCode    // 91
+        request.phone_number = txtPhone.text ?? ""           // 9876543210
+        
         if let location = txtLocation.text,
            !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             request.locationString = location
@@ -269,12 +305,14 @@ extension EditProfileVc {
     }
     
     @IBAction func btnVerifyFirebase(_ sender: UIButton) {
-
-        guard let phone = txtPhone.text,
-              !phone.isEmpty else {
+        self.view.endEditing(true)
+        guard let localNumber = txtPhone.text,
+              !localNumber.isEmpty else {
             showAlert("Enter phone number")
             return
         }
+
+        let phone = phoneField.fullNumber
 
         showLoader()
 
@@ -286,7 +324,6 @@ extension EditProfileVc {
 
                 if success {
 
-                   
                     let otpVC = OTPBottomSheetVC()
                     otpVC.modalPresentationStyle = .pageSheet
 
@@ -296,11 +333,41 @@ extension EditProfileVc {
                         sheet.preferredCornerRadius = 24
                     }
 
-                    otpVC.onVerified = {
+                    otpVC.onVerify = { [weak self, weak otpVC] code in
 
-                        self.btnVerify.setTitle("Verified", for: .normal)
-                        self.btnVerify.backgroundColor = .systemGreen
-                        self.btnVerify.isEnabled = false
+                        guard let self = self else { return }
+
+                        FirebaseManager.shared.verifyOTP(code: code) { verifySuccess, verifyMessage in
+
+                            DispatchQueue.main.async {
+
+                                if verifySuccess {
+
+                                    otpVC?.dismiss(animated: true) {
+                                        self.request.phone_verify = true
+                                        self.btnVerify.setTitle("Verified", for: .normal)
+                                        self.btnVerify.setTitleColor(.green, for: .normal)
+                                        self.btnVerify.isEnabled = false
+                                    }
+
+                                } else {
+                                    self.request.phone_verify = false
+                                    print(verifyMessage, "OTP VERIFY FAILED")
+                                    self.showAlert(verifyMessage)
+                                }
+                            }
+                        }
+                    }
+
+                    otpVC.onResend = { [weak self] in
+
+                        guard let self = self else { return }
+
+                        FirebaseManager.shared.sendOTP(phone: self.phoneField.fullNumber) { resendSuccess, resendMessage in
+                            if !resendSuccess {
+                                print(resendMessage, "RESEND FAILED")
+                            }
+                        }
                     }
 
                     self.present(otpVC, animated: true)

@@ -11,11 +11,27 @@ class SettingsVc: BaseClassVc {
     
     @IBOutlet weak var blurVw: UIVisualEffectView!
     @IBOutlet weak var vwSwitch: UIView!
+    @IBOutlet weak var vwChangePwd:UIView!
+    @IBOutlet weak var vwChangeHeight:NSLayoutConstraint!
+    // MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUi()
+        
+    }
+    
+    func setupUi(){
+        print(User.curentUser?.social_id)
+        if User.curentUser?.social_id ?? ""  != "" || User.curentUser?.social_id ?? "" != nil {
+            self.vwChangePwd.isHidden = false
+            self.vwChangeHeight.constant  = 90
+        } else {
+            self.vwChangePwd.isHidden = true
+            self.vwChangeHeight.constant  = 0
+        }
         self.blurVw.isHidden  = true
         let customSwitch = CustomSwitch(frame: CGRect(x: 0, y: 0, width: 56, height: 32))
-
+        
         customSwitch.isOn = true
         customSwitch.addTarget(self,
                                action: #selector(switchChanged(_:)),

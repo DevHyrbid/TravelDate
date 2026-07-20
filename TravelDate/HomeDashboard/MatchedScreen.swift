@@ -355,13 +355,13 @@ final class MatchBottomSheetVC: UIViewController {
             : result.message
 
         if let url = result.myGroupImageURL {
-            loadImage(urlStr: "\(url)") { [weak self] image in
+            loadImage(urlStr: "\(APiConstant.base)\(url)") { [weak self] image in
                 self?.leftImageView.image = image
             }
         }
 
         if let url = result.matchedGroupImageURL {
-            loadImage(urlStr: "\(url)") { [weak self] image in
+            loadImage(urlStr: "\(APiConstant.base)\(url)") { [weak self] image in
                 self?.rightImageView.image = image
             }
         }

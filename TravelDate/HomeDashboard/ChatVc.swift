@@ -78,9 +78,9 @@ final class ChatVc: BaseClassVc {
     
     @objc private func handleIncomingPush(_ notification: Notification) {
 
-        guard let userInfo = notification.userInfo else { return }
-
-        guard let _ = userInfo["roomId"] as? String else { return }
+//        guard let userInfo = notification.userInfo else { return }
+//
+//        guard let _ = userInfo["roomId"] as? String else { return }
         
         fetchAllData()
     }

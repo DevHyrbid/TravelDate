@@ -65,56 +65,59 @@ final class ChatHeaderView: UIView {
         } else {
             leftImageView.image = UIImage(named: "User")
         }
+        
+        leftImageView.layer.cornerRadius = self.leftImageView.frame.height / 2
+        
     }
 
     /// Match chat (2 images)
-    func configure(
-        title: String,
-        subtitle: String?,
-        imageURLs: [String]?,
-        showMore: Bool = true
-    ) {
-
-        titleLabel.text = title
-        subtitleLabel.text = subtitle
-        subtitleLabel.isHidden = (subtitle?.isEmpty ?? true)
-        moreButton.isHidden = !showMore
-
-        leftImageView.image = UIImage(named: "User")
-        rightImageView.image = UIImage(named: "User")
-
-        guard let imageURLs = imageURLs, !imageURLs.isEmpty else {
-            leftImageView.isHidden = false
-            rightImageView.isHidden = true
-            return
-        }
-
-        if imageURLs.count >= 2 {
-
-            leftImageView.isHidden = false
-            rightImageView.isHidden = false
-
-            ImageLoader.setImageKing(
-                leftImageView,
-                urlString: "\(APiConstant.base)\(imageURLs[0])"
-            )
-
-            ImageLoader.setImageKing(
-                rightImageView,
-                urlString: "\(APiConstant.base)\(imageURLs[1])"
-            )
-
-        } else {
-
-            leftImageView.isHidden = false
-            rightImageView.isHidden = true
-
-            ImageLoader.setImageKing(
-                leftImageView,
-                urlString: "\(APiConstant.base)\(imageURLs[0])"
-            )
-        }
-    }
+//    func configure(
+//        title: String,
+//        subtitle: String?,
+//        imageURLs: [String]?,
+//        showMore: Bool = true
+////    ) {
+////
+////        titleLabel.text = title
+////        subtitleLabel.text = subtitle
+////        subtitleLabel.isHidden = (subtitle?.isEmpty ?? true)
+////        moreButton.isHidden = !showMore
+////
+////        leftImageView.image = UIImage(named: "User")
+////        rightImageView.image = UIImage(named: "User")
+////
+////        guard let imageURLs = imageURLs, !imageURLs.isEmpty else {
+////            leftImageView.isHidden = false
+////            rightImageView.isHidden = true
+////            return
+////        }
+////
+////        if imageURLs.count >= 2 {
+////
+////            leftImageView.isHidden = false
+////            rightImageView.isHidden = false
+////
+////            ImageLoader.setImageKing(
+////                leftImageView,
+////                urlString: "\(APiConstant.base)\(imageURLs[0])"
+////            )
+////
+////            ImageLoader.setImageKing(
+////                rightImageView,
+////                urlString: "\(APiConstant.base)\(imageURLs[1])"
+////            )
+////
+////        } else {
+////
+////            leftImageView.isHidden = false
+////            rightImageView.isHidden = true
+////
+////            ImageLoader.setImageKing(
+////                leftImageView,
+////                urlString: "\(APiConstant.base)\(imageURLs[0])"
+////            )
+////        }
+////    }
 
     func updateSubtitle(_ text: String?) {
         subtitleLabel.text = text
