@@ -80,5 +80,7 @@
 	<string>Trips</string>
 	<key>CFBundleDisplayName</key>
 	<string>Trips</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Need Access</string>
 </dict>
 </plist>

@@ -39,11 +39,10 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hjf-tv-f7V" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="247" height="40"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GZk-aE-djX" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                                <rect key="frame" x="73.666666666666671" y="5" width="100.00000000000001" height="30"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BaliBaliBaliBaliBaliBali" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GZk-aE-djX" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                                <rect key="frame" x="63.666666666666671" y="5" width="120.00000000000001" height="30"/>
                                                 <color key="backgroundColor" name="ThemeTxt"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="100" id="3tF-uc-pfI"/>
                                                     <constraint firstAttribute="height" constant="30" id="Yzz-3D-GG1"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
@@ -56,7 +55,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLocation" translatesAutoresizingMaskIntoConstraints="NO" id="Vfm-ov-maH">
-                                                <rect key="frame" x="75.666666666666671" y="12" width="16" height="16"/>
+                                                <rect key="frame" x="43.666666666666664" y="12" width="16" height="16"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="16" id="4wz-Ty-IM8"/>
                                                     <constraint firstAttribute="width" constant="16" id="v4m-zO-2mh"/>
@@ -69,7 +68,7 @@
                                             <constraint firstItem="Vfm-ov-maH" firstAttribute="centerY" secondItem="GZk-aE-djX" secondAttribute="centerY" id="Cmt-uj-TxV"/>
                                             <constraint firstItem="GZk-aE-djX" firstAttribute="centerY" secondItem="Hjf-tv-f7V" secondAttribute="centerY" id="K1o-70-j3Q"/>
                                             <constraint firstAttribute="height" constant="40" id="fkY-bQ-Bkb"/>
-                                            <constraint firstItem="Vfm-ov-maH" firstAttribute="leading" secondItem="GZk-aE-djX" secondAttribute="leading" constant="2" id="qij-Mk-3dA"/>
+                                            <constraint firstItem="Vfm-ov-maH" firstAttribute="leading" secondItem="GZk-aE-djX" secondAttribute="leading" constant="-20" id="qij-Mk-3dA"/>
                                         </constraints>
                                         <userDefinedRuntimeAttributes>
                                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">

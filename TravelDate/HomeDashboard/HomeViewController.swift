@@ -210,7 +210,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblGreating.setFont(.regular, size: 16.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
-       
     }
     
     func setupCountdown(startDateString: String) {

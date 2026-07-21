@@ -65,7 +65,9 @@ class EditProfileVc: BaseClassVc {
         txtUserName.text = "\(User.curentUser?.userName ?? "")"
         txtLocation.text = User.curentUser?.locationString ?? ""
         txtGender.text = User.curentUser?.gender ?? ""
-        txtDob.text = User.curentUser?.dob ?? ""
+        let dob = formatDOB(User.curentUser?.dob ?? "")
+        print(dob) // 07/20/2026
+        txtDob.text = dob
         txtEmail.text = User.curentUser?.email ?? ""
         
         btnSave.setFont(.bold, size: 18.0)
@@ -95,6 +97,21 @@ class EditProfileVc: BaseClassVc {
             self?.txtLocation.text = address
             self?.locationView.isHidden = true
         }
+    }
+    
+    func formatDOB(_ isoDate: String) -> String {
+        let inputFormatter = ISO8601DateFormatter()
+        inputFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        guard let date = inputFormatter.date(from: isoDate) else {
+            return ""
+        }
+
+        let outputFormatter = DateFormatter()
+        outputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        outputFormatter.dateFormat = "MM-dd-yyyy"
+
+        return outputFormatter.string(from: date)
     }
     
     // MARK: - Phone Country Picker
@@ -257,7 +274,7 @@ extension EditProfileVc: UIPickerViewDelegate, UIPickerViewDataSource {
         titleForRow row: Int,
         forComponent component: Int
     ) -> String? {
-        return genderArray[row]
+        return genderArray[row].capitalized
     }
     
     func pickerView(
@@ -265,7 +282,7 @@ extension EditProfileVc: UIPickerViewDelegate, UIPickerViewDataSource {
         didSelectRow row: Int,
         inComponent component: Int
     ) {
-        txtGender.text = genderArray[row]
+        txtGender.text = genderArray[row].capitalized
     }
 }
 

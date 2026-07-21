@@ -6,6 +6,7 @@
 //
 import UIKit
 import Kingfisher
+import Contacts
 
 // MARK: - InviteVc
 final class InviteVc: BaseClassVc {
@@ -21,8 +22,15 @@ final class InviteVc: BaseClassVc {
     private let inviteCard       = UIView()
     private let linkLabel        = UILabel()
     private var suggestedHeader  : UIView!
+    private var suggestedCountLabel = UILabel()
 
+    // All users fetched from API (unfiltered)
+    private var allUsers: [User] = []
+    // Users that matched device contacts — this is what the table shows
     var users: [User]? = nil
+
+    // Normalized set of phone numbers from the device address book
+    private var contactNumbers = Set<String>()
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -36,7 +44,7 @@ final class InviteVc: BaseClassVc {
         setupSuggestedHeader()
         setupTableView()
         setupSkipButton()
-        getAllUsers()
+        loadDataFast()
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(shareInvite))
         inviteCard.addGestureRecognizer(tap)
@@ -106,6 +114,7 @@ final class InviteVc: BaseClassVc {
         )
         searchField.textColor = .white
         searchField.setFont(.medium, size: 14.0)
+        searchField.addTarget(self, action: #selector(searchChanged), for: .editingChanged)
         searchField.translatesAutoresizingMaskIntoConstraints = false
         searchContainer.addSubview(searchField)
 
@@ -265,14 +274,13 @@ final class InviteVc: BaseClassVc {
         titleLbl.setFont(.semiBold, size: 16.0)
         titleLbl.translatesAutoresizingMaskIntoConstraints = false
 
-        let countLbl = UILabel()
-        countLbl.text      = "\(users?.count ?? 0) friends"
-        countLbl.textColor = .appGrayText
-        countLbl.setFont(.regular, size: 14.0)
-        countLbl.translatesAutoresizingMaskIntoConstraints = false
+        suggestedCountLabel.text      = "0 friends"
+        suggestedCountLabel.textColor = .appGrayText
+        suggestedCountLabel.setFont(.regular, size: 14.0)
+        suggestedCountLabel.translatesAutoresizingMaskIntoConstraints = false
 
         header.addSubview(titleLbl)
-        header.addSubview(countLbl)
+        header.addSubview(suggestedCountLabel)
 
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: inviteCard.bottomAnchor, constant: 24),
@@ -283,8 +291,8 @@ final class InviteVc: BaseClassVc {
             titleLbl.leadingAnchor.constraint(equalTo: header.leadingAnchor),
             titleLbl.centerYAnchor.constraint(equalTo: header.centerYAnchor),
 
-            countLbl.trailingAnchor.constraint(equalTo: header.trailingAnchor),
-            countLbl.centerYAnchor.constraint(equalTo: header.centerYAnchor)
+            suggestedCountLabel.trailingAnchor.constraint(equalTo: header.trailingAnchor),
+            suggestedCountLabel.centerYAnchor.constraint(equalTo: header.centerYAnchor)
         ])
 
         suggestedHeader = header
@@ -353,22 +361,129 @@ final class InviteVc: BaseClassVc {
         self.pushVC(TripsTabBarController.self, from: .Home) { vc in }
     }
 
-    // MARK: - API
-    func getAllUsers() {
-        request.getAllUsersAPi { res, err, code in
+    @objc private func searchChanged() {
+        let query = (searchField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = allUsers.filter { contactNumbers.contains(normalizePhone($0.phone_number ?? "")) }
+        users = query.isEmpty ? base : base.filter {
+            ($0.name ?? "").lowercased().contains(query.lowercased())
+        }
+        tableView.reloadData()
+        updateCountLabel()
+    }
+
+    // MARK: - Fast parallel load: API users + device contacts at the same time
+    private func loadDataFast() {
+        let group = DispatchGroup()
+
+        group.enter()
+        fetchDeviceContactNumbers { [weak self] numbers in
+            self?.contactNumbers = numbers
+            group.leave()
+        }
+
+        group.enter()
+        request.getAllUsersAPi { [weak self] res, err, code in
+            guard let self = self else { return }
             if code == 200 {
-                DispatchQueue.main.async {
-                    if res?.data?.users?.count != 0 {
-                        self.users = res?.data?.users ?? []
-                        self.tableView.reloadData()
-                    }
-                }
+                self.allUsers = res?.data?.users ?? []
             } else {
                 self.showAlert(err)
+            }
+            group.leave()
+        }
+
+        group.notify(queue: .main) { [weak self] in
+            self?.applyContactFilter()
+        }
+    }
+
+    // Filters allUsers down to only those whose phone number is in the user's contact list
+    private func applyContactFilter() {
+        // NOTE: assumes `User.phone` holds the raw phone number string.
+        // Rename below if your model uses a different property name.
+        users = allUsers.filter { contactNumbers.contains(normalizePhone($0.phone_number ?? "")) }
+        tableView.reloadData()
+        updateCountLabel()
+    }
+
+    private func updateCountLabel() {
+        suggestedCountLabel.text = "\(users?.count ?? 0) friends"
+    }
+
+    // MARK: - Contacts fetch (background, fast)
+    private func fetchDeviceContactNumbers(completion: @escaping (Set<String>) -> Void) {
+        let store = CNContactStore()
+        switch CNContactStore.authorizationStatus(for: .contacts) {
+        case .authorized:
+            DispatchQueue.global(qos: .userInitiated).async {
+                completion(self.readContactNumbers(store))
+            }
+        case .notDetermined:
+            store.requestAccess(for: .contacts) { [weak self] granted, _ in
+                guard let self = self else { completion([]); return }
+                if granted {
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        completion(self.readContactNumbers(store))
+                    }
+                } else {
+                    DispatchQueue.main.async { completion([]) }
+                }
+            }
+        default:
+            // denied / restricted
+            DispatchQueue.main.async {
+                self.showContactsPermissionAlert()
+                completion([])
             }
         }
     }
 
+    // Runs on a background queue — only fetches phone numbers, nothing else, for speed
+    private func readContactNumbers(_ store: CNContactStore) -> Set<String> {
+        var numbers = Set<String>()
+        let keys = [CNContactPhoneNumbersKey] as [CNKeyDescriptor]
+        let fetchRequest = CNContactFetchRequest(keysToFetch: keys)
+        fetchRequest.unifyResults = true
+
+        do {
+            try store.enumerateContacts(with: fetchRequest) { contact, _ in
+                for phone in contact.phoneNumbers {
+                    let normalized = self.normalizePhone(phone.value.stringValue)
+                    if !normalized.isEmpty {
+                        numbers.insert(normalized)
+                    }
+                }
+            }
+        } catch {
+            print("Contacts fetch failed: \(error)")
+        }
+        return numbers
+    }
+
+    // Strips everything but digits, then compares on the last 10 digits
+    // so "+91 98765-43210" and "9876543210" match each other.
+    private func normalizePhone(_ raw: String) -> String {
+        let digits = raw.filter { $0.isNumber }
+        guard digits.count >= 10 else { return digits }
+        return String(digits.suffix(10))
+    }
+
+    private func showContactsPermissionAlert() {
+        let alert = UIAlertController(
+            title: "Contacts Access Needed",
+            message: "Allow contacts access to find friends who are already on Trips.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Settings", style: .default) { _ in
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    // MARK: - API
     func inviteFriend(at index: Int) {
         inviteUser(users?[index].id ?? "")
         tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
@@ -483,9 +598,9 @@ final class FriendCell: UITableViewCell {
     func configure(with friend: User, onInvite: @escaping () -> Void) {
         self.onInvite      = onInvite
         nameLabel.text     = friend.name
-        usernameLabel.text = "@\(friend.name?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")"
+        usernameLabel.text = "@\(friend.userName?.lowercased().replacingOccurrences(of: " ", with: "") ?? "")\(friend.phone_number ?? "")"
 
-        let url = URL(string: friend.profile_image ?? "")
+        let url = URL(string: "\(APiConstant.base)\(friend.profile_image ?? "")")
         avatarView.kf.setImage(
             with: url,
             placeholder: UIImage(named: "placeholder"),

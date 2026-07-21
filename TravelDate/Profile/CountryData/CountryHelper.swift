@@ -224,7 +224,7 @@ enum CountryData {
     }
 
     static var `default`: Country {
-        all.first(where: { $0.isoCode == "IN" }) ?? all[0]
+        all.first(where: { $0.isoCode == "CA" }) ?? all[0]
     }
 
     private static let raw: [(String, String, String)] = [
