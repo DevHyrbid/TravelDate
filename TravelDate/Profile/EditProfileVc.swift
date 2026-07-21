@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import PhoneNumberKit
+
 
 class EditProfileVc: BaseClassVc {
     
@@ -31,6 +33,8 @@ class EditProfileVc: BaseClassVc {
     
     // MARK: - DOB
     let dobPicker = UIDatePicker()
+//    private let phoneNumberKit = PhoneNumberKit
+    private let partialFormatter = PartialFormatter()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -395,5 +399,27 @@ extension EditProfileVc {
                 }
             }
         }
+    }
+}
+
+extension EditProfileVc :UITextFieldDelegate{
+    func textField(_ textField: UITextField,
+                   shouldChangeCharactersIn range: NSRange,
+                   replacementString string: String) -> Bool {
+        
+        guard textField == txtPhone else {
+            return true
+        }
+        
+        let current = textField.text ?? ""
+        
+        guard let textRange = Range(range, in: current) else {
+            return false
+        }
+        
+        let updated = current.replacingCharacters(in: textRange, with: string)
+        textField.text = partialFormatter.formatPartial(updated)
+        
+        return false
     }
 }
