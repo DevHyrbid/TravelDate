@@ -48,7 +48,7 @@ class BaseClassVc: UIViewController {
               plan.lowercased() != "<null>" else {
             return false
         }
-
+        
         return true
     }
     
@@ -56,10 +56,58 @@ class BaseClassVc: UIViewController {
         super.viewDidLoad()
         
         addGradient()
+        Task.detached {
+            for await result in Transaction.updates {
+
+                guard case .verified(let transaction) = result else {
+                    continue
+                }
+
+                await self.checkSubscriptionStatus()
+
+                await transaction.finish()
+            }
+        }
         
         
         
-        
+    }
+    
+    func checkSubscriptionStatus() async {
+
+        for await result in Transaction.currentEntitlements {
+
+            guard case .verified(let transaction) = result else {
+                continue
+            }
+
+            guard transaction.productType == .autoRenewable else {
+                continue
+            }
+
+            // Check expiration
+            if let expirationDate = transaction.expirationDate,
+               expirationDate > Date() {
+
+                print("Subscription Active")
+
+                // Update backend if needed
+                await updateSubscription(
+                    plan: "weekly",
+                    subscribed: 1
+                )
+
+                return
+            }
+        }
+
+        // No active subscription
+        print("Subscription Expired")
+
+        await updateSubscription(
+            plan: "free",
+            subscribed: 0
+        )
     }
     
     
@@ -749,6 +797,8 @@ extension UIView {
 //
 
 import UIKit
+import SwiftUI
+import StoreKit
 
 final class ProgressBorderView: UIView {
 

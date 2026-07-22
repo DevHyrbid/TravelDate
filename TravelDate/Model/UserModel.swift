@@ -713,14 +713,14 @@ class User : Mappable {
     
     
     func editProfileAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
-        
+        print(self.toJSON(),"HJHJHJHJHJHJ")
         NetworkManger.sendRequestUrlSession(
             url: APiConstant.updateUser,
             params: self.toJSON(),
             method: "PATCH"
         ) { responseObject, suces in
             
-            print("RESPONSE:", responseObject)
+            
             
             let statusCode = responseObject["code"] as? Int ?? 0
             

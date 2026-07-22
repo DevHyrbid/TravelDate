@@ -16,7 +16,7 @@ enum SubscriptionScreenMode {
 // MARK: - SubscriptionViewController
 
 @MainActor
-final class SubscriptionViewController: UIViewController {
+final class SubscriptionViewController: BaseClassVc {
 
     // MARK: - Dependencies
     private let viewModel: SubscriptionViewModel
@@ -211,6 +211,7 @@ final class SubscriptionViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         bottomGlowLayer.frame = view.bounds
+        
     }
 
     // MARK: - Navigation
@@ -556,9 +557,124 @@ final class SubscriptionViewController: UIViewController {
         ])
     }
 
+    
+    func updateSubscription() {
+
+        guard let selectedPlan = viewModel.selectedPlan else { return }
+
+        let startDate = Date()
+        let endDate = calculateEndDate(for: selectedPlan)
+
+        request.plan = planName(from: selectedPlan)
+        request.planStartDate = isoFormatter.string(from: startDate)
+        request.planEndDate = isoFormatter.string(from: endDate)
+        request.isSubscribed = 1
+        print(planName(from: selectedPlan),"sssssss")
+        
+        request.editProfileAPi { [weak self] errMsg, errCode in
+            
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                if errCode == 200 {
+                    let alert = UIAlertController(
+                        title: "Success",
+                        message: "Your subscription has been updated successfully.",
+                        preferredStyle: .alert
+                    )
+                    
+                    alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                        self.backTapped()
+                    })
+                    
+                    self.present(alert, animated: true)
+                    
+                } else {
+                    self.showErrorAlert(message: errMsg ?? "Something went wrong.")
+                }
+            }
+        }
+    }
+    
+    private let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    private func planName(from plan: SubscriptionPlan) -> String {
+        guard let period = plan.product?.subscription?.subscriptionPeriod else {
+            return ""
+        }
+
+        switch period.unit {
+        case .day:
+            switch period.value {
+            case 7:
+                return "weekly"
+            case 30, 31:
+                return "monthly"
+            case 365, 366:
+                return "yearly"
+            default:
+                return "\(period.value)-day"
+            }
+
+        case .week:
+            return period.value == 1 ? "weekly" : "\(period.value) weeks"
+
+        case .month:
+            return period.value == 1 ? "monthly" : "\(period.value) months"
+
+        case .year:
+            return period.value == 1 ? "yearly" : "\(period.value) years"
+
+        @unknown default:
+            return ""
+        }
+    }
+
+    private func calculateEndDate(for plan: SubscriptionPlan) -> Date {
+
+        let start = Date()
+
+        guard let period = plan.product?.subscription?.subscriptionPeriod else {
+            return start
+        }
+
+        switch period.unit {
+
+        case .day:
+            return Calendar.current.date(byAdding: .day,
+                                         value: period.value,
+                                         to: start) ?? start
+
+        case .week:
+            return Calendar.current.date(byAdding: .day,
+                                         value: 7 * period.value,
+                                         to: start) ?? start
+
+        case .month:
+            return Calendar.current.date(byAdding: .month,
+                                         value: period.value,
+                                         to: start) ?? start
+
+        case .year:
+            return Calendar.current.date(byAdding: .year,
+                                         value: period.value,
+                                         to: start) ?? start
+
+        @unknown default:
+            return start
+        }
+    }
+    
     // MARK: - Bind ViewModel
     private func bindViewModel() {
-        viewModel.onPurchaseSuccess = { [weak self] in self?.showSuccessAlert() }
+        viewModel.onPurchaseSuccess = { [weak self] in
+//            self?.showSuccessAlert()s
+            self?.updateSubscription()
+        }
         viewModel.onError = { [weak self] msg in self?.showErrorAlert(message: msg) }
 
         viewModel.$viewState
@@ -636,9 +752,7 @@ final class SubscriptionViewController: UIViewController {
         Task { await viewModel.purchaseSelectedPlan() }
     }
 
-    @objc private func backTapped() {
-        self.dismiss(animated: true)
-    }
+    
 
     // MARK: - Alerts
     private func showSuccessAlert() {

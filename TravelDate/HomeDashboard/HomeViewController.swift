@@ -60,7 +60,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-    
+        getGroups()
         
         membersView.translatesAutoresizingMaskIntoConstraints = false
         vwMembers.addSubview(membersView)
@@ -344,7 +344,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     }
     
     func getDashboard() {
-        getGroups()
+        
         getPastGroups()
         request.getDashBoardAPi { model, errMsg, errCode in
             
@@ -454,10 +454,27 @@ extension HomeViewController {
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
-//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-//            showAlert(message: "Upgrade to a subscription to create more than one group.")
-//            return
-//        }
+        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+            
+            showAlertAction("Upgrade to a subscription to create more than one group.") {
+                
+                // Screen 2 — Plans
+                let vm = SubscriptionViewModel()
+                vm.screenMode = .plans
+                let vc = SubscriptionViewController(viewModel: vm, mode: .plans)
+                
+                // Callback when purchase succeeds
+                vm.onPurchaseSuccess = {
+                    print("User subscribed! Unlock premium features.")
+                }
+                
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                self.present(nav, animated: true)
+                
+            }
+            return
+        }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
