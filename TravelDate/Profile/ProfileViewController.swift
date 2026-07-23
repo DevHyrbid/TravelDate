@@ -305,21 +305,7 @@ extension ProfileViewController : CollectionDelegate
 
 extension ProfileViewController{
     @IBAction func btnUpgrade(_ sender:UIButton){
-        
-        // Screen 2 — Plans
-        let vm = SubscriptionViewModel()
-        vm.screenMode = .plans
-        let vc = SubscriptionViewController(viewModel: vm, mode: .plans)
-        
-        // Callback when purchase succeeds
-        vm.onPurchaseSuccess = {
-            print("User subscribed! Unlock premium features.")
-        }
-        
-        let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true)
-        
+        self.pushVC(PreiumController.self, from: .Settings,hideTabBar: true)
     }
 }
 

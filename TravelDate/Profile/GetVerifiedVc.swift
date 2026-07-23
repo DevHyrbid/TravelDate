@@ -138,6 +138,8 @@ class GetVerifiedVc: BaseClassVc {
         buildLayout()
         loadUserProfile()
         updateProgressUI()
+        
+        print(User.curentUser?.selfie,User.curentUser?.back,"photoHere")
     }
 
     override func viewWillAppear(_ animated: Bool) {

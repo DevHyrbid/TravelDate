@@ -1,771 +1,347 @@
-// SubscriptionViewController.swift
-// Trips: Travel & Meet Friends
-// UIKit | Programmatic | MVVM | StoreKit 2 | iOS 16+
-// Pixel-perfect match to Figma — both Free Trial & Plans screens
+
+//
+//  SubscriptionViewController.swift
+//  TravelDate
+//
+//  UIKit only. All StoreKit/backend logic lives in SubscriptionPresenter.
+//  This file only builds UI and forwards taps to the presenter.
+//
 
 import UIKit
-import StoreKit
-import Combine
 
-// MARK: - Screen Mode
-enum SubscriptionScreenMode {
-    case freeTrial   // Screen 1: timeline onboarding + single CTA
-    case plans       // Screen 2: 3-column plan cards + features
-}
-
-// MARK: - SubscriptionViewController
+// MARK: - Subscription View Controller
 
 @MainActor
-final class SubscriptionViewController: BaseClassVc {
+final class SubscriptionViewController: UIViewController {
 
-    // MARK: - Dependencies
-    private let viewModel: SubscriptionViewModel
-    private var cancellables = Set<AnyCancellable>()
-    private var plansPopulated = false
+    // MARK: - Presenter
 
-    // Expose mode to switch between Screen 1 and Screen 2
-    var mode: SubscriptionScreenMode = .plans
+    private lazy var presenter = SubscriptionPresenter(view: self)
 
-    // MARK: - Constants
-    private let bgColor    = UIColor(hex: "#0B0D0D")
-    private let cardColor  = UIColor(hex: "#111519")
+    // MARK: - Colors
+
+    private let backgroundColor = UIColor(hex: "#0B0D0D")
+    private let cardColor = UIColor(hex: "#161A1D")
     private let orangeColor = UIColor(hex: "#FF7A00")
-    private static let buttonHeight: CGFloat = 58
-    private let bottomGlowLayer = CAGradientLayer()
 
-    // MARK: - Scroll
-    private lazy var scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.showsVerticalScrollIndicator = false
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        sv.backgroundColor = .clear
-        sv.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 32, right: 0)
-        return sv
-    }()
+    // MARK: - UI Components
 
-    private lazy var contentView: UIView = {
-        let v = UIView()
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    private let stackView = UIStackView()
 
-    // MARK: - Shared Header (both screens)
-    // Orange left-bar + title + subtitle — left aligned per Figma
-    private lazy var orangeBar: UIView = {
-        let v = UIView()
-        v.backgroundColor = orangeColor
-        v.layer.cornerRadius = 2
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
 
-    private lazy var titleLabel: UILabel = {
-        let l = UILabel()
-        l.textColor = .white
-        l.font = AppFont.bold(22.0)
-        l.numberOfLines = 2
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
+    private let plansStackView = UIStackView()
+    private let featuresStackView = UIStackView()
 
-    private lazy var subtitleLabel: UILabel = {
-        let l = UILabel()
-        l.textColor = UIColor(white: 1, alpha: 0.72)
-        l.font = AppFont.regular(15.0)
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
+    private let continueButton = UIButton(type: .system)
+    private let restoreButton = UIButton(type: .system)
+    private let statusLabel = UILabel()
 
-    // MARK: - Screen 1: Free Trial Timeline
-    private lazy var timelineCard: UIView = {
-        let v = UIView()
-        v.backgroundColor = cardColor
-        v.layer.cornerRadius = 20
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
+    private let loadingIndicator = UIActivityIndicatorView(style: .medium)
 
-    // MARK: - Screen 2: Plan Cards (horizontal 3-col)
-    private var planViews: [SubscriptionPlanView] = []
+    // MARK: - Plan Cards
 
-    private lazy var plansRowStack: UIStackView = {
-        let sv = UIStackView()
-        sv.axis = .horizontal
-        sv.spacing = 10
-        sv.distribution = .fillEqually
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        return sv
-    }()
+    private var planCardViews: [PlanCardView] = []
 
-    // MARK: - Features Section (both screens share this)
-    private lazy var featureSectionTitle: UILabel = {
-        let l = UILabel()
-        l.text = "Included with Trips"
-        l.font = AppFont.bold(18.0)
-        l.textColor = .white
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
+    // MARK: - Life Cycle
 
-    private lazy var featuresCard: UIView = {
-        let v = UIView()
-        v.backgroundColor = cardColor
-        v.layer.cornerRadius = 20
-        v.translatesAutoresizingMaskIntoConstraints = false
-        return v
-    }()
-
-    private lazy var featuresStack: UIStackView = {
-        let sv = UIStackView()
-        sv.axis = .vertical
-        sv.spacing = 22
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        return sv
-    }()
-
-    // MARK: - CTA Button
-    private lazy var ctaButton: UIButton = {
-        let btn = UIButton(type: .custom)
-        btn.setTitleColor(.white, for: .normal)
-        btn.titleLabel?.font = AppFont.bold(17.0)
-        btn.backgroundColor = orangeColor
-        btn.layer.cornerRadius = Self.buttonHeight / 2
-        btn.clipsToBounds = true
-        btn.addTarget(self, action: #selector(ctaTapped), for: .touchUpInside)
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        return btn
-    }()
-
-    private lazy var loadingIndicator: UIActivityIndicatorView = {
-        let ai = UIActivityIndicatorView(style: .medium)
-        ai.color = .white
-        ai.hidesWhenStopped = true
-        ai.translatesAutoresizingMaskIntoConstraints = false
-        return ai
-    }()
-
-    // MARK: - Footer Labels
-    private lazy var freeTrialLabel: UILabel = {
-        let l = UILabel()
-        l.text = "Free for 3 days, then 9.99 $per week"
-        l.font = AppFont.regular(16.0)
-        l.textColor = UIColor(white: 1, alpha: 0.72)
-        l.textAlignment = .center
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
-
-    private lazy var recurringLabel: UILabel = {
-        let l = UILabel()
-        l.text = "Recurring billing for same price and duration, cancel anytime"
-        l.font = AppFont.regular(16.0)
-        l.textColor = UIColor(white: 1, alpha: 0.72)
-        l.textAlignment = .center
-        l.numberOfLines = 2
-        l.translatesAutoresizingMaskIntoConstraints = false
-        return l
-    }()
-
-    // MARK: - Features Data
-    private let features: [SubscriptionFeature] = [
-        SubscriptionFeature(
-            iconName: "person.2",
-            title: "Invite friends to your travel groups",
-            description: "Create your own group and bring friends along to plan and share experiences together."
-        ),
-        SubscriptionFeature(
-            iconName: "star",
-            title: "Unlimited matches",
-            description: "preview group photos - unlimited messages."
-        ),
-        SubscriptionFeature(
-            iconName: "eye",
-            title: "Preview Photos",
-            description: "See group pictures in advance so you know who you'll be connecting with."
-        ),
-        SubscriptionFeature(
-            iconName: "message",
-            title: "Unlimited Chat",
-            description: "Chat freely with your matches and plan activities without restrictions."
-        )
-    ]
-
-    // MARK: - Init
-    init(viewModel: SubscriptionViewModel, mode: SubscriptionScreenMode = .plans) {
-        self.viewModel = viewModel
-        self.mode = mode
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupNavigation()
-        setupUI()
-        bindViewModel()
-        Task { await viewModel.loadProducts() }
+
+       
+
+        presenter.load()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        bottomGlowLayer.frame = view.bounds
-        
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        presenter.applicationDidBecomeActive()
     }
+}
 
-    // MARK: - Navigation
-    private func setupNavigation() {
-        navigationController?.navigationBar.setBackgroundImage(nil, for: .default)
-        navigationController?.navigationBar.shadowImage = nil
-        navigationController?.navigationBar.isTranslucent = false
-//        navigationController?.navigationBar.barTintColor = bgColor
-//        navigationController?.navigationBar.backgroundColor = bgColor
+// MARK: - Setup
 
-        let backButton = UIButton(type: .system)
-        backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
-        backButton.tintColor = .white
-        backButton.contentHorizontalAlignment = .leading
-        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
-        backButton.frame = CGRect(x: 0, y: 0, width: 30, height: 44)
+private extension SubscriptionViewController {
 
-        let titleLabel = UILabel()
-        titleLabel.text = "Manage Subscription"
-        titleLabel.textColor = .white
-        titleLabel.font = AppFont.medium(25.0)
-        titleLabel.sizeToFit()
-
-        navigationItem.leftBarButtonItems = [
-            UIBarButtonItem(customView: backButton),
-            UIBarButtonItem(customView: titleLabel)
-        ]
-    }
-
-    // MARK: - Setup UI
-    private func setupUI() {
-        view.backgroundColor = bgColor
-        bottomGlowLayer.colors = [
-            UIColor.clear.cgColor,
-            orangeColor.withAlphaComponent(0.04).cgColor,
-            orangeColor.withAlphaComponent(0.12).cgColor
-        ]
-        bottomGlowLayer.locations = [0.0, 0.72, 1.0]
-        bottomGlowLayer.startPoint = CGPoint(x: 0.5, y: 0)
-        bottomGlowLayer.endPoint = CGPoint(x: 0.5, y: 1)
-        view.layer.insertSublayer(bottomGlowLayer, at: 0)
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-        ])
-
-        buildSharedHeader()
-
-        switch mode {
-        case .freeTrial:
-            buildTimelineSection()
-        case .plans:
-            buildPlansSection()
-        }
-
-        buildFeaturesSection()
-        buildCTASection()
-        buildFooterSection()
-    }
-
-    // MARK: - Shared Header
-    // Figma: orange left vertical bar | title (bold) + subtitle below, left aligned
-    private func buildSharedHeader() {
-        contentView.addSubview(orangeBar)
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(subtitleLabel)
-
-        switch mode {
-        case .freeTrial:
-            titleLabel.text    = "Connect with endless travel\ncompanions using Trips"
-            subtitleLabel.text = nil
-        case .plans:
-            titleLabel.text    = "Discover who's viewed your profile"
-            subtitleLabel.text = "Upgrade to unlock"
-            titleLabel.font = AppFont.regular(20.0)
-            subtitleLabel.font = AppFont.regular(14.0)
-                
-        }
-
-        NSLayoutConstraint.activate([
-            // Orange bar: 4pt wide, ~52pt tall, left edge at 20
-            orangeBar.topAnchor.constraint(equalTo: contentView.topAnchor, constant: mode == .plans ? 31 : 20),
-            orangeBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 24 : 20),
-            orangeBar.widthAnchor.constraint(equalToConstant: 4),
-            orangeBar.heightAnchor.constraint(equalToConstant: mode == .plans ? 21 : 52),
-
-            // Title sits to the right of the bar
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: mode == .plans ? 30 : 20),
-            titleLabel.leadingAnchor.constraint(equalTo: orangeBar.trailingAnchor, constant: mode == .plans ? 11 : 14),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
-
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: mode == .plans ? 14 : 4),
-            subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-        ])
-    }
-
-    // MARK: - Screen 1: Timeline Card
-    // Figma: dark card with 3 timeline steps connected by dashed vertical line
-    private func buildTimelineSection() {
-        contentView.addSubview(timelineCard)
-
-        // Anchor timeline card below header
-        let headerBottom = mode == .freeTrial ? subtitleLabel : subtitleLabel
-        NSLayoutConstraint.activate([
-            timelineCard.topAnchor.constraint(equalTo: orangeBar.bottomAnchor, constant: 28),
-            timelineCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            timelineCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-        ])
-
-        let steps: [(icon: String, day: String, title: String, sub: String)] = [
-            ("lock.open.fill",   "Today:",  "Start your free trial",  "Get instant access to all premium features"),
-            ("map.fill",         "Day 2:",  "Keep exploring!",         "Try out all features completely free"),
-            ("calendar.badge.exclamationmark", "Day 3:", "Trial ends", "You'll be charged. Cancel anytime before")
-        ]
-
-        var prevDot: UIView? = nil
-        var prevStep: UIView? = nil
-
-        for (i, step) in steps.enumerated() {
-            let row = buildTimelineRow(icon: step.icon, day: step.day, title: step.title, sub: step.sub)
-            timelineCard.addSubview(row)
-
-            NSLayoutConstraint.activate([
-                row.leadingAnchor.constraint(equalTo: timelineCard.leadingAnchor, constant: 16),
-                row.trailingAnchor.constraint(equalTo: timelineCard.trailingAnchor, constant: -16),
-            ])
-
-            if let prev = prevStep {
-                row.topAnchor.constraint(equalTo: prev.bottomAnchor, constant: 0).isActive = true
-            } else {
-                row.topAnchor.constraint(equalTo: timelineCard.topAnchor, constant: 20).isActive = true
-            }
-
-            if i == steps.count - 1 {
-                row.bottomAnchor.constraint(equalTo: timelineCard.bottomAnchor, constant: -20).isActive = true
-            }
-
-            // Dashed vertical line connecting dots (between step 0→1 and 1→2)
-            if let prev = prevDot {
-                let dash = buildDashedLine()
-                timelineCard.addSubview(dash)
-                NSLayoutConstraint.activate([
-                    dash.centerXAnchor.constraint(equalTo: prev.centerXAnchor),
-                    dash.topAnchor.constraint(equalTo: prev.bottomAnchor, constant: 2),
-                    // will pin bottom in next iteration — approximate height
-                    dash.heightAnchor.constraint(equalToConstant: 28),
-                    dash.widthAnchor.constraint(equalToConstant: 2),
-                ])
-            }
-
-            // Find the dot inside this row (tag = 99)
-            if let dot = row.viewWithTag(99) {
-                prevDot = dot
-            }
-            prevStep = row
-        }
-    }
-
-    private func buildTimelineRow(icon: String, day: String, title: String, sub: String) -> UIView {
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-
-        // Orange circle dot
-        let dot = UIView()
-        dot.backgroundColor    = orangeColor
-        dot.layer.cornerRadius = 22
-        dot.translatesAutoresizingMaskIntoConstraints = false
-        dot.tag = 99
-        container.addSubview(dot)
-
-        let iconIV = UIImageView(image: UIImage(systemName: icon))
-        iconIV.tintColor    = .white
-        iconIV.contentMode  = .scaleAspectFit
-        iconIV.translatesAutoresizingMaskIntoConstraints = false
-        dot.addSubview(iconIV)
-
-        // Text
-        let dayLbl = UILabel()
-        dayLbl.text      = day
-        dayLbl.font      = AppFont.medium(14.0)
-        dayLbl.textColor = UIColor(white: 1, alpha: 0.55)
-
-        let titleLbl = UILabel()
-        titleLbl.text      = title
-        titleLbl.font      = AppFont.bold(15.0)
-        titleLbl.textColor = .white
-
-        let dayTitleRow = UIStackView(arrangedSubviews: [dayLbl, titleLbl])
-        dayTitleRow.axis    = .horizontal
-        dayTitleRow.spacing = 5
-        dayTitleRow.alignment = .center
-
-        let subLbl = UILabel()
-        subLbl.text          = sub
-        subLbl.font          = AppFont.regular(15.0)
-        subLbl.textColor     = UIColor(white: 1, alpha: 0.5)
-        subLbl.numberOfLines = 2
-
-        let textStack = UIStackView(arrangedSubviews: [dayTitleRow, subLbl])
-        textStack.axis    = .vertical
-        textStack.spacing = 4
-        textStack.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(textStack)
-
-        NSLayoutConstraint.activate([
-            dot.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            dot.topAnchor.constraint(equalTo: container.topAnchor, constant: 12),
-            dot.widthAnchor.constraint(equalToConstant: 44),
-            dot.heightAnchor.constraint(equalToConstant: 44),
-            dot.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor, constant: -12),
-
-            iconIV.centerXAnchor.constraint(equalTo: dot.centerXAnchor),
-            iconIV.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
-            iconIV.widthAnchor.constraint(equalToConstant: 20),
-            iconIV.heightAnchor.constraint(equalToConstant: 20),
-
-            textStack.leadingAnchor.constraint(equalTo: dot.trailingAnchor, constant: 14),
-            textStack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            textStack.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
-
-            container.heightAnchor.constraint(greaterThanOrEqualToConstant: 68),
-        ])
-
-        return container
-    }
-
-    private func buildDashedLine() -> UIView {
-        let v = UIView()
-        v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = .clear
-
-        let shapeLayer = CAShapeLayer()
-        shapeLayer.strokeColor  = UIColor(white: 1, alpha: 0.2).cgColor
-        shapeLayer.lineWidth    = 1.5
-        shapeLayer.lineDashPattern = [4, 4]
-        shapeLayer.fillColor    = UIColor.clear.cgColor
-
-        let path = UIBezierPath()
-        path.move(to: CGPoint(x: 1, y: 0))
-        path.addLine(to: CGPoint(x: 1, y: 28))
-        shapeLayer.path = path.cgPath
-        v.layer.addSublayer(shapeLayer)
-        return v
-    }
-
-    // MARK: - Screen 2: Plan Cards (horizontal 3-column)
-    // Figma: 3 equal-width cards side by side, badge at top of each
-    private func buildPlansSection() {
-        contentView.addSubview(plansRowStack)
-
-        NSLayoutConstraint.activate([
-            plansRowStack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 30),
-            plansRowStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
-            plansRowStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
-            plansRowStack.heightAnchor.constraint(equalToConstant: 210),
-        ])
-
-        for _ in 0..<3 {
-            let planView = SubscriptionPlanView()
-            planView.showSkeleton()
-            plansRowStack.addArrangedSubview(planView)
-            planViews.append(planView)
-        }
-    }
-
-    // MARK: - Features Section
-    private func buildFeaturesSection() {
-        contentView.addSubview(featuresCard)
-        featuresCard.addSubview(featureSectionTitle)
-        featuresCard.addSubview(featuresStack)
-
-        for feature in features {
-            let row = FeatureRowView()
-            row.configure(with: feature)
-            row.heightAnchor.constraint(greaterThanOrEqualToConstant: mode == .plans ? 56 : 56).isActive = true
-            featuresStack.addArrangedSubview(row)
-        }
-
-        let sectionTopAnchor: NSLayoutYAxisAnchor
-        switch mode {
-        case .freeTrial:
-            sectionTopAnchor = timelineCard.bottomAnchor
-        case .plans:
-            sectionTopAnchor = plansRowStack.bottomAnchor
-        }
-
-        NSLayoutConstraint.activate([
-            featuresCard.topAnchor.constraint(equalTo: sectionTopAnchor, constant: mode == .plans ? 25 : 28),
-            featuresCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 24 : 16),
-            featuresCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: mode == .plans ? -24 : -16),
-
-            featureSectionTitle.topAnchor.constraint(equalTo: featuresCard.topAnchor, constant: mode == .plans ? 26 : 24),
-            featureSectionTitle.leadingAnchor.constraint(equalTo: featuresCard.leadingAnchor, constant: mode == .plans ? 20 : 16),
-
-            featuresStack.topAnchor.constraint(equalTo: featureSectionTitle.bottomAnchor, constant: mode == .plans ? 27 : 20),
-            featuresStack.leadingAnchor.constraint(equalTo: featuresCard.leadingAnchor, constant: mode == .plans ? 40 : 16),
-            featuresStack.trailingAnchor.constraint(equalTo: featuresCard.trailingAnchor, constant: mode == .plans ? -28 : -16),
-            featuresStack.bottomAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: mode == .plans ? -29 : -20),
-        ])
-    }
-
-    // MARK: - CTA Button
-    private func buildCTASection() {
-        ctaButton.addSubview(loadingIndicator)
-        contentView.addSubview(ctaButton)
-
-        NSLayoutConstraint.activate([
-            loadingIndicator.centerXAnchor.constraint(equalTo: ctaButton.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: ctaButton.centerYAnchor),
-
-            ctaButton.topAnchor.constraint(equalTo: featuresCard.bottomAnchor, constant: mode == .plans ? 25 : 24),
-            ctaButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: mode == .plans ? 42 : 16),
-            ctaButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: mode == .plans ? -42 : -16),
-            ctaButton.heightAnchor.constraint(equalToConstant: Self.buttonHeight),
-        ])
-    }
-
-    // MARK: - Footer
-    private func buildFooterSection() {
-        contentView.addSubview(freeTrialLabel)
-        contentView.addSubview(recurringLabel)
-
-        NSLayoutConstraint.activate([
-            freeTrialLabel.topAnchor.constraint(equalTo: ctaButton.bottomAnchor, constant: mode == .plans ? 20 : 14),
-            freeTrialLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            freeTrialLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-
-            recurringLabel.topAnchor.constraint(equalTo: freeTrialLabel.bottomAnchor, constant: mode == .plans ? 22 : 6),
-            recurringLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            recurringLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            recurringLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-        ])
-    }
+   
 
     
-    func updateSubscription() {
+   
+}
 
-        guard let selectedPlan = viewModel.selectedPlan else { return }
+// MARK: - Plans
 
-        let startDate = Date()
-        let endDate = calculateEndDate(for: selectedPlan)
+private extension SubscriptionViewController {
 
-        request.plan = planName(from: selectedPlan)
-        request.planStartDate = isoFormatter.string(from: startDate)
-        request.planEndDate = isoFormatter.string(from: endDate)
-        request.isSubscribed = 1
-        print(planName(from: selectedPlan),"sssssss")
-        
-        request.editProfileAPi { [weak self] errMsg, errCode in
-            
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                
-                if errCode == 200 {
-                    let alert = UIAlertController(
-                        title: "Success",
-                        message: "Your subscription has been updated successfully.",
-                        preferredStyle: .alert
-                    )
-                    
-                    alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                        self.backTapped()
-                    })
-                    
-                    self.present(alert, animated: true)
-                    
-                } else {
-                    self.showErrorAlert(message: errMsg ?? "Something went wrong.")
-                }
-            }
-        }
-    }
-    
-    private let isoFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
+    /// Rebuilds the plan cards to match `presenter.plans`.
+    func rebuildPlanViews() {
+        planCardViews.forEach { $0.removeFromSuperview() }
+        planCardViews.removeAll()
 
-    private func planName(from plan: SubscriptionPlan) -> String {
-        guard let period = plan.product?.subscription?.subscriptionPeriod else {
-            return ""
-        }
-
-        switch period.unit {
-        case .day:
-            switch period.value {
-            case 7:
-                return "weekly"
-            case 30, 31:
-                return "monthly"
-            case 365, 366:
-                return "yearly"
-            default:
-                return "\(period.value)-day"
+        for (index, plan) in presenter.plans.enumerated() {
+            let card = PlanCardView()
+            card.configure(with: plan)
+            card.onTap = { [weak self] in
+                self?.selectPlan(at: index)
             }
 
-        case .week:
-            return period.value == 1 ? "weekly" : "\(period.value) weeks"
+            plansStackView.addArrangedSubview(card)
+            planCardViews.append(card)
+        }
 
-        case .month:
-            return period.value == 1 ? "monthly" : "\(period.value) months"
+        highlightSelectedPlan()
+    }
 
-        case .year:
-            return period.value == 1 ? "yearly" : "\(period.value) years"
-
-        @unknown default:
-            return ""
+    func highlightSelectedPlan() {
+        for (index, card) in planCardViews.enumerated() {
+            card.setSelected(index == presenter.selectedIndex)
         }
     }
 
-    private func calculateEndDate(for plan: SubscriptionPlan) -> Date {
-
-        let start = Date()
-
-        guard let period = plan.product?.subscription?.subscriptionPeriod else {
-            return start
-        }
-
-        switch period.unit {
-
-        case .day:
-            return Calendar.current.date(byAdding: .day,
-                                         value: period.value,
-                                         to: start) ?? start
-
-        case .week:
-            return Calendar.current.date(byAdding: .day,
-                                         value: 7 * period.value,
-                                         to: start) ?? start
-
-        case .month:
-            return Calendar.current.date(byAdding: .month,
-                                         value: period.value,
-                                         to: start) ?? start
-
-        case .year:
-            return Calendar.current.date(byAdding: .year,
-                                         value: period.value,
-                                         to: start) ?? start
-
-        @unknown default:
-            return start
-        }
+    func selectPlan(at index: Int) {
+        presenter.selectPlan(at: index)
+        highlightSelectedPlan()
     }
-    
-    // MARK: - Bind ViewModel
-    private func bindViewModel() {
-        viewModel.onPurchaseSuccess = { [weak self] in
-//            self?.showSuccessAlert()s
-            self?.updateSubscription()
-        }
-        viewModel.onError = { [weak self] msg in self?.showErrorAlert(message: msg) }
+}
 
-        viewModel.$viewState
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in self?.handleStateChange(state) }
-            .store(in: &cancellables)
+// MARK: - Actions
 
-        viewModel.$selectedPlan
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] plan in
-                self?.updatePlanSelection(selectedID: plan?.id ?? "")
-                self?.updateCTAButton()
-            }
-            .store(in: &cancellables)
+private extension SubscriptionViewController {
+
+    @objc func continueTapped() {
+        presenter.purchaseSelectedPlan()
     }
 
-    // MARK: - State Handling
-    private func handleStateChange(_ state: SubscriptionViewState) {
-        switch state {
-        case .loading, .purchasing:
-            ctaButton.isEnabled = false
-            loadingIndicator.startAnimating()
-            ctaButton.setTitle("", for: .normal)
-
-        case .loaded:
-            loadingIndicator.stopAnimating()
-            ctaButton.isEnabled = true
-            populatePlanViews()
-
-        case .error(let message):
-            loadingIndicator.stopAnimating()
-            ctaButton.isEnabled = true
-            showErrorAlert(message: message)
-        }
+    @objc func restoreTapped() {
+        presenter.restorePurchases()
     }
+}
 
-    private func populatePlanViews() {
-        guard !plansPopulated, mode == .plans else { return }
-        let plans = viewModel.plans
-        guard plans.count == planViews.count else { return }
-        for (i, plan) in plans.enumerated() {
-            planViews[i].configure(with: plan)
-            planViews[i].hideSkeleton()
-            let tap = UITapGestureRecognizer(target: self, action: #selector(planTapped(_:)))
-            planViews[i].tag = i
-            planViews[i].addGestureRecognizer(tap)
-        }
-        plansPopulated = true
-    }
+// MARK: - Alerts
 
-    private func updatePlanSelection(selectedID: String) {
-        guard mode == .plans else { return }
-        let plans = viewModel.plans
-        for (i, planView) in planViews.enumerated() {
-            guard i < plans.count else { continue }
-            planView.isSelectedPlan = (plans[i].id == selectedID)
-        }
-    }
+private extension SubscriptionViewController {
 
-    private func updateCTAButton() {
-        if case .loaded = viewModel.viewState {
-            ctaButton.setTitle(viewModel.ctaTitle, for: .normal)
-        }
-    }
-
-    // MARK: - Actions
-    @objc private func planTapped(_ gesture: UITapGestureRecognizer) {
-        guard let v = gesture.view, v.tag < viewModel.plans.count else { return }
-        viewModel.selectPlan(viewModel.plans[v.tag])
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-
-    @objc private func ctaTapped() {
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        Task { await viewModel.purchaseSelectedPlan() }
-    }
-
-    
-
-    // MARK: - Alerts
-    private func showSuccessAlert() {
-        let alert = UIAlertController(title: "Subscription Activated",
-                                      message: "You now have access to all premium travel features.",
-                                      preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Awesome!", style: .default) { [weak self] _ in self?.backTapped() })
-        present(alert, animated: true)
-    }
-
-    private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Oops", message: message, preferredStyle: .alert)
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+}
+
+// MARK: - SubscriptionView
+
+extension SubscriptionViewController: SubscriptionView {
+
+    func showLoading() {
+        loadingIndicator.startAnimating()
+        continueButton.isEnabled = false
+        restoreButton.isEnabled = false
+    }
+
+    func hideLoading() {
+        loadingIndicator.stopAnimating()
+        continueButton.isEnabled = true
+        restoreButton.isEnabled = true
+    }
+
+    func reloadPlans() {
+        rebuildPlanViews()
+    }
+
+    func updateCTA(title: String) {
+        continueButton.setTitle(title, for: .normal)
+    }
+
+    func purchaseSucceeded() {
+        showAlert(title: "Success", message: "You're all set. Enjoy premium!")
+    }
+
+    func purchaseFailed(message: String) {
+        showAlert(title: "Something went wrong", message: message)
+    }
+
+    func subscriptionStatusChanged(isSubscribed: Bool) {
+        statusLabel.isHidden = !isSubscribed
+        statusLabel.text = isSubscribed ? "You're currently subscribed." : nil
+    }
+}
+
+// MARK: - Plan Card View
+
+/// Small reusable card for a single plan. Kept in this file since only
+/// two files were requested for the module.
+private final class PlanCardView: UIView {
+
+    var onTap: (() -> Void)?
+
+    private let badgeLabel = UILabel()
+    private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
+    private let priceLabel = UILabel()
+    private let checkImageView = UIImageView()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(with plan: SubscriptionPlan) {
+        titleLabel.text = plan.title
+        descriptionLabel.text = plan.description
+        priceLabel.text = plan.priceText
+
+        badgeLabel.text = plan.badge
+        badgeLabel.isHidden = plan.badge == nil
+    }
+
+    func setSelected(_ selected: Bool) {
+        layer.borderColor = (selected ? UIColor.systemOrange : UIColor.white.withAlphaComponent(0.12)).cgColor
+        layer.borderWidth = selected ? 2 : 1
+        backgroundColor = selected
+            ? UIColor.systemOrange.withAlphaComponent(0.08)
+            : UIColor.white.withAlphaComponent(0.05)
+
+        checkImageView.image = UIImage(systemName: selected ? "checkmark.circle.fill" : "circle")
+        checkImageView.tintColor = selected ? .systemOrange : .gray
+    }
+
+    private func setupUI() {
+        layer.cornerRadius = 18
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.white.withAlphaComponent(0.12).cgColor
+        backgroundColor = UIColor.white.withAlphaComponent(0.05)
+        translatesAutoresizingMaskIntoConstraints = false
+        heightAnchor.constraint(equalToConstant: 95).isActive = true
+
+        badgeLabel.backgroundColor = .systemOrange
+        badgeLabel.textColor = .white
+        badgeLabel.font = .boldSystemFont(ofSize: 11)
+        badgeLabel.textAlignment = .center
+        badgeLabel.layer.cornerRadius = 8
+        badgeLabel.layer.masksToBounds = true
+
+        titleLabel.font = .boldSystemFont(ofSize: 18)
+        titleLabel.textColor = .white
+
+        descriptionLabel.font = .systemFont(ofSize: 13)
+        descriptionLabel.textColor = .lightGray
+        descriptionLabel.numberOfLines = 2
+
+        priceLabel.font = .boldSystemFont(ofSize: 18)
+        priceLabel.textColor = .white
+
+        checkImageView.contentMode = .scaleAspectFit
+
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, descriptionLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 4
+
+        let leftStack = UIStackView(arrangedSubviews: [badgeLabel, textStack])
+        leftStack.axis = .vertical
+        leftStack.spacing = 8
+
+        let rightStack = UIStackView(arrangedSubviews: [priceLabel, checkImageView])
+        rightStack.axis = .vertical
+        rightStack.spacing = 8
+        rightStack.alignment = .trailing
+
+        let mainStack = UIStackView(arrangedSubviews: [leftStack, UIView(), rightStack])
+        mainStack.alignment = .center
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(mainStack)
+
+        NSLayoutConstraint.activate([
+            mainStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            checkImageView.widthAnchor.constraint(equalToConstant: 26),
+            checkImageView.heightAnchor.constraint(equalToConstant: 26),
+        ])
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        addGestureRecognizer(tap)
+        isUserInteractionEnabled = true
+    }
+
+    @objc private func handleTap() {
+        onTap?()
+    }
+}
+
+// MARK: - Feature Row View
+
+/// Small reusable row for a single feature bullet.
+private final class FeatureRow: UIView {
+
+    private let iconContainer = UIView()
+    private let iconImageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func configure(icon: String, title: String, description: String) {
+        iconImageView.image = UIImage(systemName: icon)
+        titleLabel.text = title
+        descriptionLabel.text = description
+    }
+
+    private func setupUI() {
+        iconContainer.backgroundColor = UIColor(hex: "#FF7A00").withAlphaComponent(0.12)
+        iconContainer.layer.cornerRadius = 22
+        iconContainer.translatesAutoresizingMaskIntoConstraints = false
+
+        iconImageView.tintColor = UIColor(hex: "#FF7A00")
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+
+        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        titleLabel.textColor = .white
+
+        descriptionLabel.font = .systemFont(ofSize: 14)
+        descriptionLabel.textColor = UIColor.white.withAlphaComponent(0.68)
+        descriptionLabel.numberOfLines = 3
+
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, descriptionLabel])
+        textStack.axis = .vertical
+        textStack.spacing = 7
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(iconContainer)
+        iconContainer.addSubview(iconImageView)
+        addSubview(textStack)
+
+        NSLayoutConstraint.activate([
+            iconContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
+            iconContainer.centerYAnchor.constraint(equalTo: centerYAnchor),
+            iconContainer.widthAnchor.constraint(equalToConstant: 44),
+            iconContainer.heightAnchor.constraint(equalToConstant: 44),
+
+            iconImageView.centerXAnchor.constraint(equalTo: iconContainer.centerXAnchor),
+            iconImageView.centerYAnchor.constraint(equalTo: iconContainer.centerYAnchor),
+            iconImageView.widthAnchor.constraint(equalToConstant: 20),
+            iconImageView.heightAnchor.constraint(equalToConstant: 20),
+
+            textStack.leadingAnchor.constraint(equalTo: iconContainer.trailingAnchor, constant: 16),
+            textStack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            textStack.topAnchor.constraint(equalTo: topAnchor),
+            textStack.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
     }
 }

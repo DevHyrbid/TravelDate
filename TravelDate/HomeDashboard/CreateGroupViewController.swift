@@ -41,6 +41,10 @@ class CreateGroupViewController: BaseClassVc {
         setupScrollView()
         buildFormCard()
         setupLocationView()
+        
+        print(User.curentUser?.selfie
+            ,User.curentUser?.back
+        ,User.curentUser?.front,"dlknbdsnm,.")
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

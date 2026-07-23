@@ -61,7 +61,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         super.viewDidLoad()
         setupUi()
         getGroups()
-        
         membersView.translatesAutoresizingMaskIntoConstraints = false
         vwMembers.addSubview(membersView)
 
@@ -117,6 +116,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     func didSelectTrip(_ res: Group) {
         
         self.selected  = res
+        AppData.shared.latitude = res.latitude
+        AppData.shared.longitude = res.longitude
+
+        print(AppData.shared.latitude, AppData.shared.longitude)
+        
         self.setupCountdown(startDateString: res.startDate ?? "")
         
         self.lblDate.text = self.formatDateRange(
@@ -145,6 +149,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getDashboard()
+        print(hasPaidSubscription,"hJkhjk")
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
@@ -290,23 +295,26 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             if code == 200 {
                 DispatchQueue.main.async { [self] in
                     self.dataArray = model?.dataGroup ?? []
+                    
                     if let res = model?.dataGroup?.first {
+                        print(res.latitude,res.longitude,"ssss")
                         self.btnList.menu = makeTripMenu(trips: (model?.dataGroup!)!)
                         self.btnList.showsMenuAsPrimaryAction = true
 //                        self.data = model?.dataGroup ?? nil
                         self.selected = res
 //                        print(self.selected,"JEREK")
-                        self.setupCountdown(startDateString: res.startDate ?? "")
-                        self.lblDate.text = self.formatDateRange(
-                            start: res.startDate ?? "",
-                            end: res.endDate ?? ""
-                        )
-                        self.lblLocation.text = res.destination ?? ""
-                        self.lblTitle.text = res.title ?? ""
-                        if let url = URL(string: res.coverImage ?? "") {
-                            self.loadImage(self.imgTrips, url: url)
-                        }
-                        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
+                        self.didSelectTrip(res)
+//                        self.setupCountdown(startDateString: res.startDate ?? "")
+//                        self.lblDate.text = self.formatDateRange(
+//                            start: res.startDate ?? "",
+//                            end: res.endDate ?? ""
+//                        )
+//                        self.lblLocation.text = res.destination ?? ""
+//                        self.lblTitle.text = res.title ?? ""
+//                        if let url = URL(string: res.coverImage ?? "") {
+//                            self.loadImage(self.imgTrips, url: url)
+//                        }
+//                        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
@@ -346,6 +354,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     func getDashboard() {
         
         getPastGroups()
+        request.getProfile { loginUser, errMsg, errCode in
+            
+        }
+        
         request.getDashBoardAPi { model, errMsg, errCode in
             
             if errCode == 200 {
@@ -455,24 +467,10 @@ extension HomeViewController {
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
         if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-            
-            showAlertAction("Upgrade to a subscription to create more than one group.") {
-                
-                // Screen 2 — Plans
-                let vm = SubscriptionViewModel()
-                vm.screenMode = .plans
-                let vc = SubscriptionViewController(viewModel: vm, mode: .plans)
-                
-                // Callback when purchase succeeds
-                vm.onPurchaseSuccess = {
-                    print("User subscribed! Unlock premium features.")
-                }
-                
-                let nav = UINavigationController(rootViewController: vc)
-                nav.modalPresentationStyle = .fullScreen
-                self.present(nav, animated: true)
-                
+            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
+                self.upgradeButtonTapped()
             }
+            
             return
         }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
@@ -554,4 +552,14 @@ extension UIButton {
 
         setTitleColor(.white, for: .normal)
     }
+}
+
+final class AppData {
+
+    static let shared = AppData()
+
+    private init() {}
+
+    var latitude: Double?
+    var longitude: Double?
 }

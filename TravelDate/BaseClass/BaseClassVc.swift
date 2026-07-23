@@ -8,7 +8,6 @@
 //private static let baseURL = "http://187.124.251.134:9800/api/v1/api-chat"
 
 // MARK: - Colors
-// MARK: - Colors
 extension UIColor {
     static let appBg        = UIColor(hex: "#151718")
     static let appCard      = UIColor(hex: "#111211")
@@ -16,12 +15,7 @@ extension UIColor {
     static let appGrayText  = UIColor(hex: "#9E9E9E")
     static let appPlaceholder = UIColor(hex: "FFFFFF")
     static let appBorder    = UIColor(hex: "#2A2A2A")
- 
-    
-    
 }
-
-
 
 import Foundation
 import UIKit
@@ -40,77 +34,46 @@ class BaseClassVc: UIViewController {
     var request = User.new()
     private var lastOffset: CGFloat = 0
     private var isScrollingDown = false
+    private let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
     
     var hasPaidSubscription: Bool {
-        guard let plan = User.curentUser?.plan?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !plan.isEmpty,
-              plan.lowercased() != "free",
-              plan.lowercased() != "<null>" else {
+        
+        guard User.curentUser?.plan != "" else {
             return false
         }
         
         return true
+
+    }
+    
+    @objc func upgradeButtonTapped() {
+        let subscriptionVC = SubscriptionViewController()
+        let nav = UINavigationController(rootViewController: subscriptionVC)
+        nav.modalPresentationStyle = .pageSheet // or .fullScreen if you want it locked
+
+        // Adds a close (X) button since there's no back button in a modal
+        subscriptionVC.navigationItem.leftBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .close,
+            target: self,
+            action: #selector(dismissSubscription)
+        )
+
+        present(nav, animated: true)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         addGradient()
-        Task.detached {
-            for await result in Transaction.updates {
-
-                guard case .verified(let transaction) = result else {
-                    continue
-                }
-
-                await self.checkSubscriptionStatus()
-
-                await transaction.finish()
-            }
-        }
-        
-        
-        
     }
     
-    func checkSubscriptionStatus() async {
-
-        for await result in Transaction.currentEntitlements {
-
-            guard case .verified(let transaction) = result else {
-                continue
-            }
-
-            guard transaction.productType == .autoRenewable else {
-                continue
-            }
-
-            // Check expiration
-            if let expirationDate = transaction.expirationDate,
-               expirationDate > Date() {
-
-                print("Subscription Active")
-
-                // Update backend if needed
-                await updateSubscription(
-                    plan: "weekly",
-                    subscribed: 1
-                )
-
-                return
-            }
-        }
-
-        // No active subscription
-        print("Subscription Expired")
-
-        await updateSubscription(
-            plan: "free",
-            subscribed: 0
-        )
+    @objc func dismissSubscription() {
+        dismiss(animated: true)
     }
-    
-    
     
     func applyGlassEffect(to view: UIView) {
 
@@ -342,7 +305,7 @@ class BaseClassVc: UIViewController {
         onConfirm: (() -> Void)? = nil
     ) {
         
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
 
         let cancel = UIAlertAction(title: cancelTitle, style: .cancel)
 

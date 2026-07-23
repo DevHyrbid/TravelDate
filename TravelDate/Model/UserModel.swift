@@ -585,10 +585,10 @@ class User : Mappable {
         
         NetworkManger.sendRequestAF(urlPath: APiConstant.profile, type: .get, parms: [:]) { responseObject, suces in
             print(responseObject)
-            if responseObject["statusCode"] as? Int ?? 0 == 200 {
+            if responseObject["code"] as? Int ?? 0 == 200 {
                 if let data = responseObject["data"] as? [String :Any] {
                     print(data,"USER")
-                    User.curentUser = Mapper<User>().map(JSON: data)
+                    User.curentUser = Mapper<User>().map(JSON: data["user"] as? [String:Any] ?? [:])
                     callBack(User.curentUser,responseObject["message"] as? String ?? "",200)
                 } else {
                     callBack(nil,responseObject["message"] as? String ?? "",404)
@@ -925,7 +925,8 @@ class User : Mappable {
         if type == 0 { // CURRENT
             url  = APiConstant.myGroup// + "current"
         } else  if type == 1 {
-            url  = APiConstant.swipeFeed
+            url  = APiConstant.swipeFeed + "?lat=\(self.latitude ?? 0.0)6&lng=\(self.longitude ?? 0.0)"
+            print(url,"HEREADDDEDLOCATION FOR TESTING ")
         } else if type == 2 {
             url = APiConstant.matchedGroup
         } else if type == 3 { // Past
@@ -1048,7 +1049,7 @@ class User : Mappable {
     
     func swipeAPi(callBack: @escaping (_ result: SwipeResult?, _ errMsg: String, _ errCode: Int) -> Void) {
 
-        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: self.toJSON(), method: "POST") { responseObject, success in
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.swipe)", params: ["swipedId":self.swipedId ?? "","action":self.action ??  ""], method: "POST") { responseObject, success in
 
             if responseObject["code"] as? Int == 200 {
 
@@ -1223,10 +1224,15 @@ class Group: Mappable {
     var maxMembers : Int?
     
     
-    
+    var latitude : Double?
+    var longitude : Double?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        
+        latitude <- map["latitude"]
+        longitude <- map["longitude"]
+        
         membersUser <- map["members"]
         chatRoom <- map["chatRoom"]
         description <- map["description"]

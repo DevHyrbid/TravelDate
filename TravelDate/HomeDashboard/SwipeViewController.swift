@@ -25,14 +25,14 @@ class SwipeViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
-        fetchGroups()
+        
          //showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
         // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-      
+        fetchGroups()
         checkRequirements()
         self.tripsTabBarController?.showTabBar()
     }
@@ -199,6 +199,11 @@ class SwipeViewController: BaseClassVc {
 
     // MARK: - API
     private func fetchGroups() {
+         
+         
+
+        request.latitude = AppData.shared.latitude
+        request.longitude = AppData.shared.longitude
         request.getGroups(1) { [weak self] model, msg, code in
             guard let self else { return }
             DispatchQueue.main.async {
@@ -218,6 +223,7 @@ class SwipeViewController: BaseClassVc {
                        self.checkRequirements()
                 } else {
                     print("EERRR", msg as Any, code as Any)
+                    self.checkRequirements()
                 }
             }
         }
