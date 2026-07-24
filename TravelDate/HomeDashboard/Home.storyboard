@@ -2069,7 +2069,7 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sxt-2b-q5f">
+                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sxt-2b-q5f">
                                         <rect key="frame" x="230.33333333333334" y="63.999999999999993" width="122.66666666666666" height="26.666666666666664"/>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal" image="imgRead"/>
@@ -2118,6 +2118,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="lblNoData" destination="XAV-gm-ESx" id="dv8-EP-GvP"/>
                         <outlet property="lblTitle" destination="53o-kM-jq4" id="s1N-OK-HkO"/>
                         <outlet property="tblVw" destination="HcJ-r2-afy" id="cqq-VV-iFg"/>
                     </connections>

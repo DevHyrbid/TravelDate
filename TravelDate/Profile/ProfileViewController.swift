@@ -26,6 +26,8 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var borderView: ProgressBorderView!
     @IBOutlet weak var heightVw: NSLayoutConstraint!
     @IBOutlet weak var imgMyTrips: UIImageView!
+    @IBOutlet weak var imgPermium: UIImageView!
+    @IBOutlet weak var imgPermiumHeight: NSLayoutConstraint!
     private let progressLayer = CAShapeLayer()
     
     // MARK: - Arr
@@ -38,7 +40,15 @@ class ProfileViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
+        
         DispatchQueue.main.async {
+            if self.hasPaidSubscription {
+                self.imgPermium.isHidden = false
+                self.imgPermiumHeight.constant = 34
+            } else {
+                self.imgPermium.isHidden = true
+                self.imgPermiumHeight.constant = 0
+            }
             self.arr = User.curentUser?.travelStyles ?? []
 
             self.collectionVw.performBatchUpdates({
@@ -63,7 +73,7 @@ class ProfileViewController: BaseClassVc {
         
         txtAbout.setFont(.medium, size: 14.0)
         lblName.setFont(.bold, size: 20.0)
-        lblUserName.setFont(.regular, size: 16.0)
+        lblUserName.setFont(.regular, size: 14.0)
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
         if User.curentUser?.userName != "" {

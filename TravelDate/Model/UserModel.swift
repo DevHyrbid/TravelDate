@@ -112,7 +112,7 @@ class User : Mappable {
     
     var isBlockByAdmin: Bool?
     var isOnline: Bool?
-    var lastSeen: String?
+    var lastSeen: Bool?
     
     
     var updatedAt: String?
@@ -121,7 +121,7 @@ class User : Mappable {
     
     var  short_bio : String?
     var travelStyles : [String]?
-    var is_push_notification : Int?
+    var is_push_notification : Bool?
     
     var groupId : String?
     var swipedId : String?
@@ -711,7 +711,28 @@ class User : Mappable {
         
     }
     
-    
+    func deleteUserAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(
+            url: APiConstant.deleteUser,
+            params: self.toJSON(),
+            method: "DELETE"
+        ) { responseObject, suces in
+            let statusCode = responseObject["code"] as? Int ?? 0
+            
+            guard statusCode == 200 else {
+                let message = responseObject["message"] as? String ?? "Something went wrong"
+                callBack(message, statusCode)
+                return
+            }
+            
+            
+            callBack("updated", 200)
+            
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+    }
     func editProfileAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
         print(self.toJSON(),"HJHJHJHJHJHJ")
         NetworkManger.sendRequestUrlSession(

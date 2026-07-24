@@ -139,12 +139,75 @@ class GetVerifiedVc: BaseClassVc {
         loadUserProfile()
         updateProgressUI()
         
-        print(User.curentUser?.selfie,User.curentUser?.back,"photoHere")
+       
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tripsTabBarController?.hideTabBar()
+    }
+    
+    private func loadUploadedImagesIfAvailable() {
+
+        if let front = User.curentUser?.front, !front.isEmpty {
+            frontImageName = front
+            request.front = front
+            loadImage(frontPreviewImage, url: URL(string: front)!)
+        }
+
+        if let back = User.curentUser?.back, !back.isEmpty {
+            backImageName = back
+            request.back = back
+            loadImage(backPreviewImage, url: URL(string: back)!)
+        }
+
+        if let selfie = User.curentUser?.selfie, !selfie.isEmpty {
+            selfieImageName = selfie
+            request.selfie = selfie
+            loadImage(selfiePreviewImage, url: URL(string: selfie)!)
+        }
+
+        // Update UI
+        govIDPreviewStack.isHidden = frontImageName.isEmpty && backImageName.isEmpty
+        frontPreviewImage.isHidden = frontImageName.isEmpty
+        backPreviewImage.isHidden = backImageName.isEmpty
+
+        selfiePreviewImage.isHidden = selfieImageName.isEmpty
+
+        govIDUploadIcon.isHidden = !frontImageName.isEmpty || !backImageName.isEmpty
+        selfieUploadIcon.isHidden = !selfieImageName.isEmpty
+
+        if !frontImageName.isEmpty || !backImageName.isEmpty {
+            govIDUploadLabel.text = "ID Uploaded ✓ Tap to replace"
+        }
+
+        if !selfieImageName.isEmpty {
+            selfieUploadLabel.text = "Selfie Uploaded ✓ Tap to replace"
+        }
+
+        // This will automatically enable the button if all 3 images exist
+        updateProgressUI()
+        updateContinueButton()
+        lockVerificationUploads()
+    }
+    
+    private func lockVerificationUploads() {
+        let hasGovID = !frontImageName.isEmpty && !backImageName.isEmpty
+        let hasSelfie = !selfieImageName.isEmpty
+
+        if hasGovID {
+            govIDUploadArea.isUserInteractionEnabled = false
+            govIDUploadLabel.text = "Government ID Uploaded ✓"
+            govIDUploadIcon.isHidden = true
+        }
+
+        if hasSelfie {
+            selfieUploadArea.isUserInteractionEnabled = false
+            selfieUploadLabel.text = "Selfie Uploaded ✓"
+            selfieUploadIcon.isHidden = true
+        }
+
+        updateContinueButton()
     }
 
     override func viewDidLayoutSubviews() {
@@ -648,6 +711,7 @@ class GetVerifiedVc: BaseClassVc {
         }
         lblName.text     = User.curentUser?.name ?? "Alex Mercer"
         lblUsername.text = "@\(User.curentUser?.userName ?? "johndoe_travels")"
+        loadUploadedImagesIfAvailable()
     }
 
     // MARK: - API

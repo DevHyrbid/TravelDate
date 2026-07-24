@@ -11,12 +11,35 @@ class PrivacySecurityVc: BaseClassVc {
     @IBOutlet weak var vwSwitchProfile: UIView!
     @IBOutlet weak var vwSwitchLastSeen: UIView!
     @IBOutlet weak var vwLocation: UIView!
-    
+    @IBOutlet weak var lblVerify:UILabel!
+    @IBOutlet weak var vwDelete:UIVisualEffectView!
+    @IBOutlet weak var vwScroll:UIScrollView!
     override func viewDidLoad() {
         super.viewDidLoad()
         setupVw(vwLocation, tag: 0)
         setupVw(vwSwitchProfile, tag: 1)
         setupVw(vwSwitchLastSeen, tag: 2)
+        self.vwDelete.isHidden = true
+        update()
+    }
+    
+    func update() {
+        let hasFront  = !(User.curentUser?.front?.isEmpty ?? true)
+        let hasBack   = !(User.curentUser?.back?.isEmpty ?? true)
+        let hasSelfie = !(User.curentUser?.selfie?.isEmpty ?? true)
+
+        let percentage: Int
+
+        if hasFront && hasBack && hasSelfie {
+            percentage = 100
+        } else if (hasFront && hasBack) || hasSelfie {
+            percentage = 50
+        } else {
+            percentage = 0
+        }
+
+        lblVerify.text = "\(percentage)%"
+       
     }
     
     func setupVw(_ vw: UIView, tag: Int) {
@@ -53,6 +76,10 @@ class PrivacySecurityVc: BaseClassVc {
             print("Profile:", sender.isOn)
         case 2:
             print("Last Seen:", sender.isOn)
+            request.lastSeen  = sender.isOn
+            request.editProfileAPi { er, code in
+                
+            }
         default:
             break
         }
@@ -67,5 +94,43 @@ extension PrivacySecurityVc {
     @IBAction func btnGetVerfued(_ sender:UIButton) {
         let vc = GetVerifiedVc()
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @IBAction func btnDelete(_ sender:UIButton) {
+        
+        switch sender.tag {
+        case 101:
+            self.vwDelete.isHidden = false
+            vwScroll.isScrollEnabled = false
+            break
+        case 102:
+            self.vwDelete.isHidden = true
+//            SessionManager.shared.clearSession()
+            vwScroll.isScrollEnabled = true
+            
+            break
+        case 103:
+            self.vwDelete.isHidden = true
+            request.deleteUserAPi { err, code in
+                DispatchQueue.main.async {
+                    User.resetCurrentUser()
+                    self.pushVC(LoginViewController.self, from: .Main)
+                }
+                
+            }
+            
+            break
+        default:
+            break
+        }
+    }
+}
+
+extension UITextField {
+    func setPlaceholder(_ text: String, color: UIColor = .white) {
+        attributedPlaceholder = NSAttributedString(
+            string: text,
+            attributes: [.foregroundColor: color]
+        )
     }
 }

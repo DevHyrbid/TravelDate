@@ -14,12 +14,14 @@ import FirebaseMessaging
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    var subscriptionPresenter: SubscriptionPresenter?
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        subscriptionPresenter = SubscriptionPresenter(view: nil)
 
+         subscriptionPresenter?.load()
         IQKeyboardManager.shared.isEnabled = true
             
               // Show toolbar above keyboard

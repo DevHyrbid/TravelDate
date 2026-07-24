@@ -13,7 +13,7 @@ import StoreKit
 
 enum SubscriptionTier: String, CaseIterable {
     case weekly  = "com.ios.trips.weekly"
-    case monthly = "com.ios.trips.monthly"
+    case monthly = "com.ios.travel.monhtly"
     case yearly  = "com.ios.travel.yearly"
 
     var title: String {

@@ -35,6 +35,8 @@ final class ChatVc: BaseClassVc {
     // MARK: - Data
     private var groupsData: [ChatData]         = []
     private var chatData:   [ChatData] = []
+    private var filteredGroupsData: [ChatData] = []
+    private var filteredChatData: [ChatData] = []
 
     // MARK: - State
     private var selectedSegment: ChatSegment = .groups {

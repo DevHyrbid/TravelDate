@@ -20,7 +20,10 @@ class NetworkManger {
         success: (([String: Any], Bool) -> Void)!,
         faliure: ((String, Int) -> Void)!
     ) {
-        AppLoader.show(text: "")
+        
+        if !url.contains("users/profile") {
+            AppLoader.show(text: "")
+        }
         
         let url = URL(string: url)!
         var request = URLRequest(url: url)
@@ -34,7 +37,14 @@ class NetworkManger {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             defer { AppLoader.hide() }
-            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                    return
+                }
+
+                if httpResponse.statusCode == 401 {
+                    SessionManager.shared.handleSessionExpired()
+                    return 
+                }
             guard let dataJson = data else {
                 faliure("json error", 500)
                 return
@@ -130,6 +140,7 @@ class NetworkManger {
             switch uploadResult.result {
             case .failure(let error):
                 print(error)
+                
                 faliure(401)
             case .success(_):
                 if uploadResult.response?.statusCode == 200 || uploadResult.response?.statusCode == 201 {
@@ -242,9 +253,21 @@ class NetworkManger {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             defer { AppLoader.hide() }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid Response", 500)
+                return
+            }
+
+            if httpResponse.statusCode == 401 {
+                SessionManager.shared.handleSessionExpired()
+                print(401,"FORCELOGOUT")
+                return
+            }
             
-            if let error = error {
-                completion(.failure(error))
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 401 {
+                SessionManager.shared.handleSessionExpired()
+                completion(.failure(NSError(domain: "Unauthorized", code: 401)))
                 return
             }
             guard let data = data else {
@@ -265,6 +288,19 @@ class NetworkManger {
         }.resume()
     }
     
+    
+    private class func checkUnauthorized(_ response: URLResponse?) -> Bool {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            return false
+        }
+
+        if httpResponse.statusCode == 401 {
+            SessionManager.shared.handleSessionExpired()
+            return true
+        }
+
+        return false
+    }
     
     // MARK: - Helper
     static var sessionManager: Session = {

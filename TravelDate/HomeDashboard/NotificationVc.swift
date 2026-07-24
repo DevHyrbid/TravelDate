@@ -66,10 +66,21 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
         if  let model = self.notifications?[indexPath.row] {
             cell.lblDesc.text = model.message ?? ""
             cell.lblTitle.text = model.title ?? ""
-            
+            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
             if let profileImage = model.sender?.profileImage,
-               let url = URL(string: profileImage) {
-                self.loadImage(cell.imgVw, url: url)
+               let url = URL(string: "\(profileImage)") {
+                if url.absoluteString.contains("https://lh3.googleuserconten") {
+                    self.loadImage(cell.imgVw, url: url)
+                } //\(APiConstant.base)
+                else {
+                    if profileImage != "" {
+                        self.loadImage(cell.imgVw, url: URL(string: "\(APiConstant.base)\(profileImage)")!)
+                    }
+                    
+                }
+                 
+            } else {
+                cell.imgVw.image = UIImage(named: "User")
             }
             cell.imgVw.layer.cornerRadius = 12
         }

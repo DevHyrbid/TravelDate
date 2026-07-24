@@ -13,6 +13,7 @@ class SettingsVc: BaseClassVc {
     @IBOutlet weak var vwSwitch: UIView!
     @IBOutlet weak var vwChangePwd:UIView!
     @IBOutlet weak var vwChangeHeight:NSLayoutConstraint!
+    
     // MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +22,7 @@ class SettingsVc: BaseClassVc {
     }
     
     func setupUi(){
-        print(User.curentUser?.social_id)
+        
         if User.curentUser?.social_id ?? ""  != "" || User.curentUser?.social_id ?? "" != nil {
             self.vwChangePwd.isHidden = false
             self.vwChangeHeight.constant  = 90
@@ -32,7 +33,8 @@ class SettingsVc: BaseClassVc {
         self.blurVw.isHidden  = true
         let customSwitch = CustomSwitch(frame: CGRect(x: 0, y: 0, width: 56, height: 32))
         
-        customSwitch.isOn = true
+        
+        customSwitch.isOn = User.curentUser!.is_push_notification ?? true
         customSwitch.addTarget(self,
                                action: #selector(switchChanged(_:)),
                                for: .valueChanged)
@@ -44,6 +46,10 @@ class SettingsVc: BaseClassVc {
     
     @objc func switchChanged(_ sender: CustomSwitch) {
         print(sender.isOn)
+        request.is_push_notification  = sender.isOn
+        request.editProfileAPi { errMsg, errCode in
+            
+        }
     }
 }
 
@@ -60,7 +66,6 @@ extension SettingsVc {
         self.pushVC(PrivacySecurityVc.self, from: .Settings)
     }
     
-    
     @IBAction func btnLogout(_ sender:UIButton) {
         switch sender.tag {
         case 100:
@@ -73,9 +78,6 @@ extension SettingsVc {
             break
         case 102:
             self.blurVw.isHidden = true
-//            SessionManager.shared.clearSession()
-            User.resetCurrentUser()
-            self.pushVC(LoginViewController.self, from: .Main)
             break
         default:
             break 

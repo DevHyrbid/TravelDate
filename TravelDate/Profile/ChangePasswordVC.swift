@@ -17,12 +17,15 @@ class ChangePasswordVC: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
+        
     }
     
     // MARK: -  Methods
     func setupUi() {
-        
-        
+        txtNew.setPlaceholder("Current password")
+        txtOld.setPlaceholder("New password")
+        txtNew.enablePasswordToggle()
+        txtOld.enablePasswordToggle()
         btnSave.setFont(.bold, size: 18.0)
         customSet(txtNew)
         customSet(txtOld)
@@ -60,4 +63,35 @@ class ChangePasswordVC: BaseClassVc {
     }
     
     
+}
+import UIKit
+
+extension UITextField {
+
+    func enablePasswordToggle() {
+        isSecureTextEntry = true
+
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+        button.tintColor = .lightGray
+        button.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+
+        button.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
+
+        rightView = button
+        rightViewMode = .always
+    }
+
+    @objc private func togglePasswordVisibility(_ sender: UIButton) {
+        isSecureTextEntry.toggle()
+
+        let imageName = isSecureTextEntry ? "eye.slash" : "eye"
+        sender.setImage(UIImage(systemName: imageName), for: .normal)
+
+        // Prevent cursor jump
+        if let text = text {
+            self.text = ""
+            insertText(text)
+        }
+    }
 }

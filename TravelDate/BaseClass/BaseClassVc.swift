@@ -41,13 +41,10 @@ class BaseClassVc: UIViewController {
     }()
     
     var hasPaidSubscription: Bool {
-        
-        guard User.curentUser?.plan != "" else {
+        guard User.curentUser?.plan != "" || User.curentUser?.plan != nil || User.curentUser?.plan != "free" else {
             return false
         }
-        
         return true
-
     }
     
     @objc func upgradeButtonTapped() {
@@ -892,22 +889,25 @@ final class ProgressBorderView: UIView {
 
     private func updateBadgePosition() {
 
-        let radius = min(bounds.width, bounds.height) / 2
+        let lineWidth: CGFloat = 6
+        let badgeSize: CGFloat = 36
 
-        let angle = (-CGFloat.pi / 2) + (currentProgress * CGFloat.pi * 2)
+        let circleRadius = min(bounds.width, bounds.height) / 2 - lineWidth / 2
+        let badgeRadius = circleRadius + 4   // adjust 4~8 as needed
 
-        let x = bounds.midX + cos(angle) * radius
-        let y = bounds.midY + sin(angle) * radius
+        let angle = -.pi / 2 + currentProgress * .pi * 2
+
+        let x = bounds.midX + cos(angle) * badgeRadius
+        let y = bounds.midY + sin(angle) * badgeRadius
 
         badgeView.frame = CGRect(
-            x: x - 30,
-            y: y - 30,
+            x: x - badgeSize / 2,
+            y: y - badgeSize / 2,
             width: 0,
             height: 0
         )
 
-        badgeView.layer.cornerRadius = 18
-
+        badgeView.layer.cornerRadius = badgeSize / 2
         percentageLabel.frame = badgeView.bounds
     }
 }

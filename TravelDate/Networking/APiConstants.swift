@@ -53,6 +53,6 @@ class APiConstant : NSObject {
     static let unblockURl = baseUrl + "user/unblock"
     
     static let bulkDeleteNotifications = baseUrl + "notifications/bulk-delete"
+    
+    static let deleteUser = baseUrl + "delete-account?type=hard&isDelete=true"
 }
-
-

@@ -119,8 +119,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         AppData.shared.latitude = res.latitude
         AppData.shared.longitude = res.longitude
 
-        print(AppData.shared.latitude, AppData.shared.longitude)
-        
         self.setupCountdown(startDateString: res.startDate ?? "")
         
         self.lblDate.text = self.formatDateRange(
@@ -149,6 +147,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getDashboard()
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            return
+        }
+
+        Task {
+            await appDelegate.subscriptionPresenter?.refreshSubscriptionStatus()
+        }
+        
         print(hasPaidSubscription,"hJkhjk")
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
