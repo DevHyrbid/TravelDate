@@ -68,8 +68,8 @@ class EditGroupViewController: CreateGroupViewController {
     private var didPickNewImage = false
     private var datesLocked     = false
 
-    private let localStyles = ["Partygoers", "Adventure travelers",
-                                "Cultural travelers", "Leisure travelers"]
+    private let localStyles = ["Partygoer", "Adventure traveler",
+                                "Cultural traveler", "Leisure traveler"]
 
     // MARK: - Lifecycle
     override func viewDidLoad() {

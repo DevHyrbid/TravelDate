@@ -21,7 +21,7 @@ enum ChatSegment: Int, CaseIterable {
 
 // MARK: - ChatVc
 
-final class ChatVc: BaseClassVc {
+final class ChatVc: BaseClassVc, UITextFieldDelegate {
 
     // MARK: - IBOutlets
     @IBOutlet private weak var vwGlass:UIView!
@@ -47,11 +47,17 @@ final class ChatVc: BaseClassVc {
     }
 
     // MARK: - Computed
-    private var currentRowCount: Int {
+    private var currentData: [ChatData] {
         switch selectedSegment {
-        case .groups: return groupsData.count
-        case .chats:  return chatData.count
+        case .groups:
+            return txtSearch.text?.isEmpty == false ? filteredGroupsData : groupsData
+        case .chats:
+            return txtSearch.text?.isEmpty == false ? filteredChatData : chatData
         }
+    }
+
+    private var currentRowCount: Int {
+        currentData.count
     }
 
     // MARK: - Lifecycle
@@ -74,9 +80,61 @@ final class ChatVc: BaseClassVc {
             ]
         )
         txtSearch.font = AppFont.medium(14.0)
+        txtSearch.textColor = .white
+        txtSearch.delegate = self
+        txtSearch.addTarget(self,
+                            action: #selector(searchTextChanged(_:)),
+                            for: .editingChanged)
 //     nvwGlass)
     }
     
+    @objc
+    private func searchTextChanged(_ textField: UITextField) {
+        filterData(with: textField.text ?? "")
+    }
+    
+    private func filterData(with text: String) {
+
+        let keyword = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if keyword.isEmpty {
+            filteredGroupsData.removeAll()
+            filteredChatData.removeAll()
+            refreshTableView()
+            return
+        }
+
+        switch selectedSegment {
+
+        case .groups:
+
+            filteredGroupsData = groupsData.filter {
+
+                ($0.name ?? "")
+                    .localizedCaseInsensitiveContains(keyword)
+
+                ||
+
+                ($0.lastMessage?.content ?? "")
+                    .localizedCaseInsensitiveContains(keyword)
+            }
+
+        case .chats:
+
+            filteredChatData = chatData.filter {
+
+                ($0.name ?? "")
+                    .localizedCaseInsensitiveContains(keyword)
+
+                ||
+
+                ($0.lastMessage?.content ?? "")
+                    .localizedCaseInsensitiveContains(keyword)
+            }
+        }
+
+        refreshTableView()
+    }
     
     @objc private func handleIncomingPush(_ notification: Notification) {
 
@@ -310,7 +368,7 @@ private extension ChatVc {
 
     func configureGroupCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
-        let model = groupsData[indexPath.row]
+        let model = currentData[indexPath.row]
         cell.lblTitle.text = model.name ?? ""
         cell.lblDesc.text  = "\(model.name ?? "")"
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
@@ -323,7 +381,7 @@ private extension ChatVc {
 
     func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
-        let model = chatData[indexPath.row]
+        let model = currentData[indexPath.row]
     
         if model.type == "MATCH" {
 
@@ -333,22 +391,21 @@ private extension ChatVc {
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
             
-//            if let images = matchGroup.imageArr,
-//               images.count >= 2 {
-//
-//                cell.containerView.isHidden = false
-//                loadImage(cell.leftImageView, url: URL(string: images[0])!)
-//                loadImage(cell.rightImageView, url: URL(string: images[1])!)
-//                
-//
-//            } else {}
-
-                let imageUrl = matchGroup.imageArr?.first ?? matchGroup.image ?? ""
-                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
+            
+                let imageUrl = matchGroup.imageArr?[1] ??  ""
+//                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
+            cell.leftImageView.kf.setImage(
+                with: URL(string: APiConstant.base + (matchGroup.imageArr?[1] ?? ""))
+            )
+            print("Row:", indexPath.row)
+            print("Image:", matchGroup.imageArr?[1] ?? "")
+            print(matchGroup.imageArr?[1] ??  "","hjhmhj")
                 
 
                 cell.rightImageView.image = nil
-            
+            print(indexPath.row)
+            print(matchGroup.imageArr ?? [])
+            print(matchGroup.imageArr?[1] ?? "")
 
         } else {
             cell.containerView.isHidden = true

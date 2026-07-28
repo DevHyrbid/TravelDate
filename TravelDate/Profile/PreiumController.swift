@@ -78,30 +78,37 @@ class PreiumController: BaseClassVc,SubscriptionView {
 
         selectedPlan = plan
 
-        // Reset
         resetView(vwWeek)
         resetView(vwMonth)
         resetView(vwYear)
+
+        let subscriptionTier: SubscriptionTier
 
         switch plan {
 
         case .weekly:
             highlightView(vwWeek)
-            btnContinue.setTitle("Continue - ₹999/week", for: .normal)
+            subscriptionTier = .weekly
 
         case .monthly:
             highlightView(vwMonth)
-            btnContinue.setTitle("Continue - ₹1999/month", for: .normal)
+            subscriptionTier = .monthly
 
         case .yearly:
             highlightView(vwYear)
-            btnContinue.setTitle("Continue - ₹9999/year", for: .normal)
+            subscriptionTier = .yearly
+        }
+
+        if let selected = presenter.plans.first(where: { $0.tier == subscriptionTier }) {
+            btnContinue.setTitle("Continue - \(selected.priceText)", for: .normal)
+        } else {
+            btnContinue.setTitle("Continue", for: .normal)
         }
     }
 
     private func highlightView(_ view: UIView) {
         view.layer.borderColor = UIColor.appOrange.cgColor
-        view.layer.borderWidth = 2
+        view.layer.borderWidth = 2.5
         view.backgroundColor = UIColor.appOrange.withAlphaComponent(0.12)
     }
 
@@ -182,6 +189,9 @@ extension PreiumController {
                 lblYear.text = plan.priceText
             }
         }
+
+        // Refresh button with localized price
+        selectPlan(selectedPlan)
     }
 
     func updateCTA(title: String) {

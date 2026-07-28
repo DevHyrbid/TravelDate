@@ -15,7 +15,7 @@ class CreateGroupViewController: BaseClassVc {
     let minAgeLabel = UILabel()
     let maxAgeLabel = UILabel()
     var groupSize = 1
-    let styles = ["Partygoers", "Adventure travelers", "Cultural travelers", "Leisure travelers"]
+    let styles = ["Partygoer", "Adventure traveler", "Cultural traveler", "Leisure traveler"]
     var selectedStyles: Set<Int> = []
     var selectedImage: UIImage?
     var startDate: String = ""

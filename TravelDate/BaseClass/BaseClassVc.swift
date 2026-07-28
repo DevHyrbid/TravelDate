@@ -159,6 +159,8 @@ class BaseClassVc: UIViewController {
                     .cacheOriginalImage
                 ]
             )
+            
+            print("loaded,",urlStr)
         }
     }
     

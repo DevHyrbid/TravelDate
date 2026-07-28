@@ -32,10 +32,10 @@ enum TravelStyle: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .partygoers: return "Partygoers"
-        case .adventureTravelers: return "Adventure travelers"
-        case .culturalTravelers: return "Cultural travelers"
-        case .leisureTravelers: return "Leisure travelers"
+        case .partygoers: return "Partygoer"
+        case .adventureTravelers: return "Adventure traveler"
+        case .culturalTravelers: return "Cultural traveler"
+        case .leisureTravelers: return "Leisure traveler"
         }
     }
 }

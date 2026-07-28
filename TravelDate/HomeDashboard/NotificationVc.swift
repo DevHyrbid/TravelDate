@@ -74,7 +74,7 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
                 } //\(APiConstant.base)
                 else {
                     if profileImage != "" {
-                        self.loadImage(cell.imgVw, url: URL(string: "\(APiConstant.base)\(profileImage)")!)
+                        self.loadImage(cell.imgVw, url: URL(string: "\(profileImage)")!)
                     }
                     
                 }
@@ -82,8 +82,9 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
             } else {
                 cell.imgVw.image = UIImage(named: "User")
             }
-            cell.imgVw.layer.cornerRadius = 12
+            
         }
+        cell.imgVw.layer.cornerRadius = 12
         return cell
             
     }

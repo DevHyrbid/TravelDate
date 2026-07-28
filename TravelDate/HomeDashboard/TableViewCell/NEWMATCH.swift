@@ -202,7 +202,7 @@ class NewMatchCell: UITableViewCell {
         let ago = timeAgo(from: model.createdAt ?? "")
 
         let base = "Matched \(ago) "
-        let hi   = "(92% Match)"
+        let hi   = ""
         let full = base + hi
         let attr = NSMutableAttributedString(
             string: full,
@@ -228,7 +228,7 @@ class NewMatchCell: UITableViewCell {
         let ago = timeAgo(from: model.matchedAtStr ?? "")
 
         let base = "Matched \(ago) "
-        let hi = "(92% Match)"
+        let hi = ""
         let full = base + hi
 
         let attr = NSMutableAttributedString(

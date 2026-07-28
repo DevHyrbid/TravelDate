@@ -39,6 +39,17 @@ class ChatTableViewCell: UITableViewCell {
         rightImageView.clipsToBounds = true
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        leftImageView.image = nil
+        rightImageView.image = nil
+        imgVw.image = nil
+
+        leftImageView.sd_cancelCurrentImageLoad()
+        rightImageView.sd_cancelCurrentImageLoad()
+        imgVw.sd_cancelCurrentImageLoad()
+    }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

@@ -405,7 +405,7 @@ class SwipeViewController: BaseClassVc {
             groupId: "b3d912d4-b666-45f4-82f7-a2a99802192e",
             swipeId: "f63fdfea-4564-40f4-93d9-711349fbe21b",
             groupTitle: "Weekend Trip",
-            matchedStyles: ["Partygoers", "Adventure travelers"],
+            matchedStyles: ["Partygoer", "Adventure traveler"],
             message: "Is Ready To Make Some Plans. Why not start the conversation?",
             myGroupImageURL: baseURL + "/uploads/1783600038080-56423482.jpg",
             matchedGroupImageURL: baseURL + "/uploads/1783600182171-623694586.jpg"
