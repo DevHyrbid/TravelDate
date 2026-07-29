@@ -1457,11 +1457,13 @@ struct UserMembers : Mappable {
     var shortbio : String?
     var locationstring : String?
     var travelStyles : [String]?
+    var groupId : String?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
+        groupId <- map["groupId"]
         travelStyles <- map["travelStyles"]
         locationstring <- map["location_string"]
         shortbio <- map["short_bio"]
@@ -2115,13 +2117,15 @@ struct ChatRoom : Mappable {
     var createdAt : String?
     var matchId : String?
     var groupId : String?
-
+    var group2Id: String?
+    var group1Id : String?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
-
+        group1Id <- map["group1Id"]
+        group2Id <- map["group2Id"]
         id <- map["id"]
         type <- map["type"]
         createdAt <- map["createdAt"]

@@ -268,7 +268,7 @@ class TripsTabBarController: UIViewController {
 //    }
 
     @objc private func tabTapped(_ sender: UIButton) {
-        let feedback = UIImpactFeedbackGenerator(style: .heavy)
+        let feedback = UIImpactFeedbackGenerator(style: .medium)
         feedback.prepare()
         feedback.impactOccurred()
         

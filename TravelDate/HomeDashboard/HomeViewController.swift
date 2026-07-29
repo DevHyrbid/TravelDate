@@ -132,7 +132,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         }
         
         membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
-        
+        print((res.members?.count ?? 0),"hjkljkl")
         membersView.onAvatarStackTapped = {
             print("Avatar stack tapped — show members list")
         }

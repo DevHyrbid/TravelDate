@@ -59,6 +59,7 @@ final class MembersProgressView: UIView {
         self.members = members
         self.totalCount = max(totalCount, 1)
         self.completedCount = min(completedCount, totalCount)
+        print(completedCount,"hjklhjkhj")
         refreshAvatars()
         refreshProgress()
     }
@@ -213,6 +214,7 @@ final class MembersProgressView: UIView {
 
     private func refreshProgress() {
         let ratio = totalCount > 0 ? CGFloat(completedCount) / CGFloat(totalCount) : 0
+        print(completedCount,totalCount,"dddddddddddddd")
         let remaining = totalCount - completedCount
         leftLabel.text = "\(remaining) left"
 

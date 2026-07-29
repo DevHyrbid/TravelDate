@@ -40,11 +40,17 @@ class BaseClassVc: UIViewController {
         return formatter
     }()
     
+//    var hasPaidSubscription: Bool {
+//        guard User.curentUser?.plan != "" || User.curentUser?.plan != nil || User.curentUser?.plan == "free" else {
+//            return false
+//        }
+//        return true
+//    }
     var hasPaidSubscription: Bool {
-        guard User.curentUser?.plan != "" || User.curentUser?.plan != nil || User.curentUser?.plan != "free" else {
+        guard let plan = User.curentUser?.plan else {
             return false
         }
-        return true
+        return !plan.isEmpty && plan.lowercased() != "free"
     }
     
     @objc func upgradeButtonTapped() {

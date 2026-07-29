@@ -1641,6 +1641,31 @@
                                                                     <constraint firstAttribute="height" constant="165.33000000000001" id="kCV-GK-Ulc"/>
                                                                 </constraints>
                                                             </imageView>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R7h-vM-tof">
+                                                                <rect key="frame" x="0.0" y="60" width="343" height="97"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Trips " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0HG-vB-OJy">
+                                                                        <rect key="frame" x="20" y="20" width="84" height="24"/>
+                                                                        <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="20"/>
+                                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Trips " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zPX-e8-y5J">
+                                                                        <rect key="frame" x="20" y="54" width="84" height="24"/>
+                                                                        <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="20"/>
+                                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                                <color key="backgroundColor" name="ThemeTxt"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="0HG-vB-OJy" firstAttribute="leading" secondItem="R7h-vM-tof" secondAttribute="leading" constant="20" id="5Kc-8R-NeB"/>
+                                                                    <constraint firstItem="zPX-e8-y5J" firstAttribute="top" secondItem="0HG-vB-OJy" secondAttribute="bottom" constant="10" id="BXQ-9w-Whi"/>
+                                                                    <constraint firstAttribute="height" constant="97" id="YkA-2k-1Nd"/>
+                                                                    <constraint firstItem="0HG-vB-OJy" firstAttribute="top" secondItem="R7h-vM-tof" secondAttribute="top" constant="20" id="fUG-v9-mUY"/>
+                                                                    <constraint firstItem="zPX-e8-y5J" firstAttribute="leading" secondItem="R7h-vM-tof" secondAttribute="leading" constant="20" id="ifq-Yp-Gov"/>
+                                                                </constraints>
+                                                            </view>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uxD-f2-R6z">
                                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="165.33333333333334"/>
                                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
@@ -1653,8 +1678,12 @@
                                                         <constraints>
                                                             <constraint firstItem="uxD-f2-R6z" firstAttribute="leading" secondItem="vqD-OV-Em9" secondAttribute="leading" id="0gf-2K-cF9"/>
                                                             <constraint firstAttribute="bottom" secondItem="i4z-d3-W7I" secondAttribute="bottom" id="IYI-1G-mfJ"/>
+                                                            <constraint firstItem="R7h-vM-tof" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="top" constant="60" id="JrZ-xk-GcJ"/>
+                                                            <constraint firstItem="R7h-vM-tof" firstAttribute="leading" secondItem="vqD-OV-Em9" secondAttribute="leading" id="Jzf-z0-GG3"/>
                                                             <constraint firstAttribute="trailing" secondItem="uxD-f2-R6z" secondAttribute="trailing" id="PZc-BQ-kBM"/>
+                                                            <constraint firstAttribute="bottom" secondItem="R7h-vM-tof" secondAttribute="bottom" constant="8.3300000000000001" id="QNR-oD-NAk"/>
                                                             <constraint firstItem="i4z-d3-W7I" firstAttribute="leading" secondItem="vqD-OV-Em9" secondAttribute="leading" id="UII-ST-G9O"/>
+                                                            <constraint firstAttribute="trailing" secondItem="R7h-vM-tof" secondAttribute="trailing" id="Z18-VD-QdH"/>
                                                             <constraint firstAttribute="bottom" secondItem="uxD-f2-R6z" secondAttribute="bottom" id="nx6-p6-JbN"/>
                                                             <constraint firstAttribute="trailing" secondItem="i4z-d3-W7I" secondAttribute="trailing" id="nzt-1d-7ha"/>
                                                             <constraint firstItem="i4z-d3-W7I" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="top" id="odf-QG-Gbe"/>
@@ -1783,10 +1812,13 @@
                         <outlet property="imgPermiumHeight" destination="Twi-lS-leQ" id="IHF-nb-hsS"/>
                         <outlet property="imgProfile" destination="BV2-zb-1Ik" id="Hit-Hr-pvj"/>
                         <outlet property="lblName" destination="VKa-CV-FI2" id="RBE-GI-M4P"/>
+                        <outlet property="lblPlanName" destination="0HG-vB-OJy" id="Nc8-YL-RR6"/>
                         <outlet property="lblProfileTitle" destination="w1H-zn-tkC" id="AD4-Fa-qIj"/>
+                        <outlet property="lblSubscribe" destination="zPX-e8-y5J" id="GBg-dH-Qgz"/>
                         <outlet property="lblUserName" destination="Xep-UE-uc6" id="5vK-uc-GLm"/>
                         <outlet property="tblVw" destination="GAQ-KQ-w7Q" id="GPI-1Z-PGi"/>
                         <outlet property="txtAbout" destination="owf-HA-u9O" id="s34-fR-SFY"/>
+                        <outlet property="vwPlan" destination="R7h-vM-tof" id="bNI-zO-PDw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aqB-XZ-fa3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

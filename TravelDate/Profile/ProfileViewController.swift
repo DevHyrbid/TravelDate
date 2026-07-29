@@ -22,6 +22,9 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var lblName: UILabel!
     @IBOutlet weak var collectionVw: UICollectionView!
     @IBOutlet weak var lblProfileTitle: UILabel!
+    @IBOutlet weak var lblPlanName: UILabel!
+    @IBOutlet weak var lblSubscribe: UILabel!
+    @IBOutlet weak var vwPlan: UIView!
     @IBOutlet weak var tblVw:UITableView!
     @IBOutlet weak var borderView: ProgressBorderView!
     @IBOutlet weak var heightVw: NSLayoutConstraint!
@@ -45,10 +48,15 @@ class ProfileViewController: BaseClassVc {
             if self.hasPaidSubscription {
                 self.imgPermium.isHidden = false
                 self.imgPermiumHeight.constant = 34
+                self.vwPlan.isHidden = false
             } else {
+                self.vwPlan.isHidden = true
                 self.imgPermium.isHidden = true
                 self.imgPermiumHeight.constant = 0
             }
+            
+            self.lblPlanName.text = User.curentUser?.plan
+            self.lblSubscribe.text = User.curentUser?.planStartDate
             self.arr = User.curentUser?.travelStyles ?? []
 
             self.collectionVw.performBatchUpdates({
@@ -74,6 +82,8 @@ class ProfileViewController: BaseClassVc {
         txtAbout.setFont(.medium, size: 14.0)
         lblName.setFont(.bold, size: 20.0)
         lblUserName.setFont(.regular, size: 14.0)
+        lblPlanName.setFont(.bold, size: 16.0)
+        lblSubscribe.setFont(.regular, size: 13.0)
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
         if User.curentUser?.userName != "" {

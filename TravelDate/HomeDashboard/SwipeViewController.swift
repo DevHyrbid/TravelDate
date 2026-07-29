@@ -12,6 +12,7 @@ class SwipeViewController: BaseClassVc {
     @IBOutlet weak var emptyStateView: UIView!
 
     // MARK: - Properties
+    var chatData: [ChatData] = [] // Replace with your actual model type
     private var overlayView: UIView?
     private var overlayType: OverlayType?
     private var groups: [Group] = []
@@ -26,7 +27,7 @@ class SwipeViewController: BaseClassVc {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
         
-         //showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
+//         showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
         // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
 
@@ -402,7 +403,7 @@ class SwipeViewController: BaseClassVc {
         let baseURL = APiConstant.base
 
         let result = MatchResult(
-            groupId: "b3d912d4-b666-45f4-82f7-a2a99802192e",
+            groupId: "b7333e2b-ee27-4df2-bfb9-341954fe4b2f",
             swipeId: "f63fdfea-4564-40f4-93d9-711349fbe21b",
             groupTitle: "Weekend Trip",
             matchedStyles: ["Partygoer", "Adventure traveler"],
@@ -574,91 +575,51 @@ extension SwipeViewController {
 
 // MARK: - MatchBottomSheetDelegate
 extension SwipeViewController: MatchBottomSheetDelegate {
-    func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
-        /*   let currentUserId = User.curentUser?.id ?? ""
-        let viewModel = ChatViewModel(
-            currentUserId: currentUserId
-        )
+    
+    
 
-        // Open existing room directly if available
-        let vc = ChatMessageVc(
-            viewModel: viewModel,
-            participants: group.members ?? [],
-            roomId: group.chatId,
-            roomTitle: group.name ?? "",
-            type: .group
-        )
-        vc.roomImageURL =  group.image ?? ""
-        vc.memberCount = participantIds.count
+    private func fetchChats(completion: (() -> Void)? = nil) {
+        request.getChatsInbox(1) { [weak self] model, msg, code in
+            guard let self else { return }
 
-        navigationController?.pushViewController(vc, animated: true)
-
- {
-
-     let group = groupsData[indexPath.row]
-
-     let currentUserId = User.curentUser?.id ?? ""
-
-     // Get all member ids
-     let participantIds = group.members?.compactMap { $0.id } ?? []
-
-     // Ensure current user exists
-//        if !participantIds.contains(currentUserId) {
-//            participantIds.append(currentUserId)
-//        }
-//
-//        // Remove duplicates
-//        participantIds = Array(Set(participantIds))
-
-     let viewModel = ChatViewModel(
-         currentUserId: currentUserId
-     )
-
-     // Open existing room directly if available
-     let vc = ChatMessageVc(
-         viewModel: viewModel,
-         participants: group.members ?? [],
-         roomId: group.chatId,
-         roomTitle: group.name ?? "",
-         type: .group
-     )
-     vc.roomImageURL =  group.image ?? ""
-     vc.memberCount = participantIds.count
-
-     navigationController?.pushViewController(vc, animated: true)
- }
-        guard let group = groups.first(where: { $0.id == groupId }) else {
-            print("Group not found")
-            return
+            DispatchQueue.main.async {
+                if code == 200 {
+                    self.chatData = model?.data ?? []
+                    completion?()
+                }
+            }
         }
-
-        let currentUserId = User.curentUser?.id ?? ""
-
-        let participantIds = group.members?
-            .compactMap { $0.id } ?? []
-
-        let viewModel = ChatViewModel(
-            currentUserId: currentUserId
-        )
-
-        let vc = ChatMessageVc(
-            viewModel: viewModel,
-            participants: participantIds as! [UserMembers],
-            roomId: group.roomId,
-            roomTitle: group.title ?? "Group Chat",
-            type: .group
-        )
-
-        vc.memberCount = participantIds.count
- ✈️ Join my travel group!
-
- Use this link to join:
- 2B8392
-
- Let’s plan something awesome 🌍
-        navigationController?.pushViewController(vc, animated: true)
- */
     }
+    
+    func matchSheetDidTapSayHello(groupId: String, swipeId: String) {
+
+        fetchChats { [weak self] in
+            guard let self else { return }
+            let item = chatData.first {
+                print("Comparing '\($0.groupDetails?.group1Id ?? "nil")' == '\(groupId)'")
+                return $0.groupDetails?.group1Id == groupId ||
+                       $0.groupDetails?.group2Id == groupId
+            }
+
+            print(item == nil ? "NOT FOUND" : "FOUND")
+
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: item?.members ?? [],
+                roomId: item?.chatId,
+                roomTitle: item? .name ?? "",
+                type: .group
+            )
+
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    
     
     func matchSheetDidTapKeepSwiping() {
         print("Keep swiping")
