@@ -1104,7 +1104,7 @@ class User : Mappable {
     func  saveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.saveGroup)" + "\(id ?? "")/save", params: self.toJSON(), method: "POST") { responseObject, suces in
-            
+            print("\(APiConstant.saveGroup)" + "\(id ?? "")/save")
             if  responseObject["code"] as? Int == 200 {
                 print("USER")
                 callBack(responseObject["message"] as? String ?? "",200)

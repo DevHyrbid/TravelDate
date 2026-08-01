@@ -31,6 +31,10 @@ class NewMatchCellTableViewCell: UITableViewCell {
     
     var onStartChat: (() -> Void)?
     var onSaveGroup: (() -> Void)?
+    var onViewGroup: (() -> Void)?
+    var onRemoveBookmark: (() -> Void)?
+    func setTimeText(_ text: String)  { lblTime.text  = text  }
+    func setTimeTextSave(_ text: String)  { lblTimeSave.text  = text  }
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -73,6 +77,15 @@ class NewMatchCellTableViewCell: UITableViewCell {
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
         btnStart.addTarget(self, action: #selector(startChatTapped), for: .touchUpInside)
         btnSaveGroup.addTarget(self, action: #selector(saveGroupTapped), for: .touchUpInside)
+        btnViewGroup.addTarget(self,
+                               action: #selector(viewGroupTapped),
+                               for: .touchUpInside)
+
+       
+    }
+    
+    @objc func viewGroupTapped() {
+        onViewGroup?()
     }
     
     @objc private func startChatTapped() {
@@ -84,55 +97,64 @@ class NewMatchCellTableViewCell: UITableViewCell {
         
     }
     
+    func showNewMatch() {
+        nwVw.isHidden = false
+        savedVw.isHidden = true
+    }
+
+    func showSavedGroup() {
+        nwVw.isHidden = true
+        savedVw.isHidden = false
+    }
+    
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         
         // Configure the view for the selected state
     }
     
-    func setImage(_ image: UIImage?) {
-        imgVw.image = image
-    }
-    
-    func setTimeText(_ text: String) {
-        lblTime.text = text
-    }
-    
-    func setSavedImage(_ image: UIImage?) {
-        imgVwSave.image = image
-    }
-    
-    func setSavedTimeText(_ text: String) {
-        lblTimeSave.text = text
-    }
     
     
-    func configureNewMatch(with model: DataMatch) {
-        let group = model.otherGroup
+    
+    func configureNewMatch(with model: Group) {
 
-        lblTitle.text = group?.title
-        lblLocation.text = group?.destination
-        lblTime.text = formatDateRange(
-            start: group?.startDate ?? "",
-            end: group?.endDate ?? ""
-        )
+        nwVw.isHidden = false
+        savedVw.isHidden = true
 
-        lblMatched.text = "Matched \(timeAgo(from: model.matchedAtStr ?? ""))"
+        let group = model
+
+        lblTitle.text = group.title
+        lblLocation.text = group.destination
+
+//        lblTime.text = formatDateRange(
+//            start: group?.startDate ?? "",
+//            end: group?.endDate ?? ""
+//        )
+
+        
 
         membersView.configure(
-            members: group?.members ?? [],
-            totalCount: group?.maxGroupSize ?? 0,
-            completedCount: group?.members?.count ?? 0
+            members: group.members ?? [],
+            totalCount: group.maxGroupSize ?? 0,
+            completedCount: group.members?.count ?? 0
         )
     }
 
+    
+    
     func configureSavedGroup(with model: Group) {
+        print("nwVw:", nwVw.isHidden)
+        print("savedVw:", savedVw.isHidden)
+//        nwVw.isHidden = true
+        savedVw.isHidden = false
+
         lblName.text = model.title
         lblLocationSave.text = model.destination
-        lblTimeSave.text = formatDateRange(
-            start: model.startDate ?? "",
-            end: model.endDate ?? ""
-        )
+
+//        lblTimeSave.text = formatDateRange(
+//            start: model.startDate ?? "",
+//            end: model.endDate ?? ""
+//        )
 
         membersVwSave.configure(
             members: model.members ?? [],

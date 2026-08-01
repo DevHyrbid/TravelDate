@@ -65,7 +65,7 @@
                                                 </constraints>
                                             </imageView>
                                         </subviews>
-                                        <color key="backgroundColor" red="1" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" name="ThemeBG"/>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="bhU-Gq-tWR" secondAttribute="trailing" id="K8h-m3-pDB"/>
                                             <constraint firstItem="Dv2-gv-jbX" firstAttribute="centerY" secondItem="evv-NE-pho" secondAttribute="centerY" id="M4O-9F-fhk"/>
@@ -84,7 +84,7 @@
                                         <rect key="frame" x="212" y="0.0" width="67" height="40"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SHp-XN-c7Y">
-                                                <rect key="frame" x="31" y="0.0" width="0.0" height="40"/>
+                                                <rect key="frame" x="31" y="0.0" width="26" height="40"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
@@ -100,6 +100,7 @@
                                         <color key="backgroundColor" name="ThemeBG"/>
                                         <constraints>
                                             <constraint firstItem="SHp-XN-c7Y" firstAttribute="leading" secondItem="oQ4-0o-xO0" secondAttribute="trailing" constant="5" id="BkC-f7-Cgy"/>
+                                            <constraint firstAttribute="trailing" secondItem="SHp-XN-c7Y" secondAttribute="trailing" constant="10" id="GLE-5V-dfR"/>
                                             <constraint firstAttribute="bottom" secondItem="SHp-XN-c7Y" secondAttribute="bottom" id="Gta-tE-T1c"/>
                                             <constraint firstItem="SHp-XN-c7Y" firstAttribute="top" secondItem="mpf-fp-VjE" secondAttribute="top" id="Qtu-1f-naM"/>
                                             <constraint firstItem="oQ4-0o-xO0" firstAttribute="leading" secondItem="mpf-fp-VjE" secondAttribute="leading" constant="10" id="e2Y-ck-UgF"/>
@@ -114,6 +115,7 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstItem="mpf-fp-VjE" firstAttribute="leading" secondItem="Xnx-1r-hBZ" secondAttribute="leading" constant="212" id="6pC-Zk-NaO"/>
                                     <constraint firstAttribute="height" constant="40" id="uIm-qJ-vBg"/>
                                 </constraints>
                             </stackView>
