@@ -28,13 +28,13 @@
                                 </constraints>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You (22)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hzP-vA-PNR">
-                                <rect key="frame" x="20" y="160" width="237" height="74"/>
+                                <rect key="frame" x="20" y="160" width="237" height="66"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="4JL-uO-3vd">
-                                <rect key="frame" x="15" y="244" width="247" height="75"/>
+                                <rect key="frame" x="15" y="236" width="247" height="75"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hjf-tv-f7V" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="247" height="40"/>
@@ -107,63 +107,66 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="5k5-t4-Kj7">
-                                <rect key="frame" x="1.6666666666666572" y="329" width="274" height="30"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="  Food   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Vw-Kx-e2g" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="44.666666666666664" height="30"/>
-                                        <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                <real key="value" value="15"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Nightlife     " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uRT-x6-sQB" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="49.666666666666679" y="0.0" width="64.333333333333314" height="30"/>
-                                        <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                <real key="value" value="15"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   Adventure   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hi4-v2-IAv" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="119" y="0.0" width="75" height="30"/>
-                                        <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                <real key="value" value="15"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="   Adventure   " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KYm-jP-CEj" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="199" y="0.0" width="75" height="30"/>
-                                        <color key="backgroundColor" red="0.066666666669999999" green="0.070588235289999995" blue="0.066666666669999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <nil key="highlightedColor"/>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
-                                                <real key="value" value="15"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Food" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Vw-Kx-e2g" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                <rect key="frame" x="19.999999999999996" y="319" width="51.666666666666657" height="30"/>
+                                <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="30" id="YA9-L7-sXN"/>
+                                    <constraint firstAttribute="height" constant="30" id="04G-bJ-WYx"/>
                                 </constraints>
-                            </stackView>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Food" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uRT-x6-sQB" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                <rect key="frame" x="81.666666666666671" y="319" width="52.000000000000014" height="30"/>
+                                <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="ksN-aT-n8D"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Food" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Hi4-v2-IAv" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                <rect key="frame" x="143.66666666666666" y="319" width="51.666666666666657" height="30"/>
+                                <color key="backgroundColor" red="0.066666666666666666" green="0.070588235294117646" blue="0.066666666666666666" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="qbu-PL-vrf"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Food" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KYm-jP-CEj" customClass="DesignableLabel" customModule="TravelDate" customModuleProvider="target">
+                                <rect key="frame" x="205.33333333333334" y="319" width="51.666666666666657" height="30"/>
+                                <color key="backgroundColor" red="0.066666666669999999" green="0.070588235289999995" blue="0.066666666669999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="gG6-jX-rxN"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                        <real key="value" value="12"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S3X-Ng-F5z" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
                                 <rect key="frame" x="68.666666666666686" y="369" width="140" height="45"/>
                                 <constraints>
@@ -186,21 +189,49 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </button>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="saM-Y3-zBX">
+                                <rect key="frame" x="20" y="311" width="237" height="40"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="kFk-ie-dT7"/>
+                                </constraints>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Vme-nL-ep4">
+                                    <size key="itemSize" width="128" height="128"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                            </collectionView>
                         </subviews>
                         <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <constraints>
+                            <constraint firstItem="Hi4-v2-IAv" firstAttribute="width" secondItem="9Vw-Kx-e2g" secondAttribute="width" id="0fS-zI-tDX"/>
+                            <constraint firstItem="9Vw-Kx-e2g" firstAttribute="centerY" secondItem="uRT-x6-sQB" secondAttribute="centerY" id="1ZS-Md-ium"/>
+                            <constraint firstItem="Hi4-v2-IAv" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" constant="8" symbolic="YES" id="1mn-9I-Ca2"/>
                             <constraint firstAttribute="bottom" secondItem="S3X-Ng-F5z" secondAttribute="bottom" constant="20" id="2hL-uu-eYl"/>
                             <constraint firstItem="hzP-vA-PNR" firstAttribute="top" secondItem="3Vx-tv-GdT" secondAttribute="bottom" constant="20" id="6RP-4X-aCv"/>
+                            <constraint firstItem="KYm-jP-CEj" firstAttribute="width" secondItem="9Vw-Kx-e2g" secondAttribute="width" id="Eb2-Bi-wP3"/>
+                            <constraint firstItem="KYm-jP-CEj" firstAttribute="leading" secondItem="Hi4-v2-IAv" secondAttribute="trailing" constant="10" id="FS8-zX-5ui"/>
                             <constraint firstAttribute="trailing" secondItem="hzP-vA-PNR" secondAttribute="trailing" constant="20" id="Gdw-D2-uOd"/>
+                            <constraint firstItem="9Vw-Kx-e2g" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" constant="8" symbolic="YES" id="Hbx-Xa-sN7"/>
                             <constraint firstItem="S3X-Ng-F5z" firstAttribute="centerX" secondItem="z9y-zo-aYZ" secondAttribute="centerX" id="JeY-MA-HuH"/>
-                            <constraint firstItem="5k5-t4-Kj7" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" constant="10" id="MoF-r0-BZf"/>
+                            <constraint firstItem="KYm-jP-CEj" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" constant="8" symbolic="YES" id="KeS-PT-mTy"/>
+                            <constraint firstAttribute="trailing" secondItem="KYm-jP-CEj" secondAttribute="trailing" constant="20" id="Ml2-gE-TwD"/>
+                            <constraint firstItem="saM-Y3-zBX" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" id="RjI-37-Ic1"/>
+                            <constraint firstItem="S3X-Ng-F5z" firstAttribute="top" secondItem="uRT-x6-sQB" secondAttribute="bottom" constant="20" id="Rtq-Mg-YCm"/>
+                            <constraint firstItem="saM-Y3-zBX" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="20" id="Xdw-R6-2PL"/>
+                            <constraint firstItem="uRT-x6-sQB" firstAttribute="width" secondItem="9Vw-Kx-e2g" secondAttribute="width" id="YW3-WW-YQD"/>
+                            <constraint firstItem="uRT-x6-sQB" firstAttribute="leading" secondItem="9Vw-Kx-e2g" secondAttribute="trailing" constant="10" id="aud-cY-0lT"/>
                             <constraint firstItem="4JL-uO-3vd" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="15" id="bEI-rH-vh0"/>
+                            <constraint firstAttribute="trailing" secondItem="saM-Y3-zBX" secondAttribute="trailing" constant="20" id="fdJ-F8-i7w"/>
                             <constraint firstItem="4JL-uO-3vd" firstAttribute="top" secondItem="hzP-vA-PNR" secondAttribute="bottom" constant="10" id="mD1-nh-Uw1"/>
                             <constraint firstItem="hzP-vA-PNR" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="20" id="q6L-m6-q2i"/>
+                            <constraint firstItem="Hi4-v2-IAv" firstAttribute="leading" secondItem="uRT-x6-sQB" secondAttribute="trailing" constant="10" id="qCO-4p-UYz"/>
+                            <constraint firstItem="9Vw-Kx-e2g" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="20" id="rBb-TL-ia6"/>
                             <constraint firstItem="3Vx-tv-GdT" firstAttribute="top" secondItem="z9y-zo-aYZ" secondAttribute="top" constant="20" id="sVW-dZ-LJn"/>
+                            <constraint firstItem="uRT-x6-sQB" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" constant="8" symbolic="YES" id="stw-lm-4n0"/>
                             <constraint firstItem="3Vx-tv-GdT" firstAttribute="centerX" secondItem="z9y-zo-aYZ" secondAttribute="centerX" id="vBh-6H-W8c"/>
                             <constraint firstAttribute="trailing" secondItem="4JL-uO-3vd" secondAttribute="trailing" constant="15" id="vdh-zG-InI"/>
-                            <constraint firstItem="S3X-Ng-F5z" firstAttribute="top" secondItem="5k5-t4-Kj7" secondAttribute="bottom" constant="10" id="xHo-CK-cq9"/>
                         </constraints>
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
@@ -219,11 +250,9 @@
             </tableViewCellContentView>
             <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-            <constraints>
-                <constraint firstItem="5k5-t4-Kj7" firstAttribute="centerX" secondItem="njF-e1-oar" secondAttribute="centerX" id="Ra0-KV-oJ0"/>
-            </constraints>
             <connections>
                 <outlet property="btnEdit" destination="S3X-Ng-F5z" id="bvz-Mj-tl8"/>
+                <outlet property="collectionVw" destination="saM-Y3-zBX" id="aHx-31-LIW"/>
                 <outlet property="imgUser" destination="3Vx-tv-GdT" id="gUM-KT-sPs"/>
                 <outlet property="lbl1" destination="9Vw-Kx-e2g" id="nng-fa-xuC"/>
                 <outlet property="lbl2" destination="uRT-x6-sQB" id="FSQ-N3-3nL"/>

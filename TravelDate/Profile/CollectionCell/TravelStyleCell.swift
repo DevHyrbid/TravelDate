@@ -8,9 +8,9 @@
 import UIKit
 
 final class TravelStyleCell: UICollectionViewCell {
-
+    
     static let identifier = "TravelStyleCell"
-
+    
     private let containerView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 18
@@ -18,37 +18,37 @@ final class TravelStyleCell: UICollectionViewCell {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
-     let titleLabel: UILabel = {
+    
+    let titleLabel: UILabel = {
         let label = UILabel()
-         label.setFont(.medium, size: 14.0)
-         label.textAlignment = .left
+        label.setFont(.medium, size: 14.0)
+        label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
+    
     // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Setup
     private func setupUI() {
         contentView.addSubview(containerView)
         containerView.addSubview(titleLabel)
-
+        
         NSLayoutConstraint.activate([
             // Container fills cell
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-
+            
             // Label padding
             titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8),
             titleLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8),
@@ -56,17 +56,28 @@ final class TravelStyleCell: UICollectionViewCell {
             titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -14),
         ])
     }
-
+    
     // MARK: - Configure
+    
+    
     func configure(title: String, isSelected: Bool) {
-        titleLabel.text = "• \(title)"
-
+        titleLabel.text = title
         
+        if isSelected {
+            // Orange style
+            titleLabel.text = "• \(title)"
             containerView.layer.borderColor = UIColor.themeOrange.cgColor
             containerView.backgroundColor = UIColor.themeOrange.withAlphaComponent(0.1)
             titleLabel.textColor = .themeOrange
-       
+        } else {
+            // Black style
+            titleLabel.text = "\(title)"
+            containerView.layer.borderColor = UIColor.clear.cgColor
+            containerView.backgroundColor = UIColor(hex: "#111211") // or .black
+            titleLabel.textColor = .white
+        }
     }
+
 }
 
 

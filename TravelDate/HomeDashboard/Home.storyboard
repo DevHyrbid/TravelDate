@@ -938,10 +938,7 @@
                                                                 <rect key="frame" x="212" y="0.0" width="126" height="40"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
-                                                                        <rect key="frame" x="36" y="0.0" width="90" height="40"/>
-                                                                        <constraints>
-                                                                            <constraint firstAttribute="width" constant="90" id="YYV-Dz-CNB"/>
-                                                                        </constraints>
+                                                                        <rect key="frame" x="31" y="0.0" width="89" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <nil key="highlightedColor"/>
@@ -958,10 +955,10 @@
                                                                 <constraints>
                                                                     <constraint firstItem="Vxo-Gi-WjI" firstAttribute="leading" secondItem="xfX-AO-RV6" secondAttribute="leading" constant="10" id="DIb-V2-q7J"/>
                                                                     <constraint firstItem="BUk-pP-jdO" firstAttribute="top" secondItem="xfX-AO-RV6" secondAttribute="top" id="O6m-7j-g65"/>
-                                                                    <constraint firstItem="BUk-pP-jdO" firstAttribute="leading" secondItem="Vxo-Gi-WjI" secondAttribute="trailing" constant="10" id="TjS-Bn-yYA"/>
+                                                                    <constraint firstItem="BUk-pP-jdO" firstAttribute="leading" secondItem="Vxo-Gi-WjI" secondAttribute="trailing" constant="5" id="TjS-Bn-yYA"/>
                                                                     <constraint firstItem="Vxo-Gi-WjI" firstAttribute="centerY" secondItem="xfX-AO-RV6" secondAttribute="centerY" id="ZJn-Xm-b1v"/>
                                                                     <constraint firstAttribute="bottom" secondItem="BUk-pP-jdO" secondAttribute="bottom" id="qGx-Q8-RhR"/>
-                                                                    <constraint firstAttribute="trailing" secondItem="BUk-pP-jdO" secondAttribute="trailing" id="qtF-BU-aVL"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="BUk-pP-jdO" secondAttribute="trailing" constant="6" id="qtF-BU-aVL"/>
                                                                 </constraints>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
@@ -1010,7 +1007,7 @@
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                         </subviews>
-                                                                        <color key="backgroundColor" red="0.10980392160000001" green="0.1176470588" blue="0.1333333333" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                                        <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="trailing" secondItem="4YU-jh-qy6" secondAttribute="trailing" constant="5" id="DAo-m9-ada"/>
                                                                             <constraint firstAttribute="width" constant="64" id="Pkx-wO-kCh"/>
@@ -1043,7 +1040,7 @@
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                         </subviews>
-                                                                        <color key="backgroundColor" red="0.10980392160000001" green="0.1176470588" blue="0.1333333333" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                                        <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                         <constraints>
                                                                             <constraint firstItem="QIQ-1g-ov6" firstAttribute="leading" secondItem="rVd-GQ-563" secondAttribute="leading" constant="5" id="Ebr-5n-uSs"/>
                                                                             <constraint firstAttribute="height" constant="68" id="K7g-iR-y1V"/>
@@ -1076,7 +1073,7 @@
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                         </subviews>
-                                                                        <color key="backgroundColor" red="0.10980392160000001" green="0.1176470588" blue="0.1333333333" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                                        <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                         <constraints>
                                                                             <constraint firstItem="c0Q-c2-wC4" firstAttribute="top" secondItem="whp-lI-eRO" secondAttribute="bottom" constant="7" id="6vE-4P-rIr"/>
                                                                             <constraint firstAttribute="height" constant="68" id="7hW-cd-f95"/>
@@ -1109,7 +1106,7 @@
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                         </subviews>
-                                                                        <color key="backgroundColor" red="0.10980392160000001" green="0.1176470588" blue="0.1333333333" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                                        <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                                         <constraints>
                                                                             <constraint firstAttribute="height" constant="68" id="Cg5-yN-Bl9"/>
                                                                             <constraint firstItem="G2U-nc-95c" firstAttribute="top" secondItem="jLY-9r-RpV" secondAttribute="bottom" constant="7" id="DpG-E0-4Zq"/>

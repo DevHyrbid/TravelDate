@@ -171,16 +171,18 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
             cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
         
-        let styles = model?.userMembers?.travelStyles ?? []
+//        let styles = model?.userMembers?.travelStyles ?? []
 
-        cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
-        cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
-        cell.lbl3.text = styles.indices.contains(2) ? " \(styles[2]) " : nil
-        cell.lbl4.text = styles.indices.contains(3) ? " \(styles[3]) " : nil
-        cell.lbl1.isHidden = !styles.indices.contains(0)
-        cell.lbl2.isHidden = !styles.indices.contains(1)
-        cell.lbl3.isHidden = !styles.indices.contains(2)
-        cell.lbl4.isHidden = !styles.indices.contains(3)
+//        cell.lbl1.text = styles.indices.contains(0) ? styles[0] : nil
+//        cell.lbl2.text = styles.indices.contains(1) ? styles[1] : nil
+//        cell.lbl3.text = styles.indices.contains(2) ? styles[2] : nil
+//        cell.lbl4.text = styles.indices.contains(3) ? styles[3] : nil
+//        cell.lbl1.isHidden = !styles.indices.contains(0)
+//        cell.lbl2.isHidden = !styles.indices.contains(1)
+//        cell.lbl3.isHidden = !styles.indices.contains(2)
+//        cell.lbl4.isHidden = !styles.indices.contains(3)
+        
+        cell.styles = model?.userMembers?.travelStyles ?? []
         
         
         cell.lblLocation.text = model?.userMembers?.locationstring ?? ""

@@ -8,7 +8,7 @@
 import UIKit
 
 class NewMatchCellTableViewCell: UITableViewCell {
-
+    
     @IBOutlet weak var nwVw:UIView!
     @IBOutlet weak var savedVw:UIView!
     @IBOutlet weak var matchVw:UIView!
@@ -28,6 +28,9 @@ class NewMatchCellTableViewCell: UITableViewCell {
     
     let membersView = MembersProgressView()
     let membersVwSave = MembersProgressView()
+    
+    var onStartChat: (() -> Void)?
+    var onSaveGroup: (() -> Void)?
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -68,12 +71,74 @@ class NewMatchCellTableViewCell: UITableViewCell {
         
         btnViewGroup.layer.borderWidth = 1
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
+        btnStart.addTarget(self, action: #selector(startChatTapped), for: .touchUpInside)
+        btnSaveGroup.addTarget(self, action: #selector(saveGroupTapped), for: .touchUpInside)
     }
-
+    
+    @objc private func startChatTapped() {
+        onStartChat?()
+    }
+    
+    @objc private func saveGroupTapped() {
+        onSaveGroup?()
+        
+    }
+    
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-
+        
         // Configure the view for the selected state
+    }
+    
+    func setImage(_ image: UIImage?) {
+        imgVw.image = image
+    }
+    
+    func setTimeText(_ text: String) {
+        lblTime.text = text
+    }
+    
+    func setSavedImage(_ image: UIImage?) {
+        imgVwSave.image = image
+    }
+    
+    func setSavedTimeText(_ text: String) {
+        lblTimeSave.text = text
+    }
+    
+    
+    func configureNewMatch(with model: DataMatch) {
+        let group = model.otherGroup
+
+        lblTitle.text = group?.title
+        lblLocation.text = group?.destination
+        lblTime.text = formatDateRange(
+            start: group?.startDate ?? "",
+            end: group?.endDate ?? ""
+        )
+
+        lblMatched.text = "Matched \(timeAgo(from: model.matchedAtStr ?? ""))"
+
+        membersView.configure(
+            members: group?.members ?? [],
+            totalCount: group?.maxGroupSize ?? 0,
+            completedCount: group?.members?.count ?? 0
+        )
+    }
+
+    func configureSavedGroup(with model: Group) {
+        lblName.text = model.title
+        lblLocationSave.text = model.destination
+        lblTimeSave.text = formatDateRange(
+            start: model.startDate ?? "",
+            end: model.endDate ?? ""
+        )
+
+        membersVwSave.configure(
+            members: model.members ?? [],
+            totalCount: model.maxGroupSize ?? 0,
+            completedCount: model.members?.count ?? 0
+        )
     }
     
 }

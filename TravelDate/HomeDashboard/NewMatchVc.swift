@@ -202,7 +202,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
         switch selectedTab {
         case .new:
             let model = data?[indexPath.row].otherGroup ?? nil
-            let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCell", for: indexPath) as! NewMatchCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCellTableViewCell", for: indexPath) as! NewMatchCellTableViewCell
             if let model { cell.configureNewMatch(with: data![indexPath.row]) }
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.imageView_, url: url)
@@ -244,7 +244,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
 
         case .saved:
             let model = dataGroup?[indexPath.row]
-            let cell = tableView.dequeueReusableCell(withIdentifier: "SavedGroupCell", for: indexPath) as! SavedGroupCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NewMatchCellTableViewCell", for: indexPath) as! NewMatchCellTableViewCell
             if let model { cell.configure(with: model) }
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.heroImage, url: url)

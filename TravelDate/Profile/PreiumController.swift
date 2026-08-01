@@ -47,7 +47,7 @@ class PreiumController: BaseClassVc,SubscriptionView {
             let tap = UITapGestureRecognizer(target: self, action: #selector(vwTap(_:)))
             view?.addGestureRecognizer(tap)
             view?.isUserInteractionEnabled = true
-            view?.layer.cornerRadius = 12
+            view?.layer.cornerRadius = 19
         }
     }
 
@@ -124,14 +124,14 @@ class PreiumController: BaseClassVc,SubscriptionView {
 
     private func highlightView(_ view: UIView) {
         view.layer.borderColor = UIColor.appOrange.cgColor
-        view.layer.borderWidth = 2.5
+        view.layer.borderWidth = 1.0
         view.backgroundColor = UIColor.appOrange.withAlphaComponent(0.12)
     }
 
     private func resetView(_ view: UIView) {
         view.layer.borderColor = UIColor.clear.cgColor
         view.layer.borderWidth = 0
-        view.backgroundColor = .clear
+        view.backgroundColor = UIColor(hex: "151718")
     }
     
     

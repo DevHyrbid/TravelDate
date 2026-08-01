@@ -63,7 +63,7 @@ struct SubscriptionPlan {
 
     var priceText: String {
         guard let product else { return "--" }
-        return "\(product.displayPrice) / \(tier.duration)"
+        return "\(product.displayPrice)"
     }
 }
 
