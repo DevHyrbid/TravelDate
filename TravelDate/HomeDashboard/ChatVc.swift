@@ -159,6 +159,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
             // My Group Selected
             btnLeft.setImage(UIImage(named: "1-1"), for: .normal)
             btnRight.setImage(UIImage(named: "1-2"), for: .normal)
+            
 
             selectedSegment = .groups
 
@@ -170,6 +171,8 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
 
             selectedSegment = .chats
         }
+        btnRight.imageView?.contentMode = .scaleAspectFill
+        btnLeft.imageView?.contentMode = .scaleAspectFill
         self.tblVw.reloadData()
     }
     
@@ -370,7 +373,11 @@ private extension ChatVc {
 
         let model = currentData[indexPath.row]
         cell.lblTitle.text = model.name ?? ""
-        cell.lblDesc.text  = "\(model.name ?? "")"
+        if model.lastMessage?.content == "" {
+            cell.lblDesc.text = "No msg"
+        } else {
+            cell.lblDesc.text  = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+        }
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
         loadAvatarImage(into: cell.imgVw, urlString: model.image)
         cell.containerView.isHidden  = true
@@ -379,6 +386,25 @@ private extension ChatVc {
         
     }
 
+    
+    func changeDate(_ str:String) -> String {
+        let isoString = str
+
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        if let date = isoFormatter.date(from: isoString) {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "EEE"   // Mon, Tue, Wed, Thu, Fri, Sat, Sun
+
+            let day = formatter.string(from: date)
+            print(day) // Sat
+            return day
+        }
+        return ""
+    }
+    
     func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
         let model = currentData[indexPath.row]
@@ -393,10 +419,8 @@ private extension ChatVc {
             
             
                 let imageUrl = matchGroup.imageArr?[1] ??  ""
-//                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
-            cell.leftImageView.kf.setImage(
-                with: URL(string: APiConstant.base + (matchGroup.imageArr?[1] ?? ""))
-            )
+                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
+            
             print("Row:", indexPath.row)
             print("Image:", matchGroup.imageArr?[1] ?? "")
             print(matchGroup.imageArr?[1] ??  "","hjhmhj")

@@ -47,9 +47,11 @@ class BaseClassVc: UIViewController {
 //        return true
 //    }
     var hasPaidSubscription: Bool {
+        print(User.curentUser?.plan,"CHECK PLAN")
         guard let plan = User.curentUser?.plan else {
             return false
         }
+        
         return !plan.isEmpty && plan.lowercased() != "free"
     }
     

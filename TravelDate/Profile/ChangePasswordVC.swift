@@ -74,12 +74,20 @@ extension UITextField {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "eye.slash"), for: .normal)
         button.tintColor = .lightGray
-        button.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
 
-        button.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
+        // Position button with trailing padding
+        button.frame = CGRect(x: 10, y: 0, width: 20, height: 20)
 
-        rightView = button
+        // Container width = button width + left/right padding
+        let container = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 20))
+        container.addSubview(button)
+
+        rightView = container
         rightViewMode = .always
+
+        button.addTarget(self,
+                         action: #selector(togglePasswordVisibility(_:)),
+                         for: .touchUpInside)
     }
 
     @objc private func togglePasswordVisibility(_ sender: UIButton) {

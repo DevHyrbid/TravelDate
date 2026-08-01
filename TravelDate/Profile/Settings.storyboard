@@ -1641,7 +1641,7 @@
                                                                     <constraint firstAttribute="height" constant="165.33000000000001" id="kCV-GK-Ulc"/>
                                                                 </constraints>
                                                             </imageView>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R7h-vM-tof">
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R7h-vM-tof" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="60" width="343" height="97"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Trips " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0HG-vB-OJy">
@@ -1665,6 +1665,11 @@
                                                                     <constraint firstItem="0HG-vB-OJy" firstAttribute="top" secondItem="R7h-vM-tof" secondAttribute="top" constant="20" id="fUG-v9-mUY"/>
                                                                     <constraint firstItem="zPX-e8-y5J" firstAttribute="leading" secondItem="R7h-vM-tof" secondAttribute="leading" constant="20" id="ifq-Yp-Gov"/>
                                                                 </constraints>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
+                                                                        <real key="value" value="12"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uxD-f2-R6z">
                                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="165.33333333333334"/>

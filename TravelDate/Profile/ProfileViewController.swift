@@ -44,25 +44,7 @@ class ProfileViewController: BaseClassVc {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
         
-        DispatchQueue.main.async {
-            if self.hasPaidSubscription {
-                self.imgPermium.isHidden = false
-                self.imgPermiumHeight.constant = 34
-                self.vwPlan.isHidden = false
-            } else {
-                self.vwPlan.isHidden = true
-                self.imgPermium.isHidden = true
-                self.imgPermiumHeight.constant = 0
-            }
-            
-            self.lblPlanName.text = User.curentUser?.plan
-            self.lblSubscribe.text = User.curentUser?.planStartDate
-            self.arr = User.curentUser?.travelStyles ?? []
-
-            self.collectionVw.performBatchUpdates({
-                self.collectionVw.reloadSections(IndexSet(integer: 0))
-            })
-        }
+        
         
 //        let vc = TravelListViewController()
 //        navigationController?.pushViewController(vc, animated: true)
@@ -78,6 +60,10 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewViewWillAppear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        setupViewData()
+    }
+    
+    func setupViewData() {
         
         txtAbout.setFont(.medium, size: 14.0)
         lblName.setFont(.bold, size: 20.0)
@@ -104,6 +90,71 @@ class ProfileViewController: BaseClassVc {
         tripsTabBarController?.showTabBar()
         registerNib()
         updateProfileCompletion()
+        DispatchQueue.main.async {
+            if self.hasPaidSubscription {
+                self.imgPermium.isHidden = false
+                self.imgPermiumHeight.constant = 34
+                self.vwPlan.isHidden = false
+            } else {
+                self.vwPlan.isHidden = true
+                self.imgPermium.isHidden = true
+                self.imgPermiumHeight.constant = 0
+            }
+            
+            
+            if let plan = User.curentUser?.plan {
+                switch plan {
+                case SubscriptionTier.weekly.rawValue:
+                    self.lblPlanName.text = "Weekly Plan"
+
+                case SubscriptionTier.monthly.rawValue:
+                    self.lblPlanName.text = "Monthly Plan"
+
+                case SubscriptionTier.yearly.rawValue:
+                    self.lblPlanName.text = "Yearly Plan"
+
+                default:
+                    self.lblPlanName.text = "Free Plan"
+                }
+            }
+
+            if let startDateString = User.curentUser?.planStartDate {
+                let formatter = ISO8601DateFormatter()
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+                if let startDate = formatter.date(from: startDateString) {
+
+                    var components = DateComponents()
+
+                    switch User.curentUser?.plan {
+                    case SubscriptionTier.weekly.rawValue:
+                        components.day = 7
+
+                    case SubscriptionTier.monthly.rawValue:
+                        components.month = 1
+
+                    case SubscriptionTier.yearly.rawValue:
+                        components.year = 1
+
+                    default:
+                        break
+                    }
+
+                    if let endDate = Calendar.current.date(byAdding: components, to: startDate) {
+
+                        let displayFormatter = DateFormatter()
+                        displayFormatter.dateFormat = "dd MMM yyyy"
+
+                        self.lblSubscribe.text = "Expires: \(displayFormatter.string(from: endDate))"
+                    }
+                }
+            }
+            self.arr = User.curentUser?.travelStyles ?? []
+
+            self.collectionVw.performBatchUpdates({
+                self.collectionVw.reloadSections(IndexSet(integer: 0))
+            })
+        }
     }
     
     

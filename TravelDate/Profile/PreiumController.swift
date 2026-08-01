@@ -100,8 +100,24 @@ class PreiumController: BaseClassVc,SubscriptionView {
         }
 
         if let selected = presenter.plans.first(where: { $0.tier == subscriptionTier }) {
-            btnContinue.setTitle("Continue - \(selected.priceText)", for: .normal)
+
+            if isSubscriptionActive(),
+               let currentPlan = currentSubscriptionType(),
+               currentPlan == plan {
+
+                btnContinue.setTitle("Current Plan", for: .normal)
+                btnContinue.isEnabled = false
+                btnContinue.alpha = 0.5
+
+            } else {
+
+                btnContinue.setTitle("Continue - \(selected.priceText)", for: .normal)
+                btnContinue.isEnabled = true
+                btnContinue.alpha = 1.0
+            }
+
         } else {
+
             btnContinue.setTitle("Continue", for: .normal)
         }
     }
@@ -209,4 +225,60 @@ extension PreiumController {
     func subscriptionStatusChanged(isSubscribed: Bool) {
         print("Subscribed: \(isSubscribed)")
     }
+    
+    private func currentSubscriptionType() -> SubscriptionType? {
+
+        guard let plan = User.curentUser?.plan else { return nil }
+
+        switch plan {
+        case "com.ios.trips.weekly":
+            return .weekly
+
+        case "com.ios.travel.monhtly":
+            return .monthly
+
+        case "com.ios.travel.yearly":
+            return .yearly
+
+        default:
+            return nil
+        }
+    }
+    
+    
+    private func isSubscriptionActive() -> Bool {
+
+        guard let startDateString = User.curentUser?.planStartDate else {
+            return false
+        }
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        guard let startDate = formatter.date(from: startDateString),
+              let currentPlan = currentSubscriptionType() else {
+            return false
+        }
+
+        var components = DateComponents()
+
+        switch currentPlan {
+        case .weekly:
+            components.day = 7
+
+        case .monthly:
+            components.month = 1
+
+        case .yearly:
+            components.year = 1
+        }
+
+        guard let expiryDate = Calendar.current.date(byAdding: components, to: startDate) else {
+            return false
+        }
+
+        return Date() < expiryDate
+    }
+    
 }
+
