@@ -159,6 +159,8 @@ class BaseClassVc: UIViewController {
                 urlStr = URL(string:APiConstant.base + url.absoluteString)
             }
             
+            print(urlStr,"hjklghjkhjkghj")
+            
             img.kf.setImage(
                 with: urlStr,
                 placeholder: UIImage(named: "User"), // optional

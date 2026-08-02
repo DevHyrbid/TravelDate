@@ -108,7 +108,7 @@ final class MembersProgressView: UIView {
         progressTrack.addSubview(progressFill)
 
         // "N left" label
-        leftLabel.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        leftLabel.font = AppFont.regular(12.0)
         leftLabel.textColor = UIColor(white: 0.85, alpha: 1)
         leftLabel.textAlignment = .right
         leftLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -135,7 +135,7 @@ final class MembersProgressView: UIView {
             // "N left" label — fixed width, pinned to right of progressContainer
             leftLabel.trailingAnchor.constraint(equalTo: progressContainer.trailingAnchor),
             leftLabel.centerYAnchor.constraint(equalTo: progressContainer.centerYAnchor),
-            leftLabel.widthAnchor.constraint(equalToConstant: 50),
+            leftLabel.widthAnchor.constraint(equalToConstant: 80),
 
             // Track — leading to container, trailing to left of label
             progressTrack.leadingAnchor.constraint(equalTo: progressContainer.leadingAnchor),
@@ -180,9 +180,33 @@ final class MembersProgressView: UIView {
             let iv = makeAvatarImageView(image: nil, index: i) // ✅ nil pass karo
             
             
-            if let urlStr = member.userMembers?.profile_image, let url = URL(string: "\(APiConstant.base)\(urlStr)") {
-                iv.kf.setImage(with: url, placeholder: UIImage(named: "User"))
+            if let url = member.userMembers?.profile_image {
+                
+                
+                if url.isEmpty {
+                    iv.image = UIImage(named: "User")
+                } else {
+                    var  urlStr = URL(string: "")
+                    if url.contains("https://lh3.googleusercontent.com") {
+                        urlStr =  URL(string: url)
+                    } else {
+                        urlStr = URL(string:APiConstant.base + url)
+                    }
+                    
+                    print(urlStr,"hjklghjkhjkghj")
+                    
+                    iv.kf.setImage(
+                        with: urlStr,
+                        placeholder: UIImage(named: "User")
+                    )
+                    
+                    print("loaded,",urlStr)
+                }
+                
             }
+            
+            iv.layer.borderColor = Theme.orange.cgColor
+            iv.layer.borderWidth = 0.5
             
             avatarStackContainer.addSubview(iv)
             avatarImageViews.append(iv)
@@ -216,7 +240,7 @@ final class MembersProgressView: UIView {
         let ratio = totalCount > 0 ? CGFloat(completedCount) / CGFloat(totalCount) : 0
         print(completedCount,totalCount,"dddddddddddddd")
         let remaining = totalCount - completedCount
-        leftLabel.text = ""//\(remaining) left
+        leftLabel.text = "\(totalCount) Travelers"
 
         // Remove old fill width constraint
         progressFillWidthConstraint?.isActive = false

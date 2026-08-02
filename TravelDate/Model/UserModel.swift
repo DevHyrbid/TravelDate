@@ -740,7 +740,7 @@ class User : Mappable {
             params: self.toJSON(),
             method: "PATCH"
         ) { responseObject, suces in
-            
+            print(responseObject)
             
             
             let statusCode = responseObject["code"] as? Int ?? 0
@@ -1312,6 +1312,7 @@ class MemberGroup: Mappable {
     var endDate  : String?
     var maxGroupSize  : Int?
     var travelStyle : [String]?
+    var travelStyles : [String]?
     var isActive : Bool?
     
     var code  : String?
@@ -1362,7 +1363,7 @@ class MemberGroup: Mappable {
     var isInvited: Bool?
     
     var  short_bio : String?
-    var travelStyles : [String]?
+    
     var is_push_notification : Int?
     
     var groupId : String?
@@ -1377,6 +1378,7 @@ class MemberGroup: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        travelStyles <- map["travelStyles"]
         members <- map["members"]
         userMembers <- map["user"]
         roomId <- map["roomId"]

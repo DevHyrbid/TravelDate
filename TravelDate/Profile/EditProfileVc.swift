@@ -93,13 +93,31 @@ class EditProfileVc: BaseClassVc {
     
     // MARK: - Location
     func setuplocationVw() {
+
         locationView = LocationSearchView()
+
+        view.addSubview(locationView)
+
+        locationView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            locationView.topAnchor.constraint(equalTo: txtLocation.bottomAnchor, constant: 8),
+            locationView.leadingAnchor.constraint(equalTo: txtLocation.leadingAnchor),
+            locationView.trailingAnchor.constraint(equalTo: txtLocation.trailingAnchor),
+            locationView.heightAnchor.constraint(equalToConstant: 220)
+        ])
+
         locationView.isHidden = true
         locationView.attach(to: txtLocation)
-        
+
         locationView.onLocationSelected = { [weak self] address, coordinate in
-            self?.txtLocation.text = address
-            self?.locationView.isHidden = true
+            guard let self = self else { return }
+
+            self.txtLocation.text = address
+            self.locationView.isHidden = true
+
+            self.request.latitude = coordinate.latitude
+            self.request.longitude = coordinate.longitude
         }
     }
     
@@ -247,10 +265,7 @@ class EditProfileVc: BaseClassVc {
         request.editProfileAPi { msg, errCode in
             
             DispatchQueue.main.async {
-                
                 if errCode == 200 {
-                    
-                    
                     self.showAlert("Profile Updated Successfully")
                 }
             }
@@ -278,7 +293,7 @@ extension EditProfileVc: UIPickerViewDelegate, UIPickerViewDataSource {
         titleForRow row: Int,
         forComponent component: Int
     ) -> String? {
-        return genderArray[row].capitalized
+        return genderArray[row]
     }
     
     func pickerView(
@@ -286,7 +301,7 @@ extension EditProfileVc: UIPickerViewDelegate, UIPickerViewDataSource {
         didSelectRow row: Int,
         inComponent component: Int
     ) {
-        txtGender.text = genderArray[row].capitalized
+        txtGender.text = genderArray[row]
     }
 }
 
@@ -422,4 +437,10 @@ extension EditProfileVc :UITextFieldDelegate{
         
         return false
     }
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == txtLocation {
+            locationView.isHidden = false
+        }
+    }
 }
+

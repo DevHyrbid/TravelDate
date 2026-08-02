@@ -25,7 +25,6 @@ class MySavedGroupVc: BaseClassVc {
         super.viewDidLoad()
        registerNib()
         setupData()
-        print(data?.members?.count,"sadf",data,"2-304irek")
     }
     
     func registerNib(){
@@ -65,8 +64,9 @@ class MySavedGroupVc: BaseClassVc {
         )
         lblTitle.text = data?.title ?? ""
         loadImage(imgGroup, url: URL(string: data?.coverImage ?? "")!)
-        lblCount.text = "\(data?.members?.count ?? 0)"
-        lblName.text = data?.creator?.name ?? ""
+        lblCount.text = "\(data?.members?.count ?? 0) Travelers"
+        lblName.text = data?.title ?? ""
+        
         tblVwHeight.constant = CGFloat((data?.members?.count ?? 0) * 400)
     }
 }
@@ -99,18 +99,19 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
             cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
         
-        let styles = model?.travelStyles ?? []
-
-        cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
-        cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
-        cell.lbl3.text = styles.indices.contains(2) ? " \(styles[2]) " : nil
-        cell.lbl4.text = styles.indices.contains(3) ? " \(styles[3]) " : nil
-        cell.lbl1.isHidden = !styles.indices.contains(0)
-        cell.lbl2.isHidden = !styles.indices.contains(1)
-        cell.lbl3.isHidden = !styles.indices.contains(2)
-        cell.lbl4.isHidden = !styles.indices.contains(3)
-        
-        
+//        let styles = model?.travelStyles ?? []
+//        print(styles,"HERE ARE THE STYLES")
+//
+//        cell.lbl1.text = styles.indices.contains(0) ? " \(styles[0]) " : nil
+//        cell.lbl2.text = styles.indices.contains(1) ? " \(styles[1]) " : nil
+//        cell.lbl3.text = styles.indices.contains(2) ? " \(styles[2]) " : nil
+//        cell.lbl4.text = styles.indices.contains(3) ? " \(styles[3]) " : nil
+//        cell.lbl1.isHidden = !styles.indices.contains(0)
+//        cell.lbl2.isHidden = !styles.indices.contains(1)
+//        cell.lbl3.isHidden = !styles.indices.contains(2)
+//        cell.lbl4.isHidden = !styles.indices.contains(3)
+        cell.styles = model?.travelStyle ?? []
+        print(model?.travelStyle ?? [],"iuoiooppppppp",model)
 //        cell.lblLocation.text = model?.locationstring ?? ""
         cell.lblDescription.text = model?.shortBio ?? ""
         
@@ -134,7 +135,7 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
     @objc func openChat(_ sender:UIButton) {
         guard let selectedUser = self.data?.members?[sender.tag] else { return }
         
-        request.targetUserId  = selectedUser.userMembers?.id  ?? ""
+        request.targetUserId  = selectedUser.id  ?? ""
         request.directChat { model,errMsg, errCode in
             if errCode == 200 {
                 
