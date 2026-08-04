@@ -92,7 +92,7 @@ class NewMatchVc: BaseClassVc {
                 DispatchQueue.main.async {
                     
                     self.data = res?.dataMatch ?? nil
-                    lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
+                    self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
                     self.tblVw.reloadData()
                     if self.data?.count == 0 {
                         self.lblNoData.isHidden = false
@@ -130,6 +130,7 @@ class NewMatchVc: BaseClassVc {
                 
                 self.dataGroup = groups
                 print("Saved Groups:", groups.count)
+                self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved matches "
                 self.lblNoData.isHidden = !groups.isEmpty
                 self.tblVw.reloadData()
             }
@@ -347,10 +348,13 @@ extension NewMatchVc {
         print("Button tapped")
         if sender == btnNew {
             print("NEW")
+            lblNewMatch.text = "New Matches"
             selectTab(.new)
             
         } else if sender == btnSave {
             print("SAVE")
+            lblNewMatch.text = "Saved Matches"
+            
             selectTab(.saved)
             
         } else if sender == btnActive {

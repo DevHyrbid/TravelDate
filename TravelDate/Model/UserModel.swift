@@ -1460,11 +1460,15 @@ struct UserMembers : Mappable {
     var locationstring : String?
     var travelStyles : [String]?
     var groupId : String?
+    var role : String?
+    var userId : String?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
+        userId <- map["userId"]
+        role <- map["role"]
         groupId <- map["groupId"]
         travelStyles <- map["travelStyles"]
         locationstring <- map["location_string"]

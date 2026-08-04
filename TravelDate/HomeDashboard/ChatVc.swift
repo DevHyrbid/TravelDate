@@ -372,6 +372,12 @@ private extension ChatVc {
     func configureGroupCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
         let model = currentData[indexPath.row]
+        
+        if model.members?.first?.id == User.curentUser?.id{
+            if model.members?.first?.role == "ADMIN" {
+                
+            }
+        }
         cell.lblTitle.text = model.name ?? ""
         if model.lastMessage?.content == "" {
             cell.lblDesc.text = "No msg"
@@ -385,7 +391,7 @@ private extension ChatVc {
         cell.imgVw.contentMode = .scaleToFill
         
     }
-
+    
     
     func changeDate(_ str:String) -> String {
         let isoString = str
@@ -408,29 +414,24 @@ private extension ChatVc {
     func configureChatCell(_ cell: ChatTableViewCell, at indexPath: IndexPath) {
 
         let model = currentData[indexPath.row]
-    
+        
         if model.type == "MATCH" {
-
+            
             let matchGroup = model
-
+            print(matchGroup.imageArr,"now new msg")
             cell.lblTitle.text = matchGroup.name ?? ""
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
+            cell.leftImageView.isHidden = false
             
+            let imageUrl = matchGroup.imageArr?[0] ??  ""
+            loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
             
-                let imageUrl = matchGroup.imageArr?[1] ??  ""
-                loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
-            
-            print("Row:", indexPath.row)
-            print("Image:", matchGroup.imageArr?[1] ?? "")
-            print(matchGroup.imageArr?[1] ??  "","hjhmhj")
-                
-
-                cell.rightImageView.image = nil
+            cell.rightImageView.isHidden = true
             print(indexPath.row)
             print(matchGroup.imageArr ?? [])
             print(matchGroup.imageArr?[1] ?? "")
-
+            cell.containerView.isHidden = false
         } else {
             cell.containerView.isHidden = true
 
@@ -619,33 +620,53 @@ private extension ChatVc {
     func makeGroupSwipeActions(at indexPath: IndexPath) -> UISwipeActionsConfiguration {
         let group = groupsData[indexPath.row]
 
-        let deleteAction = UIContextualAction(
-            style: .destructive,
-            title: "Delete"
-        ) { [weak self] _, _, completion in
-            guard let self else { completion(false); return }
-            
-            self.request.deleteGroupAPi(group.groupDetails?.id ?? "") { [weak self] _, code in
-                DispatchQueue.main.async {
-                    guard let self else { return }
+        guard let currentUserId = User.curentUser?.id,
+              let currentMember = group.members?.first(where: { $0.userId == currentUserId }) else {
+            return UISwipeActionsConfiguration(actions: [])
+        }
+        print(currentMember,"groupsData",group)
+        let title = currentMember.role == "ADMIN" ? "Delete" : "Leave"
+        let style: UIContextualAction.Style = currentMember.role == "ADMIN" ? .destructive : .destructive
+
+        let action = UIContextualAction(style: style, title: title) { [weak self] _, _, completion in
+            guard let self else {
+                completion(false)
+                return
+            }
+
+            if currentMember.role == "ADMIN" {
+                // Delete Group API
+                self.request.deleteGroupAPi(group.groupDetails?.id ?? "") { [weak self] _, code in
+                    DispatchQueue.main.async {
+                        guard let self else { return }
+
+                        if code == 200 {
+                            self.groupsData.remove(at: indexPath.row)
+                            self.tblVw.deleteRows(at: [indexPath], with: .automatic)
+                            self.lblNoData.isHidden = self.currentRowCount > 0
+
+                            NotificationCenter.default.post(
+                                name: .valueUpdated,
+                                object: nil,
+                                userInfo: ["value": "New Value"]
+                            )
+                        }
+
+                        completion(code == 200)
+                    }
+                }
+            } else {
+                // Leave Group API
+                self.request.type = "GROUP"
+                self.request.leaveGroupAPi(group.chatId ?? "") { err, code in
                     if code == 200 {
-                        self.groupsData.remove(at: indexPath.row)
-                        self.tblVw.deleteRows(at: [indexPath], with: .automatic)
-                        self.lblNoData.isHidden = self.currentRowCount > 0
-                        NotificationCenter.default.post(
-                            name: .valueUpdated,
-                            object: nil,
-                            userInfo: ["value": "New Value"]
-                        )
-                        
-                        
+                        self.fetchAllData()
                     }
                 }
             }
-            completion(true)
         }
 
-        let config = UISwipeActionsConfiguration(actions: [deleteAction])
+        let config = UISwipeActionsConfiguration(actions: [action])
         config.performsFirstActionWithFullSwipe = false
         return config
     }

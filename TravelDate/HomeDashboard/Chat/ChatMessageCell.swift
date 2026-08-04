@@ -222,7 +222,7 @@ final class ChatMessageCell: UITableViewCell {
         nameLabel.isHidden  = false
         nameLabel.text      = item.senderName
 
-        if let str = item.senderImage, let url = URL(string: str) {
+        if let str = item.senderImage, let url = URL(string: "\(str)") {
             avatarView.image = UIImage(named: "User")
             ChatImageLoader.load(url: url, into: avatarView)
         } else {

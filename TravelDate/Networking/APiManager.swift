@@ -20,10 +20,16 @@ class NetworkManger {
         success: (([String: Any], Bool) -> Void)!,
         faliure: ((String, Int) -> Void)!
     ) {
-        
-        if !url.contains("users/profile") {
+        let ignorePaths = [
+            "users/profile",
+            "filter=mygroup",
+            "filter=match"
+        ]
+
+        if !ignorePaths.contains(where: { url.contains($0) }) {
             AppLoader.show(text: "")
         }
+       
         
         let url = URL(string: url)!
         var request = URLRequest(url: url)

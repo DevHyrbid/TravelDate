@@ -218,7 +218,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblMin.setFont(.bold, size: 16.0)
         lblSec.setFont(.bold, size: 16.0)
         lblDay.setFont(.bold, size: 16.0)
-        lblGreating.setFont(.regular, size: 16.0)
+        lblGreating.setFont(.regular, size: 13.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
     }
@@ -303,24 +303,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     self.dataArray = model?.dataGroup ?? []
                     
                     if let res = model?.dataGroup?.first {
-                        print(res.latitude,res.longitude,"ssss")
+                        
                         self.btnList.menu = makeTripMenu(trips: (model?.dataGroup!)!)
                         self.btnList.showsMenuAsPrimaryAction = true
 //                        self.data = model?.dataGroup ?? nil
                         self.selected = res
-//                        print(self.selected,"JEREK")
+
                         self.didSelectTrip(res)
-//                        self.setupCountdown(startDateString: res.startDate ?? "")
-//                        self.lblDate.text = self.formatDateRange(
-//                            start: res.startDate ?? "",
-//                            end: res.endDate ?? ""
-//                        )
-//                        self.lblLocation.text = res.destination ?? ""
-//                        self.lblTitle.text = res.title ?? ""
-//                        if let url = URL(string: res.coverImage ?? "") {
-//                            self.loadImage(self.imgTrips, url: url)
-//                        }
-//                        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
+
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
@@ -361,7 +351,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         
         getPastGroups()
         request.getProfile { loginUser, errMsg, errCode in
-            
         }
         
         request.getDashBoardAPi { model, errMsg, errCode in
@@ -390,7 +379,6 @@ extension HomeViewController {
             selectedGlobal = 0
              
             self.tripsTabBarController?.switchTo(index: 1)
-//            self.pushVC(NewMatchVc.self, from: .Home,hideTabBar: true)
             break
         case 102:
             self.tripsTabBarController?.switchTo(index:3)
@@ -399,7 +387,6 @@ extension HomeViewController {
             selectedGlobal = 1
             self.tripsTabBarController?.switchTo(index: 1)
             break
-            
         case 104:
             self.btnOpenGroupChat()
             break
@@ -425,7 +412,6 @@ extension HomeViewController {
         }
         self.editGroupTappedfunc(self.selected!.toJSON())
     }
-    //self.editGroupTapped(self.selected!.toJSON())
     
     @objc private func editGroupTappedfunc(_ group: [String: Any]) {
         guard let model = GroupModel.from(group) else { return }

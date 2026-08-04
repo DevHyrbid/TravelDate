@@ -69,6 +69,11 @@ final class ChatHeaderView: UIView {
         leftImageView.layer.cornerRadius = self.leftImageView.frame.height / 2
         
     }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        leftImageView.layer.cornerRadius = leftImageView.bounds.height / 2
+        leftImageView.clipsToBounds = true
+    }
 
     /// Match chat (2 images)
 //    func configure(
