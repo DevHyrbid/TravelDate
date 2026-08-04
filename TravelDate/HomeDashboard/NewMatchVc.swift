@@ -130,7 +130,7 @@ class NewMatchVc: BaseClassVc {
                 
                 self.dataGroup = groups
                 print("Saved Groups:", groups.count)
-                self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved matches "
+                self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved groups "
                 self.lblNoData.isHidden = !groups.isEmpty
                 self.tblVw.reloadData()
             }
@@ -299,7 +299,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch selectedTab {
-        case .new:    return 650
+        case .new:    return 680
         case .saved:  return 560
         case .active: return 750
         }
@@ -353,7 +353,7 @@ extension NewMatchVc {
             
         } else if sender == btnSave {
             print("SAVE")
-            lblNewMatch.text = "Saved Matches"
+            lblNewMatch.text = "Saved Groups"
             
             selectTab(.saved)
             

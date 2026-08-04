@@ -19,6 +19,7 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var btnVwHistory: UIButton!
     @IBOutlet weak var lblUserName: UILabel!
     @IBOutlet weak var imgProfile: UIImageView!
+    @IBOutlet weak var imgTick: UIImageView!
     @IBOutlet weak var lblName: UILabel!
     @IBOutlet weak var collectionVw: UICollectionView!
     @IBOutlet weak var lblProfileTitle: UILabel!
@@ -44,7 +45,11 @@ class ProfileViewController: BaseClassVc {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
         
-        
+//        if User.curentUser?.isVerified ?? 0 == 1 {
+//            self.imgTick.isHidden = false
+//        } else {}
+            self.imgTick.isHidden = true
+//        }
         
 //        let vc = TravelListViewController()
 //        navigationController?.pushViewController(vc, animated: true)

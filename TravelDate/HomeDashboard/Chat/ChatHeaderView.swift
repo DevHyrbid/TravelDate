@@ -66,6 +66,7 @@ final class ChatHeaderView: UIView {
             leftImageView.image = UIImage(named: "User")
         }
         
+        print("\(APiConstant.base)\(imageURL)","hjehjhejkehjke")
         leftImageView.layer.cornerRadius = self.leftImageView.frame.height / 2
         
     }

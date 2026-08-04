@@ -632,7 +632,7 @@ final class ImageLoader {
             imageView.image = placeholder
             return
         }
-
+        print(url,"HERE LOADED")
         imageView.kf.setImage(
             with: url,
             placeholder: placeholder,

@@ -314,7 +314,7 @@ final class ChatMessageVc: BaseClassVc {
                 ? UIColor(hex: "#FF6B00").withAlphaComponent(0.4)
                 : UIColor(hex: "#555555"),
                 initials: initials.isEmpty ? "?" : initials,
-                profileImage: "\(APiConstant.base)\(photoURL)",currentGroupId:groupId
+                profileImage: "\(APiConstant.base)\(photoURL ?? "")",currentGroupId:groupId
             )
         }
         

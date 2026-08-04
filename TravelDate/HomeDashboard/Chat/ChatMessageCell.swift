@@ -157,6 +157,9 @@ final class ChatMessageCell: UITableViewCell {
 
     func configure(with item: ChatItem) {
         timeLabel.text = ChatDate.bubbleTime(item.createdAt)
+        print("Base:", APiConstant.base)
+        print("Image:", item.senderImage ?? "nil")
+        print("Final:", "\(APiConstant.base)\(item.imageURL ?? "")")
 
         configureAttachment(item)
 
@@ -185,7 +188,6 @@ final class ChatMessageCell: UITableViewCell {
             } else if let str = item.imageURL, let url = URL(string: str) {
                 print("-e-e-e--ee-",url)
                 attachmentView.image = nil
-//                ChatImageLoader.load(url: url, into: attachmentView)
                 ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)\(url.absoluteString)")
             }
         } else {
@@ -222,8 +224,8 @@ final class ChatMessageCell: UITableViewCell {
         nameLabel.isHidden  = false
         nameLabel.text      = item.senderName
 
-        if let str = item.senderImage, let url = URL(string: "\(str)") {
-            avatarView.image = UIImage(named: "User")
+        if let str = item.senderImage, let url = URL(string: str) {
+//            avatarView.image = UIImage(named: "User")
             ChatImageLoader.load(url: url, into: avatarView)
         } else {
             avatarView.image = UIImage(named: "User")

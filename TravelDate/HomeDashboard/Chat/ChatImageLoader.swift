@@ -15,10 +15,10 @@ enum ChatImageLoader {
     static func load(url: URL, into imageView: UIImageView) {
         
         
-        if let cached = cache.object(forKey: url as NSURL) {
-            imageView.image = cached
-            return
-        }
+//        if let cached = cache.object(forKey: url as NSURL) {
+//            imageView.image = cached
+//            return
+//        }
         var  urlStr = url
         if url.absoluteString.contains("https://lh3.googleusercontent.com") {
             urlStr =  URL(string: url.absoluteString)!

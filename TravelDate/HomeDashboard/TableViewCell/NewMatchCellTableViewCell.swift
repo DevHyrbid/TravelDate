@@ -25,6 +25,7 @@ class NewMatchCellTableViewCell: UITableViewCell {
     @IBOutlet weak var lblTimeSave:UILabel!
     @IBOutlet weak var lblLocationSave:UILabel!
     @IBOutlet weak var btnViewGroup:UIButton!
+    @IBOutlet weak var vwGlass:UIView!
     
     let membersView = MembersProgressView()
     let membersVwSave = MembersProgressView()
@@ -62,8 +63,8 @@ class NewMatchCellTableViewCell: UITableViewCell {
         ])
         
         // MARK: - Fonts
-        lblMatched.font = AppFont.semibold(12)
-        lblTitle.font = AppFont.semibold(18)
+        lblMatched.font = AppFont.semibold(10)
+        lblTitle.font = AppFont.semibold(22)
         lblTime.font = AppFont.regular(12)
         lblLocation.font = AppFont.regular(12)
         
@@ -72,16 +73,16 @@ class NewMatchCellTableViewCell: UITableViewCell {
         lblLocationSave.font = AppFont.regular(13)
         btnSaveGroup.layer.borderWidth = 1
         btnSaveGroup.layer.borderColor = UIColor.lightGray.cgColor
-        
-        btnViewGroup.layer.borderWidth = 1
+//        btnStart.setFont(UIFont(name: "Poppins-SemiBold", size: 18.0)
+//           btnSaveGroup.setFont(UIFont(name: "Poppins-SemiBold", size: 18.0)
+                                 btnViewGroup.layer.borderWidth = 1
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
         btnStart.addTarget(self, action: #selector(startChatTapped), for: .touchUpInside)
         btnSaveGroup.addTarget(self, action: #selector(saveGroupTapped), for: .touchUpInside)
         btnViewGroup.addTarget(self,
                                action: #selector(viewGroupTapped),
                                for: .touchUpInside)
-
-       
+        
     }
     
     @objc func viewGroupTapped() {
@@ -163,4 +164,69 @@ class NewMatchCellTableViewCell: UITableViewCell {
         )
     }
     
+}
+
+import UIKit
+
+final class GlassBadgeLabel: UIView {
+
+    private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+    private let label = UILabel()
+
+    init(text: String) {
+        super.init(frame: .zero)
+        setup(text: text)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup(text: "")
+    }
+
+    private func setup(text: String) {
+        translatesAutoresizingMaskIntoConstraints = false
+        clipsToBounds = true
+
+        // Glass background
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        blurView.isUserInteractionEnabled = false
+        addSubview(blurView)
+
+        // Slight white tint for the frosted look
+        let tintView = UIView()
+        tintView.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        tintView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(tintView)
+
+        // Label
+        label.text = text
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 13, weight: .semibold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+
+        NSLayoutConstraint.activate([
+            blurView.topAnchor.constraint(equalTo: topAnchor),
+            blurView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            blurView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            tintView.topAnchor.constraint(equalTo: topAnchor),
+            tintView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            tintView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tintView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            label.topAnchor.constraint(equalTo: topAnchor, constant: 6),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+        ])
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // Rounded only on trailing side (pill hanging from corner)
+        layer.cornerRadius = bounds.height / 2
+        layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner]
+    }
 }

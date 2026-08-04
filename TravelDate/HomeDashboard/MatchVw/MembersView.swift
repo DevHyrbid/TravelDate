@@ -59,7 +59,7 @@ final class MembersProgressView: UIView {
         self.members = members
         self.totalCount = max(totalCount, 1)
         self.completedCount = min(completedCount, totalCount)
-        print(completedCount,"hjklhjkhj")
+//        print(completedCount,"hjklhjkhj")
         refreshAvatars()
         refreshProgress()
     }
@@ -203,6 +203,8 @@ final class MembersProgressView: UIView {
                     print("loaded,",urlStr)
                 }
                 
+            } else {
+                iv.image = UIImage(named: "User")
             }
             
             iv.layer.borderColor = Theme.orange.cgColor
@@ -240,7 +242,7 @@ final class MembersProgressView: UIView {
         let ratio = totalCount > 0 ? CGFloat(completedCount) / CGFloat(totalCount) : 0
         print(completedCount,totalCount,"dddddddddddddd")
         let remaining = totalCount - completedCount
-        leftLabel.text = "\(totalCount) Travelers"
+        leftLabel.text = "\(members.count) travelers"
 
         // Remove old fill width constraint
         progressFillWidthConstraint?.isActive = false

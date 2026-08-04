@@ -1308,7 +1308,7 @@
                                         </connections>
                                     </button>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="stA-JQ-lnz">
-                                        <rect key="frame" x="5" y="240" width="383" height="592"/>
+                                        <rect key="frame" x="5" y="226" width="383" height="606"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <outlet property="dataSource" destination="gWb-qF-ck9" id="qPa-G9-0hy"/>
@@ -1316,19 +1316,19 @@
                                         </connections>
                                     </tableView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Data Found" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7DB-t0-isr">
-                                        <rect key="frame" x="20" y="523" width="353" height="26.333333333333371"/>
+                                        <rect key="frame" x="20" y="516" width="353" height="26.333333333333371"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TzI-We-Njw">
-                                        <rect key="frame" x="20" y="180" width="271" height="40"/>
+                                        <rect key="frame" x="20" y="170" width="271" height="36"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ndO-UB-vO6">
-                                                <rect key="frame" x="0.0" y="0.0" width="271" height="40"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="271" height="36"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tS0-9U-wcq" customClass="GlassButton" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="127" height="40"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="127" height="36"/>
                                                         <color key="backgroundColor" name="ThemeOrange"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
@@ -1345,7 +1345,7 @@
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ldk-cR-sXG" customClass="GlassButton" customModule="TravelDate" customModuleProvider="target">
-                                                        <rect key="frame" x="137" y="0.0" width="134" height="40"/>
+                                                        <rect key="frame" x="137" y="0.0" width="134" height="36"/>
                                                         <color key="backgroundColor" name="ThemeTxt"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="15"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
@@ -1368,7 +1368,7 @@
                                         <constraints>
                                             <constraint firstItem="ndO-UB-vO6" firstAttribute="top" secondItem="TzI-We-Njw" secondAttribute="top" id="55l-Pa-8O5"/>
                                             <constraint firstAttribute="bottom" secondItem="ndO-UB-vO6" secondAttribute="bottom" id="DA7-Pi-qWJ"/>
-                                            <constraint firstAttribute="height" constant="40" id="UHe-MJ-Vu2"/>
+                                            <constraint firstAttribute="height" constant="36" id="UHe-MJ-Vu2"/>
                                             <constraint firstAttribute="trailing" secondItem="ndO-UB-vO6" secondAttribute="trailing" id="WU8-uk-dJR"/>
                                             <constraint firstItem="ndO-UB-vO6" firstAttribute="leading" secondItem="TzI-We-Njw" secondAttribute="leading" id="mX7-nr-ZEp"/>
                                         </constraints>
@@ -1383,7 +1383,7 @@
                                     <constraint firstItem="Kxx-4E-HWD" firstAttribute="top" secondItem="Mjt-RO-nHu" secondAttribute="bottom" constant="5" id="AfO-LW-Csa"/>
                                     <constraint firstAttribute="trailing" secondItem="C9d-LL-Blp" secondAttribute="trailing" id="FfM-bL-hNK"/>
                                     <constraint firstItem="la0-09-x1t" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="15" id="GPT-Z0-quk"/>
-                                    <constraint firstItem="TzI-We-Njw" firstAttribute="top" secondItem="C9d-LL-Blp" secondAttribute="bottom" constant="25" id="Hxa-L9-i5C"/>
+                                    <constraint firstItem="TzI-We-Njw" firstAttribute="top" secondItem="C9d-LL-Blp" secondAttribute="bottom" constant="15" id="Hxa-L9-i5C"/>
                                     <constraint firstItem="Kxx-4E-HWD" firstAttribute="leading" secondItem="Mjt-RO-nHu" secondAttribute="leading" id="QbC-Zm-gSw"/>
                                     <constraint firstItem="TzI-We-Njw" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="20" id="YGl-KQ-phd"/>
                                     <constraint firstItem="7DB-t0-isr" firstAttribute="centerY" secondItem="stA-JQ-lnz" secondAttribute="centerY" id="bd0-h9-RgB"/>

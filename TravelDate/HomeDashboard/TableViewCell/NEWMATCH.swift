@@ -380,13 +380,16 @@ class SavedGroupCell: UITableViewCell {
         heroImage.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(heroImage)
 
-        // ── Gradient: starts mid-card, very dark at bottom 45% ───────────
+        // ── Gradient: starts mid-card, very dark at bottom 45%
         gradientLayer.colors = [
             UIColor.clear.cgColor,
-            UIColor.black.withAlphaComponent(0.20).cgColor,
-            UIColor.black.withAlphaComponent(0.82).cgColor
+            UIColor.black.cgColor
         ]
-        gradientLayer.locations = [0.0, 0.50, 1.0]
+
+        gradientLayer.locations = [0.0, 1.0]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        gradientLayer.opacity = 0.8
         heroImage.layer.addSublayer(gradientLayer)
 
         // ── "New Strategy" badge — top-left ───────────────────────────────
@@ -493,9 +496,9 @@ class SavedGroupCell: UITableViewCell {
 
             // View Group: 20pt from bottom, 16pt margins
             viewGroupBtn.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20),
-            viewGroupBtn.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
             viewGroupBtn.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            viewGroupBtn.heightAnchor.constraint(equalToConstant: 54),
+            viewGroupBtn.heightAnchor.constraint(equalToConstant: 46),
+            viewGroupBtn.widthAnchor.constraint(equalToConstant: 160),
 
             // Members row: 14pt above View Group
             membersRow.bottomAnchor.constraint(equalTo: viewGroupBtn.topAnchor, constant: -14),
@@ -522,7 +525,7 @@ class SavedGroupCell: UITableViewCell {
     func configure(with model: Group) {
         nameLabel.text      = model.title ?? ""
         locationLabel.text  = model.destination ?? ""
-        travelersLabel.text = "\(model.members?.count ?? 0) travelers"
+//        travelersLabel.text = "\(model.members?.count ?? 0) travelers"
         membersView.configure(
             members: model.members ?? [],
             totalCount: model.maxGroupSize ?? 0,
