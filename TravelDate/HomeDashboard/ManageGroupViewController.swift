@@ -18,6 +18,15 @@ struct GroupMember {
     var avatarColor: UIColor
     var initials: String
     var profileImage: String? = nil   // ✅ default value fixes compile error at call sites
+    var currentGroupId: String
+}
+
+/// Controls which flavor of this sheet is shown.
+/// `.owner`  -> "Manage Group": members list + Delete Group (you created/administer the group)
+/// `.match`  -> "Chat Options": no members list, Trip Dates row, Leave Group (a matched/joined group)
+enum GroupManageType {
+    case owner
+    case match
 }
 
 // MARK: - Design Tokens
@@ -26,19 +35,18 @@ struct GroupMember {
 
 // MARK: - ManageGroupViewController
 
-final class ManageGroupViewController: UIViewController {
+final class ManageGroupViewController: BaseClassVc {
 
     // MARK: Config
+    var groupType: GroupManageType = .owner
     var groupName: String = "Bali Adventure Crew"
     var groupSubtitle: String = "Bali Adventure Crew"
     var tripDates: String = "Static"
     var onDeleteGroup: (() -> Void)?
+    var onLeaveGroup: (() -> Void)?
 
     private var members: [GroupMember] = [
-        GroupMember(id: "you",   name: "You",           role: "Group Creator", isAdmin: true,  isCurrentUser: true,  avatarColor: UIColor(hex: "#555555"), initials: ""),
-        GroupMember(id: "sarah", name: "Sarah Johnson", role: "Member",        isAdmin: false, isCurrentUser: false, avatarColor: UIColor(hex: "#7B3F3F"), initials: "SJ"),
-        GroupMember(id: "mike",  name: "Mike Chen",     role: "Member",        isAdmin: false, isCurrentUser: false, avatarColor: UIColor(hex: "#3F5A7B"), initials: "MC"),
-        GroupMember(id: "emma",  name: "Emma Davis",    role: "Member",        isAdmin: false, isCurrentUser: false, avatarColor: UIColor(hex: "#4F7B5A"), initials: "ED"),
+        GroupMember(id: "you",   name: "You",           role: "Group Creator", isAdmin: true,  isCurrentUser: true,  avatarColor: UIColor(hex: "#555555"), initials: "", currentGroupId: "")
     ]
 
     private var isMembersExpanded = true
@@ -50,7 +58,7 @@ final class ManageGroupViewController: UIViewController {
     private let contentStack = UIStackView()
     private let membersListStack = UIStackView()
 
-    private lazy var titleLabel    = makeLabel("Manage Group", size: 22, weight: .bold, color: Theme.textPrimary)
+    private lazy var titleLabel    = makeLabel(headerTitle, size: 22, weight: .bold, color: Theme.textPrimary)
     private lazy var subtitleLabel = makeLabel(groupSubtitle, size: 14, weight: .regular, color: Theme.textSecond)
 
     private lazy var membersChevron: UIImageView = {
@@ -71,6 +79,24 @@ final class ManageGroupViewController: UIViewController {
     }()
 
     private let feedback = UIImpactFeedbackGenerator(style: .light)
+
+    // MARK: Derived text/config based on groupType
+
+    private var headerTitle: String {
+        groupType == .owner ? "Manage Group" : "Chat Options"
+    }
+
+    private var showsMembersSection: Bool {
+        groupType == .owner
+    }
+
+    private var bottomActionTitle: String {
+        groupType == .owner ? "Delete Group" : "Leave Group"
+    }
+
+    private var bottomActionIconName: String {
+        groupType == .owner ? "rectangle.portrait.and.arrow.right" : "rectangle.portrait.and.arrow.right"
+    }
 
     // MARK: Lifecycle
 
@@ -97,21 +123,26 @@ final class ManageGroupViewController: UIViewController {
         let header = buildHeader()
 
         // ---- Scrollable content ----
-        let membersCard = buildMembersCard()
         let muteCard    = buildIconRow(iconName: "bell.fill",
                                        iconTint: Theme.accent,
                                        title: "Mute Notifications",
                                        trailing: muteToggle)
         let tripCard    = buildTripDatesRow()
-        let deleteCard  = buildDeleteRow()
+        let bottomActionCard = buildBottomActionRow()
 
-        [membersCard, muteCard, tripCard, deleteCard].forEach { styleAsCard($0) }
+        var cards: [UIView] = []
+        if showsMembersSection {
+            cards.append(buildMembersCard())
+        }
+        cards.append(contentsOf: [muteCard, tripCard, bottomActionCard])
+
+        cards.forEach { styleAsCard($0) }
 
         contentStack.axis = .vertical
         contentStack.spacing = 14
         contentStack.isLayoutMarginsRelativeArrangement = true
         contentStack.layoutMargins = UIEdgeInsets(top: 4, left: 18, bottom: 32, right: 18)
-        [membersCard, muteCard, tripCard, deleteCard].forEach { contentStack.addArrangedSubview($0) }
+        cards.forEach { contentStack.addArrangedSubview($0) }
 
         scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -189,7 +220,7 @@ final class ManageGroupViewController: UIViewController {
         return row
     }
 
-    // MARK: Members Card
+    // MARK: Members Card (owner-only)
 
     private func buildMembersCard() -> UIView {
         let container = UIView()
@@ -280,9 +311,12 @@ final class ManageGroupViewController: UIViewController {
 //            self?.blockMemberTapped(memberId: member.id, memberName: member.name)
 //        }
 //        swipeRow.translatesAutoresizingMaskIntoConstraints = false
-//        container.addSubview(swipeRow)
+        
 //        swipeRow.pinEdges(to: container)
+        container.addSubview(row)
+        row.pinEdges(to: container)
         return container
+        
     }
 
     private func makeAvatar(for member: GroupMember) -> UIView {
@@ -436,19 +470,19 @@ final class ManageGroupViewController: UIViewController {
         return wrap
     }
 
-    // MARK: Delete Row
+    // MARK: Bottom Action Row (Delete Group for owner, Leave Group for match)
 
-    private func buildDeleteRow() -> UIView {
-        let iconView = makeIconView(systemName: "rectangle.portrait.and.arrow.right",
+    private func buildBottomActionRow() -> UIView {
+        let iconView = makeIconView(systemName: bottomActionIconName,
                                     bg: UIColor(hex: "#3A1212"), tint: Theme.danger)
-        let label = makeLabel("Delete Group", size: 16, weight: .medium, color: Theme.danger)
+        let label = makeLabel(bottomActionTitle, size: 16, weight: .medium, color: Theme.danger)
         let row = UIStackView(arrangedSubviews: [iconView, label, UIView()])
         row.alignment = .center
         row.spacing = 12
         row.isLayoutMarginsRelativeArrangement = true
         row.layoutMargins = Theme.rowInset
         row.isUserInteractionEnabled = true
-        row.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(deleteGroupTapped(_:))))
+        row.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(bottomActionTapped(_:))))
         let wrap = UIView()
         row.translatesAutoresizingMaskIntoConstraints = false
         wrap.addSubview(row)
@@ -485,9 +519,14 @@ final class ManageGroupViewController: UIViewController {
         feedback.impactOccurred()
     }
 
-    @objc private func deleteGroupTapped(_ gesture: UITapGestureRecognizer) {
+    @objc private func bottomActionTapped(_ gesture: UITapGestureRecognizer) {
         if let row = gesture.view { animateTap(row) }
-        presentDeleteConfirmation()
+        switch groupType {
+        case .owner:
+            presentDeleteConfirmation()
+        case .match:
+            presentLeaveConfirmation()
+        }
     }
 
     @objc private func removeMemberTapped(_ sender: UIButton) {
@@ -518,16 +557,24 @@ final class ManageGroupViewController: UIViewController {
     @objc private func moreOptionsTapped(_ sender: UIButton) {
         guard let memberId = sender.accessibilityIdentifier,
               let idx = members.firstIndex(where: { $0.id == memberId }) else { return }
+        
+        let group = members.first?.currentGroupId ?? ""
+        
         let member = members[idx]
         let sheet = UIAlertController(title: member.name, message: nil, preferredStyle: .actionSheet)
-        let adminTitle = member.isAdmin ? "Remove Admin" : "Make Admin"
-        sheet.addAction(UIAlertAction(title: adminTitle, style: .default) { [weak self] _ in
-            self?.members[idx].isAdmin.toggle()
-            self?.animateMembersReload()
-        })
+//        let adminTitle = member.isAdmin ? "Remove Admin" : "Make Admin"
+//        sheet.addAction(UIAlertAction(title: adminTitle, style: .default) { [weak self] _ in
+//            self?.members[idx].isAdmin.toggle()
+//            self?.animateMembersReload()
+//        })
         sheet.addAction(UIAlertAction(title: "Remove from Group", style: .destructive) { [weak self] _ in
             self?.members.removeAll { $0.id == memberId }
             self?.animateMembersReload()
+            
+            self?.request.userId = memberId
+            self?.request.removeMemberAPi(group) { er, code in
+                
+            }
         })
         sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(sheet, animated: true)
@@ -541,12 +588,28 @@ final class ManageGroupViewController: UIViewController {
         }
     }
 
-    // MARK: Delete Confirmation Modal
+    // MARK: Delete / Leave Confirmation Modal
 
     private func presentDeleteConfirmation() {
         let popup = DeleteConfirmationViewController()
+        popup.configure(title: "Delete Group?",
+                        message: "Are you sure you want to permanently delete your group?",
+                        confirmTitle: "Delete")
         popup.onConfirm = { [weak self] in
             self?.dismiss(animated: true) { self?.onDeleteGroup?() }
+        }
+        popup.modalPresentationStyle = .overFullScreen
+        popup.modalTransitionStyle = .crossDissolve
+        present(popup, animated: false)
+    }
+
+    private func presentLeaveConfirmation() {
+        let popup = DeleteConfirmationViewController()
+        popup.configure(title: "Leave Group?",
+                        message: "Are you sure you want to leave this group? You can be re-invited later.",
+                        confirmTitle: "Leave")
+        popup.onConfirm = { [weak self] in
+            self?.dismiss(animated: true) { self?.onLeaveGroup?() }
         }
         popup.modalPresentationStyle = .overFullScreen
         popup.modalTransitionStyle = .crossDissolve
@@ -869,32 +932,56 @@ extension SwipeableRow: UIGestureRecognizerDelegate {
 // MARK: - Present Helper
 
 extension ManageGroupViewController {
+    /// - Parameters:
+    ///   - groupType: `.owner` shows the full "Manage Group" screen (members list + Delete Group).
+    ///                `.match` shows the simplified "Chat Options" screen (no members, Leave Group).
     static func present(from vc: UIViewController,
+                        groupType: GroupManageType = .owner,
                         groupName: String = "Bali Adventure Crew",
                         groupSubtitle: String = "Bali Adventure Crew",
                         tripDates: String = "Apr 15 - Apr 25, 2026",
                         members: [GroupMember]? = nil,
-                        onDelete: (() -> Void)? = nil) {
+                        onDelete: (() -> Void)? = nil,
+                        onLeave: (() -> Void)? = nil) {
         let sheet = ManageGroupViewController()
+        sheet.groupType = groupType
         sheet.groupName = groupName
         sheet.groupSubtitle = groupSubtitle
         sheet.tripDates = tripDates
         if let members = members { sheet.members = members }
         sheet.onDeleteGroup = onDelete
+        sheet.onLeaveGroup = onLeave
         sheet.modalPresentationStyle = .pageSheet
         vc.present(sheet, animated: true)
     }
 }
 
-// MARK: - DeleteConfirmationViewController (Custom Centered Modal)
+// MARK: - DeleteConfirmationViewController (Custom Centered Modal, reused for Delete/Leave)
 
 final class DeleteConfirmationViewController: UIViewController {
     
     var onConfirm: (() -> Void)?
-    
+
+    private var titleText = "Delete Group?"
+    private var messageText = "Are you sure you want to permanently delete your group?"
+    private var confirmTitle = "Delete"
+
     private let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private let dimView = UIView()
     private let popupView = UIView()
+
+    private let titleLabel = UILabel()
+    private let subtitleLabel = UILabel()
+
+    /// Call before presenting to customize copy for Delete vs Leave flows.
+    func configure(title: String, message: String, confirmTitle: String) {
+        self.titleText = title
+        self.messageText = message
+        self.confirmTitle = confirmTitle
+        // Safe even if called before/after viewDidLoad.
+        titleLabel.text = title
+        subtitleLabel.text = message
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -931,18 +1018,16 @@ final class DeleteConfirmationViewController: UIViewController {
         popupView.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
         view.addSubview(popupView)
         
-        let title = UILabel()
-        title.text = "Delete Group?"
-        title.font = .systemFont(ofSize: 22, weight: .bold)
-        title.textColor = .white
-        title.textAlignment = .center
+        titleLabel.text = titleText
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
         
-        let subtitle = UILabel()
-        subtitle.text = "Are you sure you want to permanently delete your group?"
-        subtitle.font = .systemFont(ofSize: 15, weight: .regular)
-        subtitle.textColor = UIColor(hex: "#9A9A9E")
-        subtitle.textAlignment = .center
-        subtitle.numberOfLines = 0
+        subtitleLabel.text = messageText
+        subtitleLabel.font = .systemFont(ofSize: 15, weight: .regular)
+        subtitleLabel.textColor = UIColor(hex: "#9A9A9E")
+        subtitleLabel.textAlignment = .center
+        subtitleLabel.numberOfLines = 0
         
         let cancelBtn = makeButton(title: "Cancel",
                                    textColor: .white,
@@ -950,21 +1035,21 @@ final class DeleteConfirmationViewController: UIViewController {
                                    borderColor: UIColor(hex: "#48484A"))
         cancelBtn.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         
-        let deleteBtn = makeButton(title: "Delete",
+        let confirmBtn = makeButton(title: confirmTitle,
                                    textColor: .white,
                                    bg: UIColor(hex: "#FF3B30"),
                                    borderColor: nil)
-        deleteBtn.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+        confirmBtn.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
         
-        let buttonRow = UIStackView(arrangedSubviews: [cancelBtn, deleteBtn])
+        let buttonRow = UIStackView(arrangedSubviews: [cancelBtn, confirmBtn])
         buttonRow.axis = .horizontal
         buttonRow.distribution = .fillEqually
         buttonRow.spacing = 12
         
-        let stack = UIStackView(arrangedSubviews: [title, subtitle, buttonRow])
+        let stack = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel, buttonRow])
         stack.axis = .vertical
         stack.spacing = 12
-        stack.setCustomSpacing(24, after: subtitle)
+        stack.setCustomSpacing(24, after: subtitleLabel)
         stack.translatesAutoresizingMaskIntoConstraints = false
         popupView.addSubview(stack)
         

@@ -23,6 +23,7 @@ class APiConstant : NSObject {
     
     static let savedGroup = baseUrl + "groups/saved"
     static let saveGroup = baseUrl + "groups/"
+    static let removeMember = baseUrl + "groups/"
     static let users = baseUrl + "users/all-users?limit=100&page="
     static let allGroups = baseUrl + "group?limit=100&page=1"
     static let socialLogin = baseUrl + "users/social-login"

@@ -13,6 +13,7 @@ import UIKit
 enum ChatRoomType: String, Codable {
     case individual
     case group
+    case match
 }
 
 // MARK: - Message Status (for optimistic UI)

@@ -40,6 +40,7 @@ final class ChatMessageVc: BaseClassVc {
     ) {
         self.viewModel = viewModel
         self.roomTitle = roomTitle
+        self.viewModel.roomType = type
 
         super.init(nibName: nil, bundle: nil)
 
@@ -270,24 +271,30 @@ final class ChatMessageVc: BaseClassVc {
         
         if self.viewModel.roomType == .group {
             
-            didTapManageGroup()
+            didTapManageGroup(.owner)
+        } else {
+            didTapManageGroup(.match)
         }
 
     }
     
     
-    @objc func didTapManageGroup() {
-        
-        // Use raw members array from group data (has full user objects)
+    func didTapManageGroup(_ type:GroupManageType) {
+        var groupId = ""
         //        viewModel.participants?.toJSON()
         let rawMembers = viewModel.participants.toJSON()
-        let groupMembers: [GroupMember] = rawMembers.enumerated().map { index, memberDict in
-            let userId        = memberDict["id"]            as? String ?? ""
-            let name          = memberDict["name"]          as? String ?? "Unknown"
-            let photoURL      = memberDict["profile_image"] as? String
-            let isAdmin       = index == 0
-            let isCurrentUser = userId == User.curentUser?.id
+        print(rawMembers,"JOINED HERE")
+        let groupMembers: [GroupMember] = rawMembers.map { memberDict in
             
+            let userId = memberDict["userId"] as? String ?? ""
+            groupId = memberDict["groupId"] as? String ?? ""
+            let name = memberDict["name"] as? String ?? "Unknown"
+            let photoURL = memberDict["profile_image"] as? String
+            
+            let backendRole = memberDict["role"] as? String ?? ""
+            let isAdmin = backendRole == "ADMIN"
+            
+            let isCurrentUser = userId == User.curentUser?.id
             let displayName = isCurrentUser ? "You" : name
             
             let initials = name
@@ -296,53 +303,75 @@ final class ChatMessageVc: BaseClassVc {
                 .compactMap { $0.first.map(String.init) }
                 .joined()
                 .uppercased()
-            
+            print("openGroupID here ----------",groupId)
             return GroupMember(
-                id:            userId,
-                name:          displayName,
-                role:          isAdmin ? "Group Creator" : "Member",
-                isAdmin:       isAdmin,
+                id: userId,
+                name: displayName,
+                role: isAdmin ? "Group Creator" : "Member",
+                isAdmin: isAdmin,
                 isCurrentUser: isCurrentUser,
-                avatarColor:   isCurrentUser
+                avatarColor: isCurrentUser
                 ? UIColor(hex: "#FF6B00").withAlphaComponent(0.4)
                 : UIColor(hex: "#555555"),
-                initials:      initials.isEmpty ? "?" : initials,
-                profileImage:  photoURL
+                initials: initials.isEmpty ? "?" : initials,
+                profileImage: "\(APiConstant.base)\(photoURL)",currentGroupId:groupId
             )
         }
         
-        ManageGroupViewController.present(
-            from: self,
-            groupName: roomTitle,
-            groupSubtitle: "\(groupMembers.count) travelers",
-            members: groupMembers,
-            onDelete: { [weak self] in
-                self?.navigationController?.popViewController(animated: true)
-            }
-        )
+        print(groupMembers,"HERE COUNT")
+        if type == .owner {
+            ManageGroupViewController.present(
+                from: self, groupType:.owner,
+                groupName: roomTitle,
+                groupSubtitle: "\(groupMembers.count) travelers",
+                members: groupMembers,
+                onDelete: { [weak self] in
+                    // Delete Group API
+                    self?.request.deleteGroupAPi(groupId) { err, code in
+                        DispatchQueue.main.async {
+                            guard let self else { return }
+                            
+                            if code == 200 {
+                                
+                                self.navigationController?.popViewController(animated: true)
+                                NotificationCenter.default.post(
+                                    name: .valueUpdated,
+                                    object: nil,
+                                    userInfo: [:]
+                                )
+                            }
+                            
+                            
+                        }
+                        
+                    }
+                    
+                }
+            )
+        } else {
+            ManageGroupViewController.present(
+                from: self, groupType:.match,
+                groupName: roomTitle,
+                groupSubtitle: "\(groupMembers.count) travelers",
+                members: groupMembers,onLeave: { [weak self] in
+                    self?.request.type = "MATCH"
+                    self?.request.leaveGroupAPi(self?.viewModel.roomId) { err, code in
+                        if code == 200 {
+                            DispatchQueue.main.async {
+                                self?.navigationController?.popViewController(animated: true)
+                                NotificationCenter.default.post(
+                                    name: .valueUpdated,
+                                    object: nil,
+                                    userInfo: [:]
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+            
+        }
     }
-    
-
-    
-    
-    /*
-     @objc private func didTapManageGroup() {
-         ManageGroupViewController.present(
-             from: self,
-             groupName: "Bali Adventure Crew",
-             groupSubtitle: "4 travelers",
-             tripDates: "Apr 15 – Apr 25, 2026",
-             onDelete: { [weak self] in
-                 // group was deleted — pop back to the chat list
-                 self?.navigationController?.popViewController(animated: true)
-             }
-         )
-     }
-     */
-
-    // MARK: - Scroll helper
-
-    
 }
 
 // MARK: - Table DataSource / Delegate

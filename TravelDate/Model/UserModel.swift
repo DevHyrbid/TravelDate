@@ -1101,6 +1101,23 @@ class User : Mappable {
         }
     }
     
+    
+    func  removeMemberAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: "\(APiConstant.removeMember)" + "\(id ?? "")/remove-member", params: self.toJSON(), method: "POST") { responseObject, suces in
+            
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
     func  saveGroupAPi(_ id:String?,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: "\(APiConstant.saveGroup)" + "\(id ?? "")/save", params: self.toJSON(), method: "POST") { responseObject, suces in
@@ -1116,6 +1133,7 @@ class User : Mappable {
         }
         
     }
+    
     func  getHistoryTrips(callBack:((_ chat:[MyGroup]?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.historyTrips , params: [:], method: "GET") { responseObject, success in

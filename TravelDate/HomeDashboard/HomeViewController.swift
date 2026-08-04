@@ -89,9 +89,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     
     @objc private func handleValueUpdated(_ notification: Notification) {
-        if let value = notification.userInfo?["value"] as? String {
-            print("Updated Value: \(value)")
-        }
+       
         
         getGroups()
         getPastGroups()

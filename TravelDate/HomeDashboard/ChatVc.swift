@@ -373,11 +373,6 @@ private extension ChatVc {
 
         let model = currentData[indexPath.row]
         
-        if model.members?.first?.id == User.curentUser?.id{
-            if model.members?.first?.role == "ADMIN" {
-                
-            }
-        }
         cell.lblTitle.text = model.name ?? ""
         if model.lastMessage?.content == "" {
             cell.lblDesc.text = "No msg"
@@ -385,7 +380,7 @@ private extension ChatVc {
             cell.lblDesc.text  = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
         }
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
-        loadAvatarImage(into: cell.imgVw, urlString: model.image)
+        loadAvatarImage(into: cell.imgVw, urlString: model.imageArr?[0])
         cell.containerView.isHidden  = true
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleToFill
@@ -418,7 +413,7 @@ private extension ChatVc {
         if model.type == "MATCH" {
             
             let matchGroup = model
-            print(matchGroup.imageArr,"now new msg")
+            
             cell.lblTitle.text = matchGroup.name ?? ""
             cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
@@ -428,15 +423,14 @@ private extension ChatVc {
             loadImage(cell.leftImageView, url: URL(string: imageUrl)!)
             
             cell.rightImageView.isHidden = true
-            print(indexPath.row)
-            print(matchGroup.imageArr ?? [])
-            print(matchGroup.imageArr?[1] ?? "")
+        
+            
             cell.containerView.isHidden = false
         } else {
             cell.containerView.isHidden = true
 
             cell.lblTitle.text = model.name
-            cell.lblDesc.text = model.lastMessage?.content ?? ""
+            cell.lblDesc.text = model.lastMessage?.content ?? "" 
             cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
             loadAvatarImage(
                 into: cell.imgVw,
@@ -557,6 +551,7 @@ private extension ChatVc {
         let viewModel = ChatViewModel(
             currentUserId: currentUserId
         )
+        
 
         // Open existing room directly if available
         let vc = ChatMessageVc(
@@ -586,7 +581,7 @@ private extension ChatVc {
                 participants: item.members ?? [],
                 roomId: item.chatId,
                 roomTitle: item.name ?? "",
-                type: .group
+                type: .match
             )
 
             navigationController?.pushViewController(vc, animated: true)
@@ -648,7 +643,7 @@ private extension ChatVc {
                             NotificationCenter.default.post(
                                 name: .valueUpdated,
                                 object: nil,
-                                userInfo: ["value": "New Value"]
+                                userInfo: [:]
                             )
                         }
 
@@ -661,6 +656,11 @@ private extension ChatVc {
                 self.request.leaveGroupAPi(group.chatId ?? "") { err, code in
                     if code == 200 {
                         self.fetchAllData()
+                        NotificationCenter.default.post(
+                            name: .valueUpdated,
+                            object: nil,
+                            userInfo: [:]
+                        )
                     }
                 }
             }
