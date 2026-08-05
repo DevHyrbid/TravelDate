@@ -485,7 +485,8 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
         )
         cell.lblTitle.text = model?.title ?? ""
         loadImage(cell.imgVw, url: URL(string: model?.coverImage ?? "")!)
-        cell.imgVw.layer.cornerRadius =  12
+        cell.imgVw.layer.cornerRadius =  10
+        cell.imgVw.contentMode = .scaleAspectFill
         cell.imgVw.clipsToBounds = true
         return cell
     }

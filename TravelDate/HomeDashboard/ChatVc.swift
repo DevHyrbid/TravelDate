@@ -434,10 +434,18 @@ private extension ChatVc {
             
             cell.containerView.isHidden = false
         } else {
+            
+            if model.lastMessage?.fileType == "video" {
+                cell.lblDesc.text = "Video"
+            } else if model.lastMessage?.fileType == "image" {
+                cell.lblDesc.text = "Image"
+            } else {
+                cell.lblDesc.text = model.lastMessage?.content ?? ""
+            }
             cell.containerView.isHidden = true
 
             cell.lblTitle.text = model.name
-            cell.lblDesc.text = model.lastMessage?.content ?? "" 
+//            cell.lblDesc.text = model.lastMessage?.content ?? "" 
             cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
             loadAvatarImage(
                 into: cell.imgVw,

@@ -62,6 +62,13 @@ final class ChatMessageVc: BaseClassVc {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        if #available(iOS 15.0, *) {
+            view.keyboardLayoutGuide.followsUndockedKeyboard = false
+        }
+
+        additionalSafeAreaInsets.bottom = 0
+    
         view.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
         setupHeader()
         setupTable()
@@ -76,6 +83,13 @@ final class ChatMessageVc: BaseClassVc {
                name: .didReceiveChatMessage,
                object: nil
            )
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        tableView.contentInset.bottom = inputBar.frame.height
+        tableView.scrollIndicatorInsets.bottom = inputBar.frame.height
     }
     // MEMBERS LIST VIEW PROFILE VIEW CHAT VIEW NEW MATCH
     @objc private func handleIncomingPush(_ notification: Notification) {
@@ -307,10 +321,10 @@ final class ChatMessageVc: BaseClassVc {
             self?.tableView.reloadData()
             self?.scrollToBottom(animated: true)
         }
-        viewModel.onAppend = { [weak self] in
-            self?.tableView.reloadData()
-            self?.scrollToBottom(animated: true)
-        }
+//        viewModel.onAppend = { [weak self] in
+//            self?.tableView.reloadData()
+//            self?.scrollToBottom(animated: true)
+//        }
         viewModel.onError = { [weak self] message in
             self?.showAlert(message)
         }
@@ -474,7 +488,32 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
                 ChatVideoPlayerPresenter.present(localURL: localURL, from: self)
             }
         }
+        
+        cell.onImageLongPressed = { [weak self] image in
+            guard let self = self, let image = image else { return }
+
+            UIImageWriteToSavedPhotosAlbum(
+                image,
+                self,
+                #selector(self.image(_:didFinishSavingWithError:contextInfo:)),
+                nil
+            )
+        }
         return cell
+    }
+    
+    @objc
+    private func image(
+        _ image: UIImage,
+        didFinishSavingWithError error: Error?,
+        contextInfo: UnsafeRawPointer?
+    ) {
+
+        if let error = error {
+            showAlert(error.localizedDescription)
+        } else {
+            showAlert("Image saved successfully")
+        }
     }
 
     // Date section header
@@ -526,9 +565,17 @@ private extension ChatMessageVc {
 
         let keyboard = view.convert(keyboardFrame, from: nil)
 
-        let bottomInset = max(0, view.bounds.maxY - keyboard.minY)
+        let keyboardHeight = max(
+            0,
+            view.bounds.maxY - keyboard.minY - view.safeAreaInsets.bottom
+        )
 
-        inputBottom.constant = -bottomInset
+        inputBottom.constant = -keyboardHeight
+
+        let bottomInset = keyboardHeight + inputBar.frame.height
+
+        tableView.contentInset.bottom = bottomInset
+        tableView.scrollIndicatorInsets.bottom = bottomInset
 
         UIView.animate(
             withDuration: duration,
@@ -536,13 +583,26 @@ private extension ChatMessageVc {
             options: UIView.AnimationOptions(rawValue: curve << 16)
         ) {
             self.view.layoutIfNeeded()
+        } completion: { _ in
+            self.scrollToBottom(animated: false)
         }
     }
-
+    
     @objc private func keyboardWillHide(_ notification: Notification) {
+
         inputBottom.constant = 0
 
-        UIView.animate(withDuration: 0.25) {
+        tableView.contentInset.bottom = inputBar.frame.height
+        tableView.scrollIndicatorInsets.bottom = inputBar.frame.height
+
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
+        let curve = notification.userInfo?[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt ?? 7
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: UIView.AnimationOptions(rawValue: curve << 16)
+        ) {
             self.view.layoutIfNeeded()
         }
     }

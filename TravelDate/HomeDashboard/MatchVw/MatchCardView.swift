@@ -6,12 +6,12 @@ private extension UIFont {
     static func poppins(_ weight: Weight, size: CGFloat) -> UIFont {
         let name: String
         switch weight {
-        case .regular:  name = "Poppins-Regular"
-        case .medium:   name = "Poppins-Medium"
-        case .semibold: name = "Poppins-SemiBold"
-        case .bold:     name = "Poppins-Bold"
-        default:        name = "Poppins-Regular"
-        }
+        case .regular:  name = "Inter28pt-Regular"
+        case .medium:   name = "Inter28pt-Medium"
+        case .semibold: name = "Inter28pt-SemiBold"
+        case .bold:     name = "Inter28pt-Bold"//"Poppins-Bold"
+        default:        name = "Inter28pt-Regular"
+        }//Inter_28pt
         return UIFont(name: name, size: size) ?? .systemFont(ofSize: size, weight: weight)
     }
 }

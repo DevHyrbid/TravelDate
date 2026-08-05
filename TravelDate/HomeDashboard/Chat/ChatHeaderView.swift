@@ -192,7 +192,7 @@ final class ChatHeaderView: UIView {
 
         titleLabel.textColor = .white
         titleLabel.font = UIFont(
-            name: "Poppins-SemiBold",
+            name: "Inter28pt-SemiBold",
             size: 17
         ) ?? .boldSystemFont(ofSize: 17)
 

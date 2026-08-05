@@ -21,7 +21,7 @@ final class ImagePickerManager: NSObject {
         self.presentingVC = presentingVC
         super.init()
         picker.delegate = self
-        picker.allowsEditing = true
+//        picker.allowsEditing = true
     }
 
     // MARK: - Public API

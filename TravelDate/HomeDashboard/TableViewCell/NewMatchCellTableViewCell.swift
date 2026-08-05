@@ -64,19 +64,19 @@ class NewMatchCellTableViewCell: UITableViewCell {
         
         // MARK: - Fonts
         lblMatched.font = AppFont.semibold(12)
-        lblTitle.font = AppFont.semibold(25)
+        lblTitle.font = AppFont.bold(25)
         lblTime.font = AppFont.regular(14)
         lblLocation.font = AppFont.regular(14)
         
-        lblName.font = AppFont.semibold(16)
+        lblName.font = AppFont.bold(16)
         lblTimeSave.font = AppFont.regular(13)
         lblLocationSave.font = AppFont.regular(13)
         btnSaveGroup.layer.borderWidth = 1
         btnSaveGroup.layer.borderColor = UIColor.lightGray.cgColor
-//        btnStart.setFont(UIFont(name: "Poppins-SemiBold", size: 18.0)
-//           btnSaveGroup.setFont(UIFont(name: "Poppins-SemiBold", size: 18.0)
-                                 btnViewGroup.layer.borderWidth = 1
+        btnViewGroup.layer.borderWidth = 1
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
+        btnStart.imageView?.contentMode = .scaleAspectFill
+        btnSaveGroup.imageView?.contentMode = .scaleAspectFill
         btnStart.addTarget(self, action: #selector(startChatTapped), for: .touchUpInside)
         btnSaveGroup.addTarget(self, action: #selector(saveGroupTapped), for: .touchUpInside)
         btnViewGroup.addTarget(self,
@@ -127,13 +127,6 @@ class NewMatchCellTableViewCell: UITableViewCell {
         lblTitle.text = group.title
         lblLocation.text = group.destination
 
-//        lblTime.text = formatDateRange(
-//            start: group?.startDate ?? "",
-//            end: group?.endDate ?? ""
-//        )
-
-        
-
         membersView.configure(
             members: group.members ?? [],
             totalCount: group.maxGroupSize ?? 0,
@@ -143,26 +136,7 @@ class NewMatchCellTableViewCell: UITableViewCell {
 
     
     
-    func configureSavedGroup(with model: Group) {
-        print("nwVw:", nwVw.isHidden)
-        print("savedVw:", savedVw.isHidden)
-//        nwVw.isHidden = true
-        savedVw.isHidden = false
-
-        lblName.text = model.title
-        lblLocationSave.text = model.destination
-
-//        lblTimeSave.text = formatDateRange(
-//            start: model.startDate ?? "",
-//            end: model.endDate ?? ""
-//        )
-
-        membersVwSave.configure(
-            members: model.members ?? [],
-            totalCount: model.maxGroupSize ?? 0,
-            completedCount: model.members?.count ?? 0
-        )
-    }
+    
     
 }
 

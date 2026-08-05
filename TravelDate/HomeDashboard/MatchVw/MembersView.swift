@@ -59,7 +59,17 @@ final class MembersProgressView: UIView {
         self.members = members
         self.totalCount = max(totalCount, 1)
         self.completedCount = min(completedCount, totalCount)
-//        print(completedCount,"hjklhjkhj")
+
+        refreshAvatars()
+        refreshProgress()
+    }
+    
+    func configureSaved(members: [UserMembers], totalCount: Int, completedCount: Int) {
+        print(members,members.first?.profile_image,"ssss")
+//        self.members = members as! [MemberGroup]
+        self.totalCount = max(totalCount, 1)
+        self.completedCount = min(completedCount, totalCount)
+
         refreshAvatars()
         refreshProgress()
     }
@@ -176,37 +186,28 @@ final class MembersProgressView: UIView {
         var previousAnchor: NSLayoutXAxisAnchor = avatarStackContainer.leadingAnchor
         var totalWidth: CGFloat = 0
 
+        
         for (i, member) in visible.enumerated() {
             let iv = makeAvatarImageView(image: nil, index: i) // ✅ nil pass karo
+            print(member.userMembers?.profile_image,"NO URL HERE WHAR THE ")
             
             
-            if let url = member.userMembers?.profile_image {
-                
-                
-                if url.isEmpty {
-                    iv.image = UIImage(named: "User")
-                } else {
-                    var  urlStr = URL(string: "")
-                    if url.contains("https://lh3.googleusercontent.com") {
-                        urlStr =  URL(string: url)
-                    } else {
-                        urlStr = URL(string:APiConstant.base + url)
-                    }
-                    
-                    print(urlStr,"hjklghjkhjkghj")
-                    
-                    iv.kf.setImage(
-                        with: urlStr,
-                        placeholder: UIImage(named: "User")
-                    )
-                    
-                    print("loaded,",urlStr)
-                }
-                
+            
+            let imagePath = member.profile_image?.isEmpty == false
+                ? member.profile_image
+                : member.userMembers?.profile_image
+
+            if let imagePath, !imagePath.isEmpty {
+
+                let url = imagePath.hasPrefix("https://lh3.googleusercontent.com")
+                    ? URL(string: imagePath)
+                    : URL(string: APiConstant.base + imagePath)
+
+                iv.kf.setImage(with: url, placeholder: UIImage(named: "User"))
+
             } else {
                 iv.image = UIImage(named: "User")
             }
-            
             iv.layer.borderColor = Theme.orange.cgColor
             iv.layer.borderWidth = 1
             

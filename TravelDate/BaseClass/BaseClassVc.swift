@@ -516,19 +516,19 @@ import UIKit
 extension UIFont {
 
     enum AppFont: String {
-        case bold = "Poppins-Bold"
-        case extraBold = "Poppins-ExtraBold"
-        case light = "Poppins-Light"
-        case extraLight = "Poppins-ExtraLight"
-        case medium = "Poppins-Medium"
-        case regular = "Poppins-Regular"
-        case semiBold = "Poppins-SemiBold"
-        case thin = "Poppins-Thin"
+        case regular    = "Inter28pt-Regular"
+        case medium     = "Inter28pt-Medium"
+        case semiBold   = "Inter28pt-SemiBold"
+        case bold       = "Inter28pt-Bold"
+        case extraBold  = "Inter28pt-ExtraBold"
+        case black      = "Inter28pt-Black"
+        case light      = "Inter28pt-Light"
+        case extraLight = "Inter28pt-ExtraLight"
+        case thin       = "Inter28pt-Thin"
     }
 
     static func appFont(_ font: AppFont, size: CGFloat) -> UIFont {
-        return UIFont(name: font.rawValue, size: size)
-            ?? UIFont.systemFont(ofSize: size)
+        UIFont(name: font.rawValue, size: size) ?? .systemFont(ofSize: size)
     }
 }
 
@@ -537,11 +537,13 @@ extension UIFont {
             self.font = UIFont.appFont(font, size: size)
         }
     }
-    extension UIButton {
-        func setFont(_ font: UIFont.AppFont, size: CGFloat) {
-            self.titleLabel?.font = UIFont.appFont(font, size: size)
-        }
+extension UIButton {
+    func setFont(_ font: UIFont.AppFont, size: CGFloat) {
+        let customFont = UIFont.appFont(font, size: size)
+        
+        self.titleLabel?.font = customFont
     }
+}
     extension UITextField {
         func setFont(_ font: UIFont.AppFont, size: CGFloat) {
             self.font = UIFont.appFont(font, size: size)

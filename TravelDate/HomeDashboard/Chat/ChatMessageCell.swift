@@ -41,11 +41,12 @@ final class ChatMessageCell: UITableViewCell {
 
     // attachment height — 0 when no image
     private var attachmentHeight: NSLayoutConstraint!
+    private var attachmentWidth: NSLayoutConstraint!
 
     var onRetryTapped: (() -> Void)?
     var onImageTapped: ((UIImage?) -> Void)?   // ← for full-screen preview
     var onVideoTapped: ((_ remoteURL: String?, _ localURL: URL?) -> Void)?   // ← NEW, for video playback
-
+    var onImageLongPressed: ((UIImage?) -> Void)?
     // Kept from the last configure(with:) call so the single tap gesture on
     // attachmentView knows whether to fire onImageTapped or onVideoTapped.
     private var currentMessageType = 1
@@ -89,8 +90,9 @@ final class ChatMessageCell: UITableViewCell {
         bubbleView.clipsToBounds = true
 
         // Attachment image
-        attachmentView.contentMode = .scaleAspectFill
+        attachmentView.contentMode = .scaleAspectFit
         attachmentView.clipsToBounds = true
+        attachmentView.backgroundColor = .clear
         attachmentView.layer.cornerRadius = 12
         attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
         attachmentView.isUserInteractionEnabled = true
@@ -134,10 +136,31 @@ final class ChatMessageCell: UITableViewCell {
             UITapGestureRecognizer(target: self, action: #selector(retryTapped))
         )
     }
+    
+    private func updateImageSize(_ image: UIImage) {
+
+        let maxWidth = UIScreen.main.bounds.width * 0.68
+
+        let minHeight: CGFloat = 120
+        let maxHeight: CGFloat = 360
+
+        let ratio = image.size.height / image.size.width
+
+        var height = maxWidth * ratio
+
+        height = max(minHeight, height)
+        height = min(maxHeight, height)
+
+        attachmentWidth.constant = maxWidth
+        attachmentHeight.constant = height
+    }
 
     // MARK: - Setup constraints
 
     private func setupConstraints() {
+        let maxWidth = UIScreen.main.bounds.width * 0.68
+
+        attachmentWidth = attachmentView.widthAnchor.constraint(equalToConstant: maxWidth)
         attachmentHeight = attachmentView.heightAnchor.constraint(equalToConstant: 0)
 
         NSLayoutConstraint.activate([
@@ -240,10 +263,23 @@ final class ChatMessageCell: UITableViewCell {
 
             if let local = item.localImage {
                 attachmentView.image = local
-            } else if let str = item.imageURL, let url = URL(string: str) {
+                updateImageSize(local)
+            } else if let str = item.imageURL, let url = URL(string: "\(APiConstant.base)\(str)") {
                 
                 attachmentView.image = nil
-                ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)\(url.absoluteString)")
+                print(url,"sksksks")
+//               /* ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)*/\(url.absoluteString)")
+                attachmentView.kf.setImage(with: url) { [weak self] result in
+
+                    switch result {
+
+                    case .success(let value):
+                        self?.updateImageSize(value.image)
+
+                    case .failure:
+                        self?.attachmentHeight.constant = 220
+                    }
+                }
             }
         } else if hasVideo {
             // Same slot/height as an image attachment — just a thumbnail
@@ -273,7 +309,22 @@ final class ChatMessageCell: UITableViewCell {
             attachmentView.isHidden   = true
             attachmentView.image      = nil
         }
+        
+        let longPress = UILongPressGestureRecognizer(
+            target: self,
+            action: #selector(imageLongPressed(_:))
+        )
+
+        attachmentView.isUserInteractionEnabled = true
+        attachmentView.addGestureRecognizer(longPress)
     }
+    
+    
+    @objc private func imageLongPressed(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        onImageLongPressed?(attachmentView.image)
+    }
+    
 
     private static func formattedDuration(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)

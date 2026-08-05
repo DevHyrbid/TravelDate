@@ -162,6 +162,18 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
             return
         }
+        
+        if type == "GROUP_JOIN" {
+            NotificationCenter.default.post(
+                name: .valueUpdated,
+                object: nil,
+                userInfo: [:]
+            )
+            completionHandler([.banner, .sound, .badge])
+            
+            
+            return
+        }
 
         completionHandler([.banner, .sound, .badge])
     }

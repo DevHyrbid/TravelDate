@@ -33,13 +33,9 @@ class NewMatchVc: BaseClassVc {
     
     func setupUi(){
         lblNoData.setFont(.medium, size: 20.0)
-        lblNewMatch.setFont(.medium, size: 18.0)
+        lblNewMatch.setFont(.regular, size: 18.0)
         lblMatchCount.setFont(.regular, size: 16.0)
-        btnSave.setFont(.medium, size: 18.0)
-        btnNew.setFont(.medium, size: 18.0)
-        btnNew.layer.cornerRadius = 21
-        btnSave.layer.cornerRadius = 21
-        
+       
         print(selectedGlobal,"TYUIO:HYUIOPYUIO")
         
         registerNib()
@@ -54,16 +50,16 @@ class NewMatchVc: BaseClassVc {
         tblVw.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         tblVw.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
         tblVw.alwaysBounceVertical = true
-        
+        (btnNew as? GlassButton)?.glassStyle = .new
+        (btnSave as? GlassButton)?.glassStyle = .saved
+        (btnActive as? GlassButton)?.glassStyle = .active
         
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        self.tripsTabBarController?.showTabBar()
-        
+        self.tripsTabBarController?.hideTabBar()
         setupUi()
-        
     }
     
     
@@ -93,9 +89,9 @@ class NewMatchVc: BaseClassVc {
                     
                     self.data = res?.dataMatch ?? nil
                     if self.data?.count ?? 0 == 1 {
-                        self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matche"
+                        self.lblMatchCount.text = "you have \(self.data?.count ?? 0) new match"
                     } else {
-                        self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
+                        self.lblMatchCount.text = "you have \(self.data?.count ?? 0) new matches "
                     }
                     
                     self.tblVw.reloadData()
@@ -136,9 +132,9 @@ class NewMatchVc: BaseClassVc {
                 self.dataGroup = groups
                 print("Saved Groups:", groups.count)
                 if self.dataGroup?.count == 1 {
-                    self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved group"
+                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved group"
                 } else {
-                    self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved groups "
+                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved groups "
                 }
                 self.lblNoData.isHidden = !groups.isEmpty
                 self.tblVw.reloadData()
@@ -169,8 +165,7 @@ class NewMatchVc: BaseClassVc {
         
         // Reset → glass
         buttons.forEach { $0?.setUnselectedStyle() }
-        
-        // Select one
+
         switch tab {
         case .new:
             (btnNew as? GlassButton)?.setSelectedStyle()
@@ -181,9 +176,6 @@ class NewMatchVc: BaseClassVc {
         case .active:
             (btnActive as? GlassButton)?.setSelectedStyle()
         }
-        print(btnNew is GlassButton)
-        print(btnSave is GlassButton)
-        print(btnActive is GlassButton)
         tblVw.reloadData()
     }
     
@@ -280,7 +272,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
                 vc.data = model
             } }
             cell.onBookmark = { [weak self] in
-                self?.showMaterialConfirm(title: "", message: "Are you sure you want to unSave this group") {
+                self?.showMaterialConfirm(title: "", message: "Are you sure you want to unsave this group?") {
                     
                     
                     guard let self = self else { return }
@@ -313,7 +305,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch selectedTab {
-        case .new:    return 680
+        case .new:    return 630
         case .saved:  return 560
         case .active: return 750
         }

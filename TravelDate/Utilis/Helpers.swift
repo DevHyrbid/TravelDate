@@ -415,37 +415,37 @@ import UIKit
 enum AppFont {
 
     static func regular(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-Regular", size: size) ??
+        UIFont(name: "Inter28pt-Regular", size: size) ??
         UIFont.systemFont(ofSize: size)
     }
 
     static func medium(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-Medium", size: size) ??
+        UIFont(name: "Inter28pt-Medium", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .medium)
     }
 
     static func semibold(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-SemiBold", size: size) ??
+        UIFont(name: "Inter28pt-SemiBold", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .semibold)
     }
 
     static func bold(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-ExtraBold", size: size) ??
+        UIFont(name: "Inter28pt-ExtraBold", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .bold)
     }
 
     static func light(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-Light", size: size) ??
+        UIFont(name: "Inter28pt-Light", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .light)
     }
 
     static func extraLight(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-ExtraLight", size: size) ??
+        UIFont(name: "Inter28pt-ExtraLight", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .ultraLight)
     }
 
     static func thin(_ size: CGFloat) -> UIFont {
-        UIFont(name: "Poppins-Thin", size: size) ??
+        UIFont(name: "Inter28pt-Thin", size: size) ??
         UIFont.systemFont(ofSize: size, weight: .thin)
     }
 }
@@ -1048,95 +1048,151 @@ extension UITableView {
     }
 }
 
-final class GlassButton: UIButton {
+//final class GlassButton: UIButton {
+//
+//    private let blurView = UIVisualEffectView()
+//    private let tintView = UIView()
+//    private let highlightLayer = CAGradientLayer()
+//    
+//    override init(frame: CGRect) {
+//        super.init(frame: frame)
+//        setup()
+//    }
+//    
+//    required init?(coder: NSCoder) {
+//        super.init(coder: coder)
+//        setup()
+//    }
+//    
+//    private func setup() {
+//        layer.cornerRadius = 18
+//        clipsToBounds = true
+//        
+//        // 1. Blur (back)
+//        blurView.effect = UIBlurEffect(style: .systemMaterialDark)
+//        blurView.isUserInteractionEnabled = false
+//        addSubview(blurView)
+//        
+//        // 2. Tint (above blur)
+//        tintView.backgroundColor = UIColor(
+//            red: 30/255,
+//            green: 30/255,
+//            blue: 35/255,
+//            alpha: 0.6
+//        )
+//        tintView.isUserInteractionEnabled = false
+//        addSubview(tintView)
+//        
+//        // 3. Gradient (above tint)
+////        layer.addSublayer(gradientLayer)
+//        
+//        // 4. Highlight (top layer)
+//        layer.addSublayer(highlightLayer)
+//        
+//        // TEXT
+//        setTitleColor(.white, for: .normal)
+//        
+//        // 👇 CRITICAL LINE
+//        bringSubviewToFront(titleLabel!)
+//    }
+//    
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//        
+//        blurView.frame = bounds
+//        tintView.frame = bounds
+////        gradientLayer.frame = bounds
+//        highlightLayer.frame = bounds
+//        
+//        // 👇 keep text always on top
+//        if let titleLabel = titleLabel {
+//            bringSubviewToFront(titleLabel)
+//        }
+//    }
+//    
+//    // MARK: - States
+//    
+////    func setSelectedStyle() {
+////        blurView.isHidden = true
+////        tintView.isHidden = true
+////        highlightLayer.isHidden = true
+////        
+////        backgroundColor = UIColor.themeOrange
+////        layer.borderColor = UIColor.clear.cgColor
+////        
+////        setTitleColor(.white, for: .normal)
+////    }
+////
+////    func setUnselectedStyle() {
+////        blurView.isHidden = false
+////        tintView.isHidden = false
+////        highlightLayer.isHidden = false
+////        
+////        backgroundColor = .clear
+////        layer.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
+////        
+////        setTitleColor(.white, for: .normal) // 👈 force pure white
+////    }
+//    
+//    func setSelectedStyle() {
+//        setBackgroundImage(UIImage(named: "tab_selected"), for: .normal)
+//    }
+//
+//    func setUnselectedStyle() {
+//        setBackgroundImage(UIImage(named: "tab_unselected"), for: .normal)
+//    }
+//    
+//    
+//}
 
-    private let blurView = UIVisualEffectView()
-    private let tintView = UIView()
-    private let highlightLayer = CAGradientLayer()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
+class GlassButton: UIButton {
+
+    enum GlassStyle {
+        case new
+        case saved
+        case active
     }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
-    }
-    
-    private func setup() {
-        layer.cornerRadius = 18
-        clipsToBounds = true
-        
-        // 1. Blur (back)
-        blurView.effect = UIBlurEffect(style: .systemMaterialDark)
-        blurView.isUserInteractionEnabled = false
-        addSubview(blurView)
-        
-        // 2. Tint (above blur)
-        tintView.backgroundColor = UIColor(
-            red: 30/255,
-            green: 30/255,
-            blue: 35/255,
-            alpha: 0.6
-        )
-        tintView.isUserInteractionEnabled = false
-        addSubview(tintView)
-        
-        // 3. Gradient (above tint)
-//        layer.addSublayer(gradientLayer)
-        
-        // 4. Highlight (top layer)
-        layer.addSublayer(highlightLayer)
-        
-        // TEXT
-        setTitleColor(.white, for: .normal)
-        
-        // 👇 CRITICAL LINE
-        bringSubviewToFront(titleLabel!)
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        blurView.frame = bounds
-        tintView.frame = bounds
-//        gradientLayer.frame = bounds
-        highlightLayer.frame = bounds
-        
-        // 👇 keep text always on top
-        if let titleLabel = titleLabel {
-            bringSubviewToFront(titleLabel)
-        }
-    }
-    
-    // MARK: - States
-    
+
+    var glassStyle: GlassStyle = .new
+
     func setSelectedStyle() {
-        blurView.isHidden = true
-        tintView.isHidden = true
-        highlightLayer.isHidden = true
-        
-        backgroundColor = UIColor.themeOrange
-        layer.borderColor = UIColor.clear.cgColor
-        
+
+        let imageName: String
+
+        switch glassStyle {
+        case .new:
+            imageName = "imgGlassNew"
+
+        case .saved:
+            imageName = "imgGlassSaved"
+
+        case .active:
+            imageName = "imgGlassActive"
+        }
+
+        setBackgroundImage(UIImage(named: imageName), for: .normal)
         setTitleColor(.white, for: .normal)
     }
 
     func setUnselectedStyle() {
-        blurView.isHidden = false
-        tintView.isHidden = false
-        highlightLayer.isHidden = false
-        
-        backgroundColor = .clear
-        layer.borderColor = UIColor.white.withAlphaComponent(0.18).cgColor
-        
-        setTitleColor(.white, for: .normal) // 👈 force pure white
-    }
-    
-    
-}
 
+        let imageName: String
+
+        switch glassStyle {
+        case .new:
+            imageName = "imgNewMatch"
+
+        case .saved:
+            imageName = "imgSavedMatch"
+
+        case .active:
+            imageName = "imgActiveMatch"
+        }
+
+        setBackgroundImage(UIImage(named: imageName), for: .normal)
+        setTitleColor(.white, for: .normal)
+    }
+}
 
 @IBDesignable
 class DesignableLabel: UILabel {
