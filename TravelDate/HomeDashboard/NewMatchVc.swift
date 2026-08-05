@@ -35,10 +35,10 @@ class NewMatchVc: BaseClassVc {
         lblNoData.setFont(.medium, size: 20.0)
         lblNewMatch.setFont(.medium, size: 18.0)
         lblMatchCount.setFont(.regular, size: 16.0)
-        btnSave.setFont(.medium, size: 15.0)
-        btnNew.setFont(.medium, size: 15.0)
-        btnNew.layer.cornerRadius = 20
-        btnSave.layer.cornerRadius = 20
+        btnSave.setFont(.medium, size: 18.0)
+        btnNew.setFont(.medium, size: 18.0)
+        btnNew.layer.cornerRadius = 21
+        btnSave.layer.cornerRadius = 21
         
         print(selectedGlobal,"TYUIO:HYUIOPYUIO")
         
@@ -60,7 +60,7 @@ class NewMatchVc: BaseClassVc {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tripsTabBarController?.showTabBar()
+//        self.tripsTabBarController?.showTabBar()
         
         setupUi()
         
@@ -92,7 +92,12 @@ class NewMatchVc: BaseClassVc {
                 DispatchQueue.main.async {
                     
                     self.data = res?.dataMatch ?? nil
-                    self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
+                    if self.data?.count ?? 0 == 1 {
+                        self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matche"
+                    } else {
+                        self.lblMatchCount.text = "You have \(self.data?.count ?? 0) new matches "
+                    }
+                    
                     self.tblVw.reloadData()
                     if self.data?.count == 0 {
                         self.lblNoData.isHidden = false
@@ -130,7 +135,11 @@ class NewMatchVc: BaseClassVc {
                 
                 self.dataGroup = groups
                 print("Saved Groups:", groups.count)
-                self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved groups "
+                if self.dataGroup?.count == 1 {
+                    self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved group"
+                } else {
+                    self.lblMatchCount.text = "You have \(self.dataGroup?.count ?? 0) saved groups "
+                }
                 self.lblNoData.isHidden = !groups.isEmpty
                 self.tblVw.reloadData()
             }
@@ -344,7 +353,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
 
 extension NewMatchVc {
     @IBAction func btnBack(_ sender:UIButton) {
-        super.backTapped()
+        self.tripsTabBarController?.switchTo(index: 0)
     }
     
     

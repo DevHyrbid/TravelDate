@@ -64,9 +64,6 @@ class MyGroupViewController: BaseClassVc {
         }
     }
     
-    
-    
-    
     func loadData() {
         if let res = self.res {
             
@@ -80,7 +77,6 @@ class MyGroupViewController: BaseClassVc {
             lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
             self.lblLocation.text = res.destination ?? ""
             self.lblTitle.text = res.title ?? ""
-            print(res.coverImage,"ghjkl;ghjkr̥")
             if let url = URL(string: res.coverImage ?? "") {
                 loadImage(self.imgTrips, url: url)
             }
@@ -260,10 +256,6 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
 
 extension MyGroupViewController {
     @IBAction func btnBack(_ sender:UIButton) {
-        super.backTapped()
-    }
-    
-    @IBAction func btnChat(_ sender:UIButton) {
         super.backTapped()
     }
 }

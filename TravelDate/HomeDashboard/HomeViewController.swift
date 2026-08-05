@@ -209,14 +209,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         view.backgroundColor = .black
         navigationController?.setNavigationBarHidden(true, animated: false)
         lblGreating.text = getGreeting()
-        lblName.setFont(.semiBold, size: 17.0)
+        lblName.setFont(.semiBold, size: 19.0)
         lblDate.setFont(.regular, size: 12.0)
         lblLocation.setFont(.regular, size: 12.0)
         lblHours.setFont(.bold, size: 16.0)
         lblMin.setFont(.bold, size: 16.0)
         lblSec.setFont(.bold, size: 16.0)
         lblDay.setFont(.bold, size: 16.0)
-        lblGreating.setFont(.regular, size: 13.0)
+        lblGreating.setFont(.regular, size: 12.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleToFill
     }

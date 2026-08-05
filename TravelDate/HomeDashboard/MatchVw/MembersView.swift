@@ -108,7 +108,7 @@ final class MembersProgressView: UIView {
         progressTrack.addSubview(progressFill)
 
         // "N left" label
-        leftLabel.font = AppFont.regular(12.0)
+        leftLabel.font = AppFont.regular(14.0)
         leftLabel.textColor = UIColor(white: 0.85, alpha: 1)
         leftLabel.textAlignment = .right
         leftLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -208,7 +208,7 @@ final class MembersProgressView: UIView {
             }
             
             iv.layer.borderColor = Theme.orange.cgColor
-            iv.layer.borderWidth = 0.5
+            iv.layer.borderWidth = 1
             
             avatarStackContainer.addSubview(iv)
             avatarImageViews.append(iv)

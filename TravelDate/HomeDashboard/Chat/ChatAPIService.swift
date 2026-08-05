@@ -73,6 +73,11 @@ final class ChatAPIService {
                 "fileUrl": content, // image URL
                 "fileType": "image"
             ]
+        } else if contentType == "video" {
+            body = [
+                "fileUrl": content, // video URL
+                "fileType": "video"
+            ]
         }
 
         request(url: "\(ChatAPI.sendMessage)\(roomId)/messages",

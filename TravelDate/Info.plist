@@ -22,15 +22,15 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Inter-Black.ttf</string>
-		<string>Inter-Bold.ttf</string>
-		<string>Inter-Regular.ttf</string>
-		<string>Inter-Thin.ttf</string>
-		<string>Inter-Medium.ttf</string>
-		<string>Inter-ExtraLight.ttf</string>
-		<string>Inter-Light.ttf</string>
-		<string>Inter-SemiBold.ttf</string>
-		<string>Inter_24pt-Bold.ttf</string>
+		<string>Inter_28pt-Black.ttf</string>
+		<string>Inter_28pt-Bold.ttf</string>
+		<string>Inter_28pt-ExtraBold.ttf</string>
+		<string>Inter_28pt-Regular.ttf</string>
+		<string>Inter_28pt-Thin.ttf</string>
+		<string>Inter_28pt-Medium.ttf</string>
+		<string>Inter_28pt-ExtraLight.ttf</string>
+		<string>Inter_28pt-Light.ttf</string>
+		<string>Inter_28pt-SemiBold.ttf</string>
 		<string>Poppins-Thin.ttf</string>
 		<string>Poppins-Bold.ttf</string>
 		<string>Poppins-ExtraLight.ttf</string>

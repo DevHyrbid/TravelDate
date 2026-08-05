@@ -45,8 +45,8 @@
                                 <color key="textColor" name="ThemeOrange"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="Xnx-1r-hBZ">
-                                <rect key="frame" x="20" y="424" width="279" height="40"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Xnx-1r-hBZ">
+                                <rect key="frame" x="10" y="424" width="272" height="40"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="evv-NE-pho" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="191.66666666666666" height="40"/>
@@ -54,7 +54,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ddsd" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bhU-Gq-tWR">
                                                 <rect key="frame" x="36" y="0.0" width="150.66666666666666" height="40"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" white="1" alpha="0.8010180749128919" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgCalendar" translatesAutoresizingMaskIntoConstraints="NO" id="Dv2-gv-jbX">
@@ -81,12 +81,12 @@
                                         </userDefinedRuntimeAttributes>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mpf-fp-VjE" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
-                                        <rect key="frame" x="206.66666666666666" y="0.0" width="72.333333333333343" height="40"/>
+                                        <rect key="frame" x="199.66666666666666" y="0.0" width="72.333333333333343" height="40"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="MNoh;" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SHp-XN-c7Y">
-                                                <rect key="frame" x="31.000000000000032" y="0.0" width="36.333333333333343" height="40"/>
+                                                <rect key="frame" x="31.000000000000004" y="0.0" width="36.333333333333343" height="40"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
-                                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <color key="textColor" white="1" alpha="0.79825511759581869" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLocation" translatesAutoresizingMaskIntoConstraints="NO" id="oQ4-0o-xO0">
@@ -370,7 +370,7 @@
                             <constraint firstItem="Xnx-1r-hBZ" firstAttribute="top" secondItem="CWf-Cp-gW8" secondAttribute="bottom" constant="15" id="NZt-MI-Lxj"/>
                             <constraint firstItem="VHS-SA-dSh" firstAttribute="centerY" secondItem="8ew-fh-zU5" secondAttribute="centerY" id="Ous-Im-yHv"/>
                             <constraint firstItem="8ew-fh-zU5" firstAttribute="top" secondItem="Dfu-2e-Wbg" secondAttribute="bottom" constant="15" id="RzY-nL-Cll"/>
-                            <constraint firstItem="Xnx-1r-hBZ" firstAttribute="leading" secondItem="w8T-B6-WrY" secondAttribute="leading" constant="20" id="Xqr-h1-ts4"/>
+                            <constraint firstItem="Xnx-1r-hBZ" firstAttribute="leading" secondItem="w8T-B6-WrY" secondAttribute="leading" constant="10" id="Xqr-h1-ts4"/>
                             <constraint firstAttribute="trailing" secondItem="l1l-fx-ewa" secondAttribute="trailing" id="aIA-hT-gGq"/>
                             <constraint firstItem="ahG-A5-TSr" firstAttribute="leading" secondItem="w8T-B6-WrY" secondAttribute="leading" constant="10" id="aTX-HW-mEi"/>
                             <constraint firstItem="his-jC-x2h" firstAttribute="top" secondItem="ahG-A5-TSr" secondAttribute="bottom" constant="30" id="bc3-7I-FSv"/>

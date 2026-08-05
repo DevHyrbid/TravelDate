@@ -415,7 +415,14 @@ private extension ChatVc {
             let matchGroup = model
             
             cell.lblTitle.text = matchGroup.name ?? ""
-            cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
+            if matchGroup.lastMessage?.fileType == "video" {
+                cell.lblDesc.text = "Video"
+            } else if matchGroup.lastMessage?.fileType == "image" {
+                cell.lblDesc.text = "Image"
+            } else {
+                cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
+            }
+            
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
             cell.leftImageView.isHidden = false
             
