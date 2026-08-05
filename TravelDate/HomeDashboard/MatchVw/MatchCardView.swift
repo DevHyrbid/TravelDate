@@ -314,7 +314,7 @@ final class MatchCardView: UIView {
 
       
         // Back face: fill member cells
-        let members = group.membersUser ?? []
+        let members = group.members ?? []
         for (i, cell) in memberCells.enumerated() {
             if i < members.count { cell.configure(with: members[i]); cell.isHidden = false }
             else { cell.isHidden = true }
@@ -490,14 +490,21 @@ final class MemberCell: UIView {
         addSubview(iconCircle); iconCircle.addSubview(iconLabel)
     }
 
-    func configure(with member: UserMembers) {
+    func configure(with member: MemberGroup) {
 
+        print("HERE",APiConstant.base + "\(member.user?.profile_image ?? "")")
         
-        ImageLoader.setImageKing(imageView, urlString: APiConstant.base + "\(member.profile_image ?? "")")
-        nameLabel.text = member.name ?? "Traveler"
-        let letter = String((member.name ?? "D").prefix(1)).uppercased()
+        if member.user?.profile_image?.contains("https://lh3.googleusercontent") == true{
+            ImageLoader.setImageKing(imageView, urlString: "\(member.user?.profile_image ?? "")")
+        } else {
+            
+            ImageLoader.setImageKing(imageView, urlString: APiConstant.base + "\(member.user?.profile_image ?? "")")
+        }
+//        imageView.kf.setImage(with: <#T##Source?#>)
+        nameLabel.text = member.user?.name ?? "Traveler"
+        let letter = String((member.user?.name ?? "D").prefix(1)).uppercased()
         avatarBadge.subviews.compactMap { $0 as? UILabel }.first?.text = letter
-        iconLabel.text = styleEmoji(for: member.travelStyles?.first ?? "")
+        iconLabel.text = styleEmoji(for: member.user?.travelStyles?.first ?? "")
     }
 
     override func layoutSubviews() {

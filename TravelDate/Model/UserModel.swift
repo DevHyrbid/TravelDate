@@ -1400,9 +1400,11 @@ class MemberGroup: Mappable {
     var roomId : String?
     var userMembers : UserMembers?
     var members : UserMembers?
+    var user: User?
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        user <- map["user"]
         travelStyles <- map["travelStyles"]
         members <- map["members"]
         userMembers <- map["user"]
