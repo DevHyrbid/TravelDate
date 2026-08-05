@@ -20,9 +20,14 @@ final class ChatMessageCell: UITableViewCell {
     private let nameLabel       = UILabel()
     private let bubbleView      = UIView()
     private let messageLabel    = UILabel()
-    private let attachmentView  = UIImageView()   // ← image attachment
+    private let attachmentView  = UIImageView()   // ← image OR video-thumbnail attachment
     private let timeLabel       = UILabel()
     private let failedLabel     = UILabel()
+
+    // MARK: - Video overlay (NEW — sits on top of attachmentView, only
+    // shown when the attachment is a video; image messages never touch these)
+    private let playIconView    = UIImageView()
+    private let durationLabel   = UILabel()
 
     // MARK: - Toggled constraints
     private var bubbleLeading: NSLayoutConstraint!
@@ -39,6 +44,13 @@ final class ChatMessageCell: UITableViewCell {
 
     var onRetryTapped: (() -> Void)?
     var onImageTapped: ((UIImage?) -> Void)?   // ← for full-screen preview
+    var onVideoTapped: ((_ remoteURL: String?, _ localURL: URL?) -> Void)?   // ← NEW, for video playback
+
+    // Kept from the last configure(with:) call so the single tap gesture on
+    // attachmentView knows whether to fire onImageTapped or onVideoTapped.
+    private var currentMessageType = 1
+    private var currentVideoRemoteURL: String?
+    private var currentVideoLocalURL: URL?
 
     // MARK: - Init
 
@@ -85,6 +97,27 @@ final class ChatMessageCell: UITableViewCell {
         attachmentView.addGestureRecognizer(
             UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         )
+
+        // Video overlay (NEW) — added on top of attachmentView, hidden by
+        // default. Nothing about attachmentView's own setup above changed.
+        attachmentView.addSubview(playIconView)
+        attachmentView.addSubview(durationLabel)
+        playIconView.translatesAutoresizingMaskIntoConstraints = false
+        durationLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        playIconView.image = UIImage(systemName: "play.circle.fill")
+        playIconView.tintColor = .white
+        playIconView.contentMode = .scaleAspectFit
+        playIconView.isHidden = true
+        playIconView.isUserInteractionEnabled = false // tap is handled by attachmentView's own gesture
+
+        durationLabel.font = UIFont(name: "Poppins-Medium", size: 11) ?? .systemFont(ofSize: 11)
+        durationLabel.textColor = .white
+        durationLabel.textAlignment = .center
+        durationLabel.backgroundColor = UIColor.black.withAlphaComponent(0.55)
+        durationLabel.layer.cornerRadius = 8
+        durationLabel.layer.masksToBounds = true
+        durationLabel.isHidden = true
 
         messageLabel.numberOfLines = 0
         messageLabel.font = UIFont(name: "Poppins-Regular", size: 15) ?? .systemFont(ofSize: 15)
@@ -140,6 +173,18 @@ final class ChatMessageCell: UITableViewCell {
             // Failed
             failedLabel.centerYAnchor.constraint(equalTo: timeLabel.centerYAnchor),
             failedLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor),
+
+            // Video overlay (NEW) — always-active constraints, nothing toggled.
+            // Both views just stay hidden for non-video attachments.
+            playIconView.centerXAnchor.constraint(equalTo: attachmentView.centerXAnchor),
+            playIconView.centerYAnchor.constraint(equalTo: attachmentView.centerYAnchor),
+            playIconView.widthAnchor.constraint(equalToConstant: 44),
+            playIconView.heightAnchor.constraint(equalToConstant: 44),
+
+            durationLabel.trailingAnchor.constraint(equalTo: attachmentView.trailingAnchor, constant: -8),
+            durationLabel.bottomAnchor.constraint(equalTo: attachmentView.bottomAnchor, constant: -8),
+            durationLabel.heightAnchor.constraint(equalToConstant: 18),
+            durationLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 32),
         ])
 
         // Toggled (created once)
@@ -157,9 +202,13 @@ final class ChatMessageCell: UITableViewCell {
 
     func configure(with item: ChatItem) {
         timeLabel.text = ChatDate.bubbleTime(item.createdAt)
-        print("Base:", APiConstant.base)
-        print("Image:", item.senderImage ?? "nil")
-        print("Final:", "\(APiConstant.base)\(item.imageURL ?? "")")
+//        print("Base:", APiConstant.base)
+//        print("Image:", item.senderImage ?? "nil")
+//        print("Final:", "\(APiConstant.base)\(item.imageURL ?? "")")
+
+        currentMessageType    = item.messageType
+        currentVideoRemoteURL = item.videoURL
+        currentVideoLocalURL  = item.localVideoURL
 
         configureAttachment(item)
 
@@ -174,27 +223,60 @@ final class ChatMessageCell: UITableViewCell {
     private func configureAttachment(_ item: ChatItem) {
         
         let hasImage = item.imageURL != nil || item.localImage != nil
+        let hasVideo = item.videoURL != nil || item.localVideoURL != nil   // NEW
         let hasText  = !(item.content ?? "").isEmpty
 
         messageLabel.isHidden = !hasText
         messageLabel.text     = hasText ? item.content : nil
 
+        // Video overlay defaults to hidden; only the video branch below turns it on.
+        playIconView.isHidden  = true
+        durationLabel.isHidden = true
+
         if hasImage {
             attachmentHeight.constant = 220
             attachmentView.isHidden   = false
+            attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)   // reset in case this cell last showed a video
 
             if let local = item.localImage {
                 attachmentView.image = local
             } else if let str = item.imageURL, let url = URL(string: str) {
-                print("-e-e-e--ee-",url)
+                
                 attachmentView.image = nil
                 ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)\(url.absoluteString)")
+            }
+        } else if hasVideo {
+            // Same slot/height as an image attachment — just a thumbnail
+            // plus a play icon + duration pill on top.
+            attachmentHeight.constant = 220
+            attachmentView.isHidden   = false
+            attachmentView.backgroundColor = .black
+            playIconView.isHidden  = false
+            durationLabel.isHidden = (item.videoDuration == nil)
+            if let seconds = item.videoDuration {
+                durationLabel.text = "  " + Self.formattedDuration(seconds) + "  "
+            }
+
+            if let localURL = item.localVideoURL {
+                if let thumb = item.videoThumbnail {
+                    attachmentView.image = thumb
+                } else {
+                    attachmentView.image = nil
+                    ChatVideoThumbnailLoader.loadLocal(localURL, into: attachmentView)
+                }
+            } else if let remote = item.videoURL {
+                attachmentView.image = nil
+                ChatVideoThumbnailLoader.loadRemote(remote, into: attachmentView)
             }
         } else {
             attachmentHeight.constant = 0
             attachmentView.isHidden   = true
             attachmentView.image      = nil
         }
+    }
+
+    private static func formattedDuration(_ seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
 
     // MARK: - Direction helpers (unchanged logic)
@@ -264,7 +346,16 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Actions
 
     @objc private func retryTapped() { onRetryTapped?() }
-    @objc private func imageTapped() { onImageTapped?(attachmentView.image) }
+
+    @objc private func imageTapped() {
+        // Same gesture recognizer as before — now branches on message type
+        // so video bubbles open the player instead of the image preview.
+        if currentMessageType == 3 {
+            onVideoTapped?(currentVideoRemoteURL, currentVideoLocalURL)
+        } else {
+            onImageTapped?(attachmentView.image)
+        }
+    }
 
     // MARK: - Reuse
 
@@ -272,12 +363,21 @@ final class ChatMessageCell: UITableViewCell {
         super.prepareForReuse()
         avatarView.image          = nil
         attachmentView.image      = nil
+        attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
         messageLabel.text         = nil
         messageLabel.isHidden     = false
         attachmentHeight.constant = 0
         attachmentView.isHidden   = true
         onRetryTapped = nil
         onImageTapped = nil
+        onVideoTapped = nil
+        // Video overlay reset (NEW)
+        playIconView.isHidden     = true
+        durationLabel.isHidden    = true
+        durationLabel.text        = nil
+        currentMessageType        = 1
+        currentVideoRemoteURL     = nil
+        currentVideoLocalURL      = nil
         failedLabel.isHidden = true
         bubbleView.alpha = 1.0
     }

@@ -603,7 +603,7 @@ class GetVerifiedVc: BaseClassVc {
             self.frontImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
 
-            self.uploadImg(data) { [weak self] name in
+            self.uploadImg(true,data) { [weak self] name in
                 guard let self else { return }
                 self.frontImageName = name ?? ""
                 request.front = name
@@ -636,7 +636,7 @@ class GetVerifiedVc: BaseClassVc {
             self.backImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
 
-            self.uploadImg(data) { [weak self] name in
+            self.uploadImg(true,data) { [weak self] name in
                 guard let self else { return }
                 self.backImageName = name ?? ""
                 request.back = name
@@ -660,7 +660,7 @@ class GetVerifiedVc: BaseClassVc {
             self.selfieImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
 
-            self.uploadImg(data) { [weak self] name in
+            self.uploadImg(true,data) { [weak self] name in
                 guard let self else { return }
                 self.selfieImageName = name ?? ""
                 request.selfie = name

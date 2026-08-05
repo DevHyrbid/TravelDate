@@ -637,14 +637,20 @@ class User : Mappable {
         }
     }
     
-    func uploadImage(_ imgData:Data,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+    func uploadImage(_ isImg:Bool?,_ imgData:Data,callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        var type = ""
+        if isImg == true {
+            type = "image/jpeg"
+        } else {
+            type = "video/mp4"  
+        }
         NetworkManger.uploadTo(
-            isImg: true,
+            isImg: isImg ?? false,
             imgVw: imgData,
             urlPath: APiConstant.uploadMedia,
             paramName: "files", // ✅ FIXED
             param: self.toJSON(),
-            fileType: "image/jpeg" // ✅ FIXED
+            fileType: type // ✅ FIXED
         ) { response, suc in
             
             print("UPLOAD RESPONSE:", response ?? [:])
@@ -660,6 +666,7 @@ class User : Mappable {
             }
             
         } faliure: { code in
+            print(code,"UPLOAD FAILED")
             callBack("error", code)
         }
         

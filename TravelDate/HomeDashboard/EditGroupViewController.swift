@@ -348,7 +348,7 @@ class EditGroupViewController: CreateGroupViewController {
         if didPickNewImage,
            let img  = selectedImage,
            let data = img.jpegData(compressionQuality: 0.7) {
-            uploadImg(data) { imageName in
+            uploadImg(true,data) { imageName in
                 patch(imageName: imageName ?? m.coverImagePath)
             }
         } else {

@@ -393,7 +393,7 @@ class SavedGroupCell: UITableViewCell {
         heroImage.layer.addSublayer(gradientLayer)
 
         // ── "New Strategy" badge — top-left ───────────────────────────────
-        badgeLabel.text               = "New Strategy"
+        badgeLabel.text               = ""
         badgeLabel.font               = AppFont.medium(13)
         badgeLabel.textColor          = .white
         badgeLabel.backgroundColor    = UIColor(white: 0.18, alpha: 0.70)

@@ -142,7 +142,7 @@ class PreiumController: BaseClassVc,SubscriptionView {
             switch plan.tier {
 
             case .weekly:
-                lblWeek.text = plan.priceText
+                lblWeek.text = plan.priceText.replacing("US", with: "")
 
             case .monthly:
                 lblMonth.text = plan.priceText

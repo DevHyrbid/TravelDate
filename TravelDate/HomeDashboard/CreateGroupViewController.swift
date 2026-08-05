@@ -951,7 +951,7 @@ class CreateGroupViewController: BaseClassVc {
         }
 
         AppLoader.show()
-        uploadImg(data) { [weak self] imageName in
+        uploadImg(true,data) { [weak self] imageName in
             guard let self else { return }
             self.request.coverImage = imageName
             self.request.title = title

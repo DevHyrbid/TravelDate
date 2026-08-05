@@ -21,6 +21,10 @@ final class ChatMessageVc: BaseClassVc {
 
     private var inputBottom: NSLayoutConstraint!
 
+    // NEW — bridges UIImagePickerControllerDelegate's callback into
+    // vidUpload()'s closure-based style (see extension at bottom of file).
+    private var videoPickerCompletion: ((URL?) -> Void)?
+
     // MARK: - ViewModel
     private let viewModel: ChatViewModel
 
@@ -201,12 +205,26 @@ final class ChatMessageVc: BaseClassVc {
             self?.viewModel.send(text,1)
         }
         inputBar.onAttach = { [weak self] in
-            // Hook up your existing attachment picker here.
-            self?.imgUpload()
             self?.view.endEditing(true)
+            self?.presentAttachmentChoice()
         }
     }
-    
+
+    // NEW — attach button now offers Photo or Video instead of jumping
+    // straight into the image picker. Everything else about the input bar
+    // is untouched.
+    private func presentAttachmentChoice() {
+        let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: "Photo", style: .default) { [weak self] _ in
+            self?.imgUpload()
+        })
+        sheet.addAction(UIAlertAction(title: "Video", style: .default) { [weak self] _ in
+            self?.vidUpload()
+        })
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(sheet, animated: true)
+    }
+
     func imgUpload() {
         imagePicker.showImagePicker(allowCamera: true) { [weak self] img in
             guard let self else { return }
@@ -220,7 +238,7 @@ final class ChatMessageVc: BaseClassVc {
                 return
             }
 
-            self.uploadImg(data) { [weak self] imageName in
+            self.uploadImg(true,data) { [weak self] imageName in
                 guard let self else { return }
                 guard let imageName else {
                     self.viewModel.markFailed(id: tempItem.id)
@@ -231,7 +249,54 @@ final class ChatMessageVc: BaseClassVc {
             }
         }
     }
-    
+
+    // NEW — same optimistic pattern as imgUpload above, for video.
+    // Uses a plain UIImagePickerController (see the delegate extension at
+    // the bottom of this file) since there's no existing video-picker
+    // utility in this bundle to hook into. Swap `videoPickerCompletion`'s
+    // body out for your own picker if you already have one elsewhere.
+    //
+    // NOTE: this assumes `uploadImg(_:completion:)` is a generic
+    // "upload this Data, get a server file name/URL back" helper (that's
+    // how imgUpload above uses it for JPEG data) and reuses it for the
+    // video's raw file data. If your video uploads actually need a
+    // different endpoint/multipart field than images, swap that one line.
+    func vidUpload() {
+        let picker = UIImagePickerController()
+        picker.sourceType = .photoLibrary
+        picker.mediaTypes = ["public.movie"]
+        picker.delegate = self
+        videoPickerCompletion = { [weak self] localURL in
+            guard let self, let localURL else { return }
+
+            // 1. Generate a thumbnail + duration and show the cell instantly.
+            let thumbnail = ChatVideoThumbnailLoader.generateThumbnailSync(for: localURL)
+            let duration  = ChatVideoThumbnailLoader.duration(for: localURL)
+            let tempItem = ChatItem.temporaryVideo(
+                localVideoURL: localURL,
+                thumbnail: thumbnail,
+                duration: duration,
+                senderId: self.viewModel.currentUserId
+            )
+            self.viewModel.appendOptimistic(item: tempItem)
+
+            guard let data = try? Data(contentsOf: localURL) else {
+                self.viewModel.markFailed(id: tempItem.id)
+                return
+            }
+            print(data,"HERE PRINTED DATA OF VIDEO ",data.count)
+            self.uploadImg(false,data) { [weak self] videoName in
+                guard let self else { return }
+                guard let videoName else {
+                    self.viewModel.markFailed(id: tempItem.id)
+                    return
+                }
+                // 2. Confirm with real URL
+                self.viewModel.confirmVideoSent(id: tempItem.id, videoURL: videoName)
+            }
+        }
+        present(picker, animated: true)
+    }
     
     
 
@@ -401,6 +466,14 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)
         }
+        cell.onVideoTapped = { [weak self] remoteURL, localURL in    // NEW
+            guard let self else { return }
+            if let remoteURL {
+                ChatVideoPlayerPresenter.present(remoteURLString: remoteURL, from: self)
+            } else if let localURL {
+                ChatVideoPlayerPresenter.present(localURL: localURL, from: self)
+            }
+        }
         return cell
     }
 
@@ -486,5 +559,27 @@ extension UIView {
             trailingAnchor.constraint(equalTo: parent.trailingAnchor),
             bottomAnchor.constraint(equalTo: parent.bottomAnchor),
         ])
+    }
+}
+
+// MARK: - Video picker (NEW)
+//
+// Self-contained UIImagePickerController delegate for vidUpload() above.
+// Doesn't touch anything else in the file — just bridges the picker's
+// delegate callback into the `videoPickerCompletion` closure.
+
+extension ChatMessageVc: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        let localURL = info[.mediaURL] as? URL
+        videoPickerCompletion?(localURL)
+        videoPickerCompletion = nil
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+        videoPickerCompletion?(nil)
+        videoPickerCompletion = nil
     }
 }

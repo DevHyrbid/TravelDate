@@ -265,25 +265,30 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.heroImage, url: url)
             }
+//            cell.badgeLabel.text = model.
             cell.setTimeText(formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? ""))
             cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) { vc in
                 vc.data = model
             } }
             cell.onBookmark = { [weak self] in
-                guard let self = self else { return }
-                guard let groupId = model?._id else { return }
-                
-                request.saveGroupAPi(groupId) { errMsg, errCode in
+                self?.showMaterialConfirm(title: "", message: "Are you sure you want to unSave this group") {
                     
-                    DispatchQueue.main.async {
+                    
+                    guard let self = self else { return }
+                    guard let groupId = model?._id else { return }
+                    
+                    self.request.saveGroupAPi(groupId) { errMsg, errCode in
                         
-                        if errCode == 200 {
+                        DispatchQueue.main.async {
                             
-                            self.showAlert( "Group Removed successfully")
-                            self.getGroups(2)
-                        } else {
-                            
-                            self.showAlert( errMsg)
+                            if errCode == 200 {
+                                
+                                self.showAlert( "Group Removed successfully")
+                                self.getGroups(2)
+                            } else {
+                                
+                                self.showAlert( errMsg)
+                            }
                         }
                     }
                 }

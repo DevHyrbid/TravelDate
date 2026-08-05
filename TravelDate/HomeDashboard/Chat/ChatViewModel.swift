@@ -148,8 +148,19 @@ final class ChatViewModel {
         onReload?()
 
         let item = items[index]
-        let content     = item.messageType == 2 ? (item.imageURL ?? "") : (item.content ?? "")
-        let contentType = item.messageType == 2 ? "image" : "text"
+        let content: String
+        let contentType: String
+        switch item.messageType {
+        case 2:
+            content = item.imageURL ?? ""
+            contentType = "image"
+        case 3:                                        // NEW
+            content = item.videoURL ?? ""
+            contentType = "video"
+        default:
+            content = item.content ?? ""
+            contentType = "text"
+        }
 
         service.sendMessage(roomId: roomId, content: content, contentType: contentType) { [weak self] result in
             guard let self else { return }
@@ -213,6 +224,29 @@ final class ChatViewModel {
         // Also push to API so other users receive it
         guard let roomId = roomId else { return }
         service.sendMessage(roomId: roomId, content: imageURL, contentType: "image") { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let serverMsg):
+                    self?.replaceTemp(id: id, with: ChatItem(message: serverMsg))
+                case .failure:
+                    self?.markFailed(id: id)
+                }
+            }
+        }
+        rebuildSections()
+        onReload?()
+    }
+
+    /// NEW — same optimistic-confirm pattern as confirmImageSent, for video.
+    /// Call once the local video file has finished uploading and you have
+    /// the server-side URL back.
+    func confirmVideoSent(id: String, videoURL: String) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].videoURL      = videoURL
+        items[index].localVideoURL = nil
+        items[index].status        = .sent
+        guard let roomId = roomId else { return }
+        service.sendMessage(roomId: roomId, content: videoURL, contentType: "video") { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let serverMsg):

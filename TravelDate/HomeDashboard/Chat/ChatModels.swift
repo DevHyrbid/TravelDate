@@ -63,9 +63,14 @@ struct ChatItem {
     var content: String?          // make optional (image-only messages have no text)
     let createdAt: Date
     var status: MessageStatus
-    var messageType: Int          // 1 = text, 2 = image
+    var messageType: Int          // 1 = text, 2 = image, 3 = video
     var imageURL: String?
     var localImage: UIImage?
+    // Video additions — same pattern as imageURL/localImage above.
+    var videoURL: String?         // remote video URL (once uploaded/confirmed by server)
+    var localVideoURL: URL?       // local file URL while the video is picked/uploading
+    var videoThumbnail: UIImage?  // locally-generated thumbnail shown instantly (optimistic)
+    var videoDuration: Int?       // seconds, filled in once known (local pick or server)
     var isMine: Bool {
         senderId == (User.curentUser?.id ?? "")
     }
@@ -81,16 +86,28 @@ extension ChatItem {
         self.createdAt   = ChatDate.parse(message.createdAt)
         self.status      = .sent
 
-        // ✅ Only signal is fileUrl — contentType/messageType are always nil
-        let isImage = message.fileUrl != nil
-        self.messageType = isImage ? 2 : 1
-
-        if isImage {
-            self.content  = nil
-            self.imageURL = message.fileUrl   // direct full URL, no fallback needed
+        // ✅ Only signal is fileUrl — contentType/messageType are always nil.
+        // Video still only has fileUrl as a signal too, so we tell it apart
+        // from an image by file extension. Once the backend actually sends
+        // fileType/contentType/messageType, replace this with a direct read
+        // of that field instead of sniffing the extension.
+        if let fileUrl = message.fileUrl, !fileUrl.isEmpty {
+            if ChatMediaKind.isVideo(fileUrl) {
+                self.messageType = 3
+                self.content     = nil
+                self.imageURL    = nil
+                self.videoURL    = fileUrl
+            } else {
+                self.messageType = 2
+                self.content     = nil
+                self.imageURL    = fileUrl   // direct full URL, no fallback needed
+                self.videoURL    = nil
+            }
         } else {
-            self.content  = message.content ?? ""
-            self.imageURL = nil
+            self.messageType = 1
+            self.content      = message.content ?? ""
+            self.imageURL     = nil
+            self.videoURL      = nil
         }
     }
     
@@ -119,6 +136,39 @@ extension ChatItem {
             messageType: 2,
             localImage:  localImage
         )
+    }
+
+    /// Same optimistic pattern as `temporaryImage`, for a locally-picked
+    /// video. `thumbnail` should come from `ChatVideoThumbnailLoader`
+    /// (generated from `localVideoURL`) so the bubble has something to
+    /// show immediately, before upload finishes.
+    static func temporaryVideo(localVideoURL: URL, thumbnail: UIImage?, duration: Int?, senderId: String) -> ChatItem {
+        ChatItem(
+            id:            "temp-\(UUID().uuidString)",
+            senderId:      senderId,
+            senderName:    "",
+            senderImage:   nil,
+            content:       nil,
+            createdAt:     Date(),
+            status:        .sending,
+            messageType:   3,
+            localVideoURL: localVideoURL,
+            videoThumbnail: thumbnail,
+            videoDuration: duration
+        )
+    }
+}
+
+// MARK: - Media kind detection
+
+/// Tells images and videos apart by file extension, since fileUrl is the
+/// only signal the API currently gives us (see ChatItem.init(message:) above).
+enum ChatMediaKind {
+    private static let videoExtensions: Set<String> = ["mp4", "mov", "m4v", "avi", "webm", "3gp"]
+
+    static func isVideo(_ urlString: String) -> Bool {
+        let ext = (urlString as NSString).pathExtension.lowercased()
+        return videoExtensions.contains(ext)
     }
 }
 

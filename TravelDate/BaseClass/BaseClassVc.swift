@@ -350,9 +350,9 @@ class BaseClassVc: UIViewController {
     }
     
     
-    func uploadImg(_ data: Data, completion: @escaping (String?) -> Void) {
-//        
-        request.uploadImage(data) { errMsg, errCode in
+    func uploadImg(_ isImg:Bool?,_ data: Data, completion: @escaping (String?) -> Void) {
+//
+        request.uploadImage(isImg,data) { errMsg, errCode in
             DispatchQueue.main.async {
                 if errCode == Constants.APIResponseCodes.statusCodeSuccessfull {
                     completion(errMsg)   // image name / URL

@@ -118,6 +118,9 @@ class NetworkManger {
             faliure(Constants.APIResponseCodes.statusCodeInternetNotAvailable)
             return
         }
+        print("Video bytes:", imgVw?.count ?? 0)
+        print("Is Image:", isImg)
+        print("Mime:", fileType)
         
         AppLoader.show(text: "Uploading…")
         
@@ -126,12 +129,27 @@ class NetworkManger {
         
         let requestURL: URLConvertible = urlPath
         print(urlPath, "-________------------", headers)
-        
+        print(param,fileType,paramName,"-________-----")
         AF.upload(
             multipartFormData: { formData in
-                if isImg, let imageData = imgVw {
-                    formData.append(imageData, withName: paramName, fileName: "\(Date().timeIntervalSince1970).jpg", mimeType: "image/jpg")
+                let fileName: String
+                let mimeType: String
+                if isImg {
+                    fileName = "\(Date().timeIntervalSince1970).jpg"
+                    mimeType = "image/jpeg"
+                } else {
+                    fileName = "\(Date().timeIntervalSince1970).mp4"
+                    mimeType = "video/mp4"
                 }
+                
+                formData.append(
+                    imgVw ?? Data(),
+                    withName: paramName,
+                    fileName: fileName,
+                    mimeType: mimeType
+                )
+                
+                
                 for (key, value) in param {
                     formData.append("\(value)".data(using: .utf8)!, withName: key)
                 }
@@ -140,6 +158,7 @@ class NetworkManger {
             method: .post,
             headers: headers
         ).responseJSON { uploadResult in
+            print(uploadResult,"hjkjhjkjhkjkkjkjkdjsdkjdiskskimdssdloksd")
             defer { AppLoader.hide() }
             
             print(paramName)

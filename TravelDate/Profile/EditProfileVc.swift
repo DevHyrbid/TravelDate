@@ -321,7 +321,7 @@ extension EditProfileVc {
 
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
 
-            self.uploadImg(data) { [weak self] imageName in
+            self.uploadImg(true,data) { [weak self] imageName in
                 
                 guard let self = self else { return }
 
