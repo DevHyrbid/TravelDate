@@ -394,9 +394,9 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         let item = viewModel.sections[indexPath.section].items[indexPath.row]
         cell.configure(with: item)
         cell.onImageTapped = { [weak self] image in
-//            let preview = ImagePreviewVC(image: image)
-//            self?.present(preview, animated: true)
-//            print(image,"ssssss")
+            let preview = ImagePreviewVC(image: image!)
+            self?.present(preview, animated: true)
+            
         }
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)

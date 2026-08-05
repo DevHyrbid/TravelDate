@@ -65,8 +65,8 @@ class NewMatchCellTableViewCell: UITableViewCell {
         // MARK: - Fonts
         lblMatched.font = AppFont.semibold(10)
         lblTitle.font = AppFont.semibold(22)
-        lblTime.font = AppFont.regular(12)
-        lblLocation.font = AppFont.regular(12)
+        lblTime.font = AppFont.regular(14)
+        lblLocation.font = AppFont.regular(14)
         
         lblName.font = AppFont.semibold(16)
         lblTimeSave.font = AppFont.regular(13)

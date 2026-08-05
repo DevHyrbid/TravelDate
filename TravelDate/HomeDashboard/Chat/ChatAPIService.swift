@@ -10,7 +10,7 @@ import Foundation
 
 enum ChatAPI {
     
-    static var baseUrl: String { "http://187.124.251.134:9800/api/v1/" }
+    static var baseUrl: String { "https://api.tripsapp.io/api/v1/" }
     
     static let createRoom  = baseUrl + "api-chat/room"
     static let sendMessage = baseUrl + "chat/"
