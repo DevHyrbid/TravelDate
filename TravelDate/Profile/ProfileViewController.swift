@@ -381,8 +381,12 @@ extension ProfileViewController : CollectionDelegate
 
 extension ProfileViewController{
     @IBAction func btnUpgrade(_ sender:UIButton){
-        self.pushVC(PreiumController.self, from: .Settings,hideTabBar: true)
-//        self.pushVC(FreeSubscriptionVc.self, from: .Settings,hideTabBar: true)
+        if hasPaidSubscription {
+            self.pushVC(PreiumController.self, from: .Settings,hideTabBar: true)
+            
+        } else {
+            self.pushVC(FreeSubscriptionVc.self, from: .Settings,hideTabBar: true)
+        }
     }
 }
 

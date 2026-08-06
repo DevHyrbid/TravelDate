@@ -64,19 +64,18 @@ class NewMatchCellTableViewCell: UITableViewCell {
         
         // MARK: - Fonts
         lblMatched.font = AppFont.semibold(12)
-        lblTitle.font = AppFont.bold(25)
+        lblTitle.font = AppFont.bold(22)
         lblTime.font = AppFont.regular(14)
         lblLocation.font = AppFont.regular(14)
         
-        lblName.font = AppFont.bold(16)
-        lblTimeSave.font = AppFont.regular(13)
-        lblLocationSave.font = AppFont.regular(13)
-        btnSaveGroup.layer.borderWidth = 1
-        btnSaveGroup.layer.borderColor = UIColor.lightGray.cgColor
+        lblName.font = AppFont.bold(14)
+        lblTimeSave.font = AppFont.regular(12)
+        lblLocationSave.font = AppFont.regular(12)
+        
         btnViewGroup.layer.borderWidth = 1
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
-        btnStart.imageView?.contentMode = .scaleAspectFill
-        btnSaveGroup.imageView?.contentMode = .scaleAspectFill
+        btnStart.imageView?.contentMode = .scaleAspectFit
+        btnSaveGroup.imageView?.contentMode = .scaleAspectFit
         btnStart.addTarget(self, action: #selector(startChatTapped), for: .touchUpInside)
         btnSaveGroup.addTarget(self, action: #selector(saveGroupTapped), for: .touchUpInside)
         btnViewGroup.addTarget(self,

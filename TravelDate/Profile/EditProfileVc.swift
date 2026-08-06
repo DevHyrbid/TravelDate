@@ -57,6 +57,7 @@ class EditProfileVc: BaseClassVc {
         }
         
         if User.curentUser?.phone_verify == true {
+           
             self.btnVerify.setTitle("Verified", for: .normal)
             self.btnVerify.setTitleColor(.green, for: .normal)
             self.btnVerify.isEnabled = false
@@ -131,7 +132,7 @@ class EditProfileVc: BaseClassVc {
 
         let outputFormatter = DateFormatter()
         outputFormatter.locale = Locale(identifier: "en_US_POSIX")
-        outputFormatter.dateFormat = "MM-dd-yyyy"
+        outputFormatter.dateFormat = "yyyy-MM-dd"
 
         return outputFormatter.string(from: date)
     }
@@ -244,7 +245,7 @@ class EditProfileVc: BaseClassVc {
         
         request.name = txtName.text ?? ""
         request.userName = txtUserName.text ?? ""
-        request.countryIso = phoneField.countryDialCode    // 91
+        request.countryIso = phoneField.countryISOCode    // 91
         request.phone_number = txtPhone.text ?? ""           // 9876543210
         
         if let location = txtLocation.text,
@@ -267,8 +268,12 @@ class EditProfileVc: BaseClassVc {
             DispatchQueue.main.async {
                 if errCode == 200 {
                     self.showAlert("Profile Updated Successfully")
+                    super.backTapped()
+                } else {
+                    self.showAlert(msg)
                 }
             }
+            print(errCode,msg,"ProfileErros")
         }
     }
 }
