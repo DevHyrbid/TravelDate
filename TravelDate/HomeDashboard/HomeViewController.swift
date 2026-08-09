@@ -331,18 +331,24 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 DispatchQueue.main.async { [self] in
                     self.dataArray = model?.dataGroup ?? []
                     
-                    if let res = model?.dataGroup?.first {
-                        
-                        self.btnList.menu = makeTripMenu(trips: (model?.dataGroup!)!)
-                        self.btnList.showsMenuAsPrimaryAction = true
-//                        self.data = model?.dataGroup ?? nil
-                        self.selected = res
+                    if let groups = model?.dataGroup, !groups.isEmpty {
 
-                        self.didSelectTrip(res)
+                        self.btnList.menu = makeTripMenu(trips: groups)
+                        self.btnList.showsMenuAsPrimaryAction = true
+
+                        let savedId = UserDefaults.standard.string(forKey: "selectedGroupId")
+
+                        // Find previously selected group
+                        let selectedGroup = groups.first {
+                            $0.id == savedId
+                        } ?? groups.first!
+
+                        self.didSelectTrip(selectedGroup)
 
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
+
                     } else {
                         self.btnList.isHidden = true
                         self.hideVw.isHidden = false
@@ -493,13 +499,13 @@ extension HomeViewController {
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
-        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
-                self.upgradeButtonTapped()
-            }
-            
-            return
-        }
+//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+//            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
+//                self.upgradeButtonTapped()
+//            }
+//            
+//            return
+//        }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
