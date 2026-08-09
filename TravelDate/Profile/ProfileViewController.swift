@@ -31,6 +31,8 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var heightVw: NSLayoutConstraint!
     @IBOutlet weak var imgMyTrips: UIImageView!
     @IBOutlet weak var imgPermium: UIImageView!
+    @IBOutlet weak var vwPercentage: UIView!
+    @IBOutlet weak var lblPercentage: UILabel!
     @IBOutlet weak var imgPermiumHeight: NSLayoutConstraint!
     private let progressLayer = CAShapeLayer()
     
@@ -45,11 +47,13 @@ class ProfileViewController: BaseClassVc {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
         
-//        if User.curentUser?.isVerified ?? 0 == 1 {
-//            self.imgTick.isHidden = false
-//        } else {}
+        if User.curentUser?.isVerified ?? 0 == 1 {
+            self.vwPercentage.isHidden = true
+            self.imgTick.isHidden = false
+        } else {
+            self.vwPercentage.isHidden = false
             self.imgTick.isHidden = true
-//        }
+        }
         
 //        let vc = TravelListViewController()
 //        navigationController?.pushViewController(vc, animated: true)
@@ -165,42 +169,50 @@ class ProfileViewController: BaseClassVc {
     
     
     func updateProfileCompletion() {
-
+        
         var completedFields = 0
-        let totalFields = 5
-
+        let totalFields = 6
+        
         if !(User.curentUser?.name ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty {
             completedFields += 1
         }
-
+        
+        if !(User.curentUser?.selfie ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty {
+            completedFields += 1
+        }
+        
         if !(User.curentUser?.userName ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty {
             completedFields += 1
         }
-
+        
         if !(User.curentUser?.short_bio ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty {
             completedFields += 1
         }
-
+        
         if !(User.curentUser?.profile_image ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty {
             completedFields += 1
         }
-
+        
         if !(User.curentUser?.travelStyles?.isEmpty ?? true) {
             completedFields += 1
         }
-
+        
         let progress = CGFloat(completedFields) / CGFloat(totalFields)
-
+        
+        let percentage = Int(progress * 100)
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.borderView.setProgress(progress)
+            self.lblPercentage.text = "\(percentage)%"
         }
     }
     

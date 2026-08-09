@@ -32,7 +32,9 @@ struct ChatUser: Codable {
     let profileImage: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, profileImage
+        case id
+        case name
+        case profileImage = "profile_image"
     }
 }
 
@@ -60,6 +62,7 @@ struct ChatItem {
     let senderId: String
     let senderName: String
     let senderImage: String?
+    let profile_image: String?
     var content: String?          // make optional (image-only messages have no text)
     let createdAt: Date
     var status: MessageStatus
@@ -85,6 +88,7 @@ extension ChatItem {
         self.senderImage = message.sender?.profileImage
         self.createdAt   = ChatDate.parse(message.createdAt)
         self.status      = .sent
+        self.profile_image = message.sender?.profileImage ?? ""
 
         // ✅ Only signal is fileUrl — contentType/messageType are always nil.
         // Video still only has fileUrl as a signal too, so we tell it apart
@@ -116,7 +120,7 @@ extension ChatItem {
             id:          "temp-\(UUID().uuidString)",
             senderId:    senderId,
             senderName:  "",
-            senderImage: nil,
+            senderImage: nil, profile_image: "",
             content:     content,
             createdAt:   Date(),
             status:      .sending,
@@ -129,7 +133,7 @@ extension ChatItem {
             id:          "temp-\(UUID().uuidString)",
             senderId:    senderId,
             senderName:  "",
-            senderImage: nil,
+            senderImage: nil,profile_image: "",
             content:     nil,
             createdAt:   Date(),
             status:      .sending,
@@ -147,7 +151,7 @@ extension ChatItem {
             id:            "temp-\(UUID().uuidString)",
             senderId:      senderId,
             senderName:    "",
-            senderImage:   nil,
+            senderImage:   nil,profile_image: "",
             content:       nil,
             createdAt:     Date(),
             status:        .sending,

@@ -174,7 +174,7 @@ final class ChatMessageVc: BaseClassVc {
                 imageURL: roomImageURL,
                 showMore: true
             )
-        
+        print(roomImageURL,"ROOM IMAGE HERE TAPPED  r")
 
         headerView.onBack    = { [weak self] in self?.backTapped() }
         headerView.onProfile = { [weak self] in self?.handleProfileTapped() }
@@ -298,7 +298,7 @@ final class ChatMessageVc: BaseClassVc {
                 self.viewModel.markFailed(id: tempItem.id)
                 return
             }
-            print(data,"HERE PRINTED DATA OF VIDEO ",data.count)
+            
             self.uploadImg(false,data) { [weak self] videoName in
                 guard let self else { return }
                 guard let videoName else {
@@ -319,12 +319,12 @@ final class ChatMessageVc: BaseClassVc {
     private func bindViewModel() {
         viewModel.onReload = { [weak self] in
             self?.tableView.reloadData()
+//            self?.scrollToBottom(animated: true)
+        }
+        viewModel.onAppend = { [weak self] in
+            self?.tableView.reloadData()
             self?.scrollToBottom(animated: true)
         }
-//        viewModel.onAppend = { [weak self] in
-//            self?.tableView.reloadData()
-//            self?.scrollToBottom(animated: true)
-//        }
         viewModel.onError = { [weak self] message in
             self?.showAlert(message)
         }
@@ -361,6 +361,7 @@ final class ChatMessageVc: BaseClassVc {
     func didTapManageGroup(_ type:GroupManageType) {
         var groupId = ""
         //        viewModel.participants?.toJSON()
+        
         let rawMembers = viewModel.participants.toJSON()
         print(rawMembers,"JOINED HERE")
         let groupMembers: [GroupMember] = rawMembers.map { memberDict in
@@ -428,6 +429,7 @@ final class ChatMessageVc: BaseClassVc {
                 }
             )
         } else {
+            
             ManageGroupViewController.present(
                 from: self, groupType:.match,
                 groupName: roomTitle,
@@ -492,12 +494,22 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         cell.onImageLongPressed = { [weak self] image in
             guard let self = self, let image = image else { return }
 
-            UIImageWriteToSavedPhotosAlbum(
-                image,
-                self,
-                #selector(self.image(_:didFinishSavingWithError:contextInfo:)),
-                nil
+            let alert = UIAlertController(
+                title: nil,
+                message: "Save this image to your photos?",
+                preferredStyle: .actionSheet
             )
+            alert.addAction(UIAlertAction(title: "Save Image", style: .default) { [weak self] _ in
+                guard let self else { return }
+                UIImageWriteToSavedPhotosAlbum(
+                    image,
+                    self,
+                    #selector(self.image(_:didFinishSavingWithError:contextInfo:)),
+                    nil
+                )
+            })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            self.present(alert, animated: true)
         }
         return cell
     }

@@ -93,11 +93,11 @@ final class ChatMessageCell: UITableViewCell {
         attachmentView.contentMode = .scaleAspectFit
         attachmentView.clipsToBounds = true
         attachmentView.backgroundColor = .clear
-        attachmentView.layer.cornerRadius = 12
+        attachmentView.layer.cornerRadius = 16
+        attachmentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
-        attachmentView.isUserInteractionEnabled = true
         attachmentView.addGestureRecognizer(
-            UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+            UILongPressGestureRecognizer(target: self, action: #selector(imageLongPressed(_:)))
         )
 
         // Video overlay (NEW) — added on top of attachmentView, hidden by
@@ -138,20 +138,28 @@ final class ChatMessageCell: UITableViewCell {
     }
     
     private func updateImageSize(_ image: UIImage) {
-
-        let maxWidth = UIScreen.main.bounds.width * 0.68
-
+        let maxWidth: CGFloat  = UIScreen.main.bounds.width * 0.68
+        let minWidth: CGFloat  = 140
         let minHeight: CGFloat = 120
-        let maxHeight: CGFloat = 360
+        let maxHeight: CGFloat = 320
 
-        let ratio = image.size.height / image.size.width
+        guard image.size.width > 0, image.size.height > 0 else {
+            attachmentWidth.constant  = maxWidth
+            attachmentHeight.constant = minHeight
+            return
+        }
 
-        var height = maxWidth * ratio
+        let aspectRatio = image.size.width / image.size.height // W / H
 
-        height = max(minHeight, height)
-        height = min(maxHeight, height)
+        var width = maxHeight * aspectRatio
+        width = min(width, maxWidth)
+        width = max(width, minWidth)
 
-        attachmentWidth.constant = maxWidth
+        var height = width / aspectRatio
+        height = min(height, maxHeight)
+        height = max(height, minHeight)
+
+        attachmentWidth.constant  = width
         attachmentHeight.constant = height
     }
 
@@ -225,9 +233,7 @@ final class ChatMessageCell: UITableViewCell {
 
     func configure(with item: ChatItem) {
         timeLabel.text = ChatDate.bubbleTime(item.createdAt)
-//        print("Base:", APiConstant.base)
-//        print("Image:", item.senderImage ?? "nil")
-//        print("Final:", "\(APiConstant.base)\(item.imageURL ?? "")")
+
 
         currentMessageType    = item.messageType
         currentVideoRemoteURL = item.videoURL
@@ -310,13 +316,6 @@ final class ChatMessageCell: UITableViewCell {
             attachmentView.image      = nil
         }
         
-        let longPress = UILongPressGestureRecognizer(
-            target: self,
-            action: #selector(imageLongPressed(_:))
-        )
-
-        attachmentView.isUserInteractionEnabled = true
-        attachmentView.addGestureRecognizer(longPress)
     }
     
     
@@ -356,9 +355,10 @@ final class ChatMessageCell: UITableViewCell {
         avatarView.isHidden = false
         nameLabel.isHidden  = false
         nameLabel.text      = item.senderName
-
+        print(item.profile_image,"SHSHSHSSHSH")
         if let str = item.senderImage, let url = URL(string: str) {
 //            avatarView.image = UIImage(named: "User")
+            
             ChatImageLoader.load(url: url, into: avatarView)
         } else {
             avatarView.image = UIImage(named: "User")

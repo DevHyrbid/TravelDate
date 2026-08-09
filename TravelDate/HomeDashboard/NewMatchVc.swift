@@ -87,7 +87,9 @@ class NewMatchVc: BaseClassVc {
             if errCode == 200 {
                 DispatchQueue.main.async {
                     
-                    self.data = res?.dataMatch ?? nil
+                    self.data = res?.dataMatch ?? []
+
+                   
                     if self.data?.count ?? 0 == 1 {
                         self.lblMatchCount.text = "you have \(self.data?.count ?? 0) new match"
                     } else {
@@ -305,7 +307,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch selectedTab {
-        case .new:    return 630
+        case .new:    return 610
         case .saved:  return 560
         case .active: return 750
         }

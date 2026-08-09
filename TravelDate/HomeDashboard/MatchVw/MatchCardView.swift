@@ -158,14 +158,23 @@ final class MatchCardView: UIView {
         backView.layer.transform = CATransform3DMakeRotation(-.pi / 2, 0, 1, 0)
         addSubview(backView)
 
-        backView.addSubview(backGradientView)
+       
+        let backTap = UITapGestureRecognizer(target: self, action: #selector(backViewTapped))
+        backView.addGestureRecognizer(backTap)
+        backView.isUserInteractionEnabled = true
         backGradientView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
+        backView.addSubview(backGradientView)
         for _ in 0..<4 {
             let cell = MemberCell()
             backView.addSubview(cell)
             memberCells.append(cell)
         }
+    }
+    
+    @objc
+    private func backViewTapped() {
+        guard isFlipped else { return }
+        flipTapped()
     }
 
     private func buildTopStrips() {
@@ -197,7 +206,7 @@ final class MatchCardView: UIView {
         layoutTopStrips()
 
         // Badge
-        let bW: CGFloat = 158, bH: CGFloat = 42
+        let bW: CGFloat = 180, bH: CGFloat = 42
         badgeBlurView.frame = CGRect(x: 16, y: 20, width: bW, height: bH)
         badgeIconLabel.frame = CGRect(x: 10, y: (bH-22)/2, width: 22, height: 22)
         badgeTextLabel.frame = CGRect(x: 38, y: 0, width: bW-48, height: bH)
@@ -302,6 +311,7 @@ final class MatchCardView: UIView {
         titleLabel.text = group.title ?? "Travel Group"
         
         ImageLoader.setImageKing(coverImageView, urlString: APiConstant.base + "\(group.coverImage ?? "")")
+        
         let style = group.travelStyle?.first ?? "beach"
         categoryIconLabel.text = iconEmoji(for: style)
         badgeIconLabel.text    = iconEmoji(for: style)
@@ -311,7 +321,7 @@ final class MatchCardView: UIView {
         pill2.setText("Avg age:25 - 30")
         pill3.setText("\(group.members?.count ?? 0) travelers")
         pill4.setText(group.destination ?? "Bali, Japan")
-
+        
       
         // Back face: fill member cells
         let members = group.members ?? []
@@ -388,17 +398,32 @@ final class MatchCardView: UIView {
 
     private func iconEmoji(for style: String) -> String {
         switch style.lowercased() {
-        case "beach", "leisure": return "🏖"
-        case "adventure": return "🧗"
-        case "city", "urban": return "🏙"
-        default: return "✈️"
+        case "adventure":
+            return "🥾"
+        case "party":
+            return "🥂"
+        case "culture", "cultural":
+            return "🎭"
+        case "beach", "leisure":
+            return "🏖️"
+        default:
+            return "✈️"
         }
     }
+
     private func badgeText(for style: String) -> String {
+        print(style)
         switch style.lowercased() {
-        case "beach", "leisure": return "Leisure travelers"
-        case "adventure": return "Adventure seekers"
-        default: return "Travel enthusiasts"
+        case "adventure":
+            return "Adventure traveler"
+        case "party":
+            return "Partygoer"
+        case "culture", "cultural":
+            return "Cultural traveler"
+        case "beach", "leisure":
+            return "Leisure traveler"
+        default:
+            return "Travel enthusiast"
         }
     }
    

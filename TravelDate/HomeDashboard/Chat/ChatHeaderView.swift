@@ -48,7 +48,6 @@ final class ChatHeaderView: UIView {
         imageURL: String?,
         showMore: Bool = true
     ) {
-
         titleLabel.text = title
         subtitleLabel.text = subtitle
         subtitleLabel.isHidden = (subtitle?.isEmpty ?? true)
@@ -58,15 +57,21 @@ final class ChatHeaderView: UIView {
         rightImageView.isHidden = true
 
         if let str = imageURL, !str.isEmpty {
+            
+            var  urlStr = ""
+            if str.contains("https://lh3.googleusercontent.com") {
+                urlStr =  str
+            } else {
+                urlStr = APiConstant.base + str
+            }
             ImageLoader.setImageKing(
                 leftImageView,
-                urlString: "\(APiConstant.base)\(str)"
+                urlString: urlStr
             )
         } else {
             leftImageView.image = UIImage(named: "User")
         }
         
-        print("\(APiConstant.base)\(imageURL)","hjehjhejkehjke")
         leftImageView.layer.cornerRadius = self.leftImageView.frame.height / 2
         
     }

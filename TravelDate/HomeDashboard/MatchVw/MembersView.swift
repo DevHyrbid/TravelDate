@@ -14,7 +14,7 @@ final class MembersProgressView: UIView {
 
     // MARK: - Config
 
-    private let avatarSize: CGFloat = 44
+    private let avatarSize: CGFloat = 40
     private let avatarOverlap: CGFloat = 14
     private let maxVisibleAvatars: Int = 4
 

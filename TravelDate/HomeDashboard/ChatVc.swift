@@ -576,7 +576,8 @@ private extension ChatVc {
             roomTitle: group.name ?? "",
             type: .group
         )
-        vc.roomImageURL =  group.image ?? ""
+        print(group, "jerercheck")
+        vc.roomImageURL =  group.imageArr?[0] ?? ""
         vc.memberCount = participantIds.count
 
         navigationController?.pushViewController(vc, animated: true)
@@ -585,7 +586,7 @@ private extension ChatVc {
     func openDirectChat(at indexPath: IndexPath) {
 
         let item = chatData[indexPath.row]
-
+        print(item.groupDetails,"hwreeee")
         if item.type == "MATCH" {
 
             let viewModel = ChatViewModel(
@@ -598,6 +599,7 @@ private extension ChatVc {
                 roomTitle: item.name ?? "",
                 type: .match
             )
+            vc.roomImageURL = item.imageArr?[0]
 
             navigationController?.pushViewController(vc, animated: true)
             return
@@ -614,7 +616,7 @@ private extension ChatVc {
                 roomTitle: item.name ?? "",
                 type: .individual
             )
-
+            vc.roomImageURL = item.image
             navigationController?.pushViewController(vc, animated: true)
             return
         }

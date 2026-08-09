@@ -56,6 +56,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     var pastData: [Group]? = nil
     var selected : Group? = nil
     let membersView = MembersProgressView()
+    private var tabBarHideTimer: Timer?
+    private let tabBarAutoHideDuration: TimeInterval = 3 // seconds
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,6 +87,24 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         )
 
         
+    }
+    
+    private func showTabBarTemporarily() {
+        tripsTabBarController?.showTabBar()
+        resetTabBarTimer()
+    }
+
+    private func resetTabBarTimer() {
+        tabBarHideTimer?.invalidate()
+
+        tabBarHideTimer = Timer.scheduledTimer(withTimeInterval: tabBarAutoHideDuration, repeats: false) { [weak self] _ in
+            self?.tripsTabBarController?.hideTabBar()
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        showTabBarTemporarily()
     }
     
     
@@ -118,7 +138,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         AppData.shared.longitude = res.longitude
 
         self.setupCountdown(startDateString: res.startDate ?? "")
-        
+        UserDefaults.standard.set(res.id, forKey: "selectedGroupId")
+
         self.lblDate.text = self.formatDateRange(
             start: res.startDate ?? "",
             end: res.endDate ?? ""
@@ -162,7 +183,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         navigationItem.hidesBackButton = true
         navigationItem.leftBarButtonItem = nil
         
-        tripsTabBarController?.showTabBar()
+        
         setupUi()
         
         if let font = UIFont(name: "Poppins-Regular", size: 16) {
@@ -170,6 +191,16 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         } else {
             print("❌ Font not loaded")
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        showTabBarTemporarily()
+    }
+    
+    deinit {
+        tabBarHideTimer?.invalidate()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -332,7 +363,16 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
+        resetTabBarTimer()
     }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        showTabBarTemporarily()
+    }
+
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        resetTabBarTimer()
+//    }
     
     
     @objc private func createGroupTapped() {
@@ -341,9 +381,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
-    deinit {
-        timer?.invalidate()
-    }
     
     func getDashboard() {
         

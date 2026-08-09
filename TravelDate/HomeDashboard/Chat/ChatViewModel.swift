@@ -62,6 +62,8 @@ final class ChatViewModel {
         } else {
             createRoom()
         }
+        
+//        self.scrollToBottom(animated: true)
     }
 
     // MARK: - 1. Create / Get Room
