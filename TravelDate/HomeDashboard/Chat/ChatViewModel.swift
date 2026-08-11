@@ -70,9 +70,9 @@ final class ChatViewModel {
 
     private func createRoom() {
         let safe = safeParticipants()
-        guard safe.count >= 1 else {
-            onError?("Missing participant info"); return
-        }
+//        guard safe.count >= 1 else {
+//            onError?("Missing participant info"); return
+//        }
         setLoading(true)
 
         service.createRoom(participants: safe, type: roomType) { [weak self] result in

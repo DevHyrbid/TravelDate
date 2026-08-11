@@ -258,4 +258,40 @@ extension MyGroupViewController {
     @IBAction func btnBack(_ sender:UIButton) {
         super.backTapped()
     }
+    
+    @IBAction func btnGroup(_ sender:UIButton) {
+//     openGroupChat()
+        self.tripsTabBarController?.switchTo(index: 3)
+    }
+    
+//    func openGroupChat() {
+//
+//        let group = res
+//
+//        let currentUserId = User.curentUser?.id ?? ""
+//
+//        // Get all member ids
+//        let participantIds = group?.members?.compactMap { $0.id } ?? []
+//
+//       
+//
+//        let viewModel = ChatViewModel(
+//            currentUserId: currentUserId
+//        )
+//        
+//
+//        // Open existing room directly if available
+//        let vc = ChatMessageVc(
+//            viewModel: viewModel,
+//            participants: group?.members ?? [],
+//            roomId: group.chatId,
+//            roomTitle: group.name ?? "",
+//            type: .group
+//        )
+//        print(group, "jerercheck")
+//        vc.roomImageURL =  group.imageArr?[0] ?? ""
+//        vc.memberCount = participantIds.count
+//
+//        navigationController?.pushViewController(vc, animated: true)
+//    }
 }

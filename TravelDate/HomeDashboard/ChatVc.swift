@@ -446,7 +446,7 @@ private extension ChatVc {
 
             cell.lblTitle.text = model.name
 //            cell.lblDesc.text = model.lastMessage?.content ?? "" 
-            cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
+            cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
             loadAvatarImage(
                 into: cell.imgVw,
                 urlString: model.image
@@ -555,13 +555,7 @@ private extension ChatVc {
         // Get all member ids
         let participantIds = group.members?.compactMap { $0.id } ?? []
 
-        // Ensure current user exists
-//        if !participantIds.contains(currentUserId) {
-//            participantIds.append(currentUserId)
-//        }
-//
-//        // Remove duplicates
-//        participantIds = Array(Set(participantIds))
+       
 
         let viewModel = ChatViewModel(
             currentUserId: currentUserId

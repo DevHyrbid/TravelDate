@@ -111,7 +111,7 @@ extension PrivacySecurityVc {
             break
         case 103:
             self.vwDelete.isHidden = true
-            request.deleteUserAPi { err, code in
+            request.deleteAccount { err, code in
                 DispatchQueue.main.async {
                     User.resetCurrentUser()
                     self.pushVC(LoginViewController.self, from: .Main)

@@ -1200,6 +1200,13 @@
                                                     <outlet property="delegate" destination="F8q-JA-hF4" id="0SY-S1-1RH"/>
                                                 </connections>
                                             </tableView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nu0-Hs-1CN">
+                                                <rect key="frame" x="329" y="34.666666666666664" width="44" height="43.999999999999993"/>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                <connections>
+                                                    <action selector="btnGroup:" destination="F8q-JA-hF4" eventType="touchUpInside" id="GXX-oS-wd2"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
@@ -1208,6 +1215,7 @@
                                             <constraint firstItem="dsA-lV-ocX" firstAttribute="top" secondItem="2rP-sU-nq0" secondAttribute="bottom" constant="20" id="42B-22-1ev"/>
                                             <constraint firstItem="3Cq-AJ-GaC" firstAttribute="top" secondItem="dsA-lV-ocX" secondAttribute="bottom" constant="20" id="818-nM-44I"/>
                                             <constraint firstItem="8lg-4y-Mqf" firstAttribute="centerY" secondItem="E3P-gZ-K3Q" secondAttribute="centerY" id="9uT-Ky-bnS"/>
+                                            <constraint firstItem="Nu0-Hs-1CN" firstAttribute="trailing" secondItem="jvG-7M-gYB" secondAttribute="trailing" id="AiO-nZ-Dhv"/>
                                             <constraint firstAttribute="bottom" secondItem="3Cq-AJ-GaC" secondAttribute="bottom" constant="20" id="B9P-HG-ktT"/>
                                             <constraint firstItem="Q8w-fg-HAg" firstAttribute="leading" secondItem="cor-9E-byr" secondAttribute="trailing" constant="10" id="OQA-32-s1O"/>
                                             <constraint firstItem="E3P-gZ-K3Q" firstAttribute="top" secondItem="Q8w-fg-HAg" secondAttribute="bottom" constant="5" id="S5y-nr-qFn"/>
@@ -1220,8 +1228,11 @@
                                             <constraint firstAttribute="trailing" secondItem="3Cq-AJ-GaC" secondAttribute="trailing" constant="5" id="d8f-hP-2RS"/>
                                             <constraint firstItem="E3P-gZ-K3Q" firstAttribute="leading" secondItem="Q8w-fg-HAg" secondAttribute="leading" id="dcB-VM-tgH"/>
                                             <constraint firstItem="cor-9E-byr" firstAttribute="leading" secondItem="WyK-sz-qnu" secondAttribute="leading" constant="15" id="dvA-Qu-Uxq"/>
+                                            <constraint firstItem="Nu0-Hs-1CN" firstAttribute="leading" secondItem="jvG-7M-gYB" secondAttribute="leading" id="e97-iD-L4f"/>
                                             <constraint firstAttribute="trailing" secondItem="jvG-7M-gYB" secondAttribute="trailing" constant="20" id="fpF-Uy-WgB"/>
+                                            <constraint firstItem="Nu0-Hs-1CN" firstAttribute="bottom" secondItem="jvG-7M-gYB" secondAttribute="bottom" id="gYN-69-kf5"/>
                                             <constraint firstItem="3Cq-AJ-GaC" firstAttribute="leading" secondItem="WyK-sz-qnu" secondAttribute="leading" constant="5" id="hAI-d2-Dvd"/>
+                                            <constraint firstItem="Nu0-Hs-1CN" firstAttribute="top" secondItem="jvG-7M-gYB" secondAttribute="top" id="pFC-nC-JLJ"/>
                                         </constraints>
                                     </view>
                                 </subviews>

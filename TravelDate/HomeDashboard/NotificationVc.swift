@@ -89,11 +89,6 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
             
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-    }
-    
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
@@ -132,6 +127,145 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
             }
         }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        guard let notification = notifications?[indexPath.row] else {
+            return
+        }
+        
+        handleNotificationTap(notification,indexPath)
+    }
+    
+    private func handleNotificationTap(_ notification: NotificationItem,_ indx:IndexPath) {
+
+        guard let type = notification.type else {
+            return
+        }
+        print(notification.chatRoom?.type,type,"tyhujkil")
+
+        switch type {
+
+        case "CHAT_MESSAGE":
+
+            // Direct or Match chat
+            
+                
+                openDirectChat(at: indx)
+            
+
+        case "MATCH":
+
+            // Group matched with another group
+            if let groupId = notification.groupId,
+               !groupId.isEmpty {
+
+                
+            }
+
+        case "GROUP_JOIN",
+             "GROUP_LEAVE":
+
+            if let groupId = notification.groupId,
+               !groupId.isEmpty {
+
+//                openGroupFromNotification(
+//                    groupId: groupId
+//                )
+            }
+
+        case "VERIFICATION":
+            // Open verification screen if you have one
+            break
+
+        case "MISSED_CHANCE":
+            // Open missed chance screen if you have one
+            break
+
+        default:
+            break
+        }
+    }
+    
+    
+    
+//    func openGroupChat(at indexPath: IndexPath) {
+//
+//        let group = notifications?[indexPath.row]
+//
+//        let currentUserId = User.curentUser?.id ?? ""
+//
+//        // Get all member ids
+//        let participantIds = group.members?.compactMap { $0.id } ?? []
+//
+//       
+//
+//        let viewModel = ChatViewModel(
+//            currentUserId: currentUserId
+//        )
+//        
+//
+//        // Open existing room directly if available
+//        let vc = ChatMessageVc(
+//            viewModel: viewModel,
+//            participants: group.members ?? [],
+//            roomId: group.chatId,
+//            roomTitle: group.name ?? "",
+//            type: .group
+//        )
+//        print(group, "jerercheck")
+//        vc.roomImageURL =  group.imageArr?[0] ?? ""
+//        vc.memberCount = participantIds.count
+//
+//        navigationController?.pushViewController(vc, animated: true)
+//    }
+
+    func openDirectChat(at indexPath: IndexPath) {
+
+        let item = notifications?[indexPath.row]
+        print(item,"hwreeee")
+        if item?.type == "MATCH" {
+
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: [],
+                roomId: item?.chatRoom?.id,
+                roomTitle: item?.title ?? "",
+                type: .match
+            )
+            vc.roomImageURL = item?.sender?.profileImage
+
+            navigationController?.pushViewController(vc, animated: true)
+            return
+        } else {
+            
+//            2B8392
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: [],
+                roomId: item?.chatRoom?.id,
+                roomTitle: item?.title ?? "",
+                type: .individual
+            )
+            vc.roomImageURL = item?.sender?.profileImage
+            navigationController?.pushViewController(vc, animated: true)
+            return
+        }
+
+        // existing direct chat logic here
+    }
+
+    
+    
+    
+    
 }
 
 

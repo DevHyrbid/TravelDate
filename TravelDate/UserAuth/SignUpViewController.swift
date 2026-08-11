@@ -141,8 +141,10 @@ var tuple: (title: String, lat: Double, lng: Double)?
 //  Fixed: scroll + keyboard avoidance, confirm password field + validation
 //
 
+
 import UIKit
 import GoogleSignIn
+import AuthenticationServices
 
 class SignUpViewController: BaseClassVc {
 
@@ -182,6 +184,12 @@ class SignUpViewController: BaseClassVc {
         label.textColor = .white
         label.setFont(.semiBold, size: 22)
         return label
+    }()
+
+    private let appleButton: ASAuthorizationAppleIDButton = {
+        let button = ASAuthorizationAppleIDButton(type: .signIn, style: .white)
+        button.cornerRadius = 25
+        return button
     }()
 
     private let nameField = CustomTextField(placeholder: "Enter name", icon: "person")
@@ -238,6 +246,7 @@ class SignUpViewController: BaseClassVc {
 
         loginButton.addTarget(self, action: #selector(handleSignupTap), for: .touchUpInside)
         googleButton.addTarget(self, action: #selector(handleGoogleTap), for: .touchUpInside)
+        appleButton.addTarget(self, action: #selector(handleAppleLogin), for: .touchUpInside)
 
         setuplocationVw()
         setupKeyboardHandling()
@@ -249,7 +258,7 @@ class SignUpViewController: BaseClassVc {
         NotificationCenter.default.removeObserver(self)
     }
 
-    // MARK: - Keyboard handling (fixes "keyboard blocking everything")
+    // MARK: - Keyboard handling
 
     private func setupKeyboardHandling() {
         NotificationCenter.default.addObserver(
@@ -292,7 +301,6 @@ class SignUpViewController: BaseClassVc {
         scrollView.contentInset.bottom = bottomInset
         scrollView.verticalScrollIndicatorInsets.bottom = bottomInset
 
-        // Scroll the active field just above the keyboard
         if let field = activeTextField {
             let fieldFrameInScroll = field.convert(field.bounds, to: scrollView)
             let visibleRect = fieldFrameInScroll.insetBy(dx: 0, dy: -60)
@@ -332,7 +340,7 @@ class SignUpViewController: BaseClassVc {
         self.backTapped()
     }
 
-    // MARK: - Validation (fixes "add confirm password validation and fields")
+    // MARK: - Validation
 
     private func validateForm() -> String? {
         let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -341,30 +349,14 @@ class SignUpViewController: BaseClassVc {
         let confirmPassword = confirmPasswordField.text ?? ""
         let location = locationField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
-        if name.isEmpty {
-            return "Please enter your name"
-        }
-        if email.isEmpty {
-            return "Please enter your email"
-        }
-        if !isValidEmail(email) {
-            return "Please enter a valid email address"
-        }
-        if location.isEmpty {
-            return "Please select your location"
-        }
-        if password.isEmpty {
-            return "Please enter a password"
-        }
-        if password.count < 6 {
-            return "Password must be at least 6 characters"
-        }
-        if confirmPassword.isEmpty {
-            return "Please confirm your password"
-        }
-        if password != confirmPassword {
-            return "Passwords do not match"
-        }
+        if name.isEmpty { return "Please enter your name" }
+        if email.isEmpty { return "Please enter your email" }
+        if !isValidEmail(email) { return "Please enter a valid email address" }
+        if location.isEmpty { return "Please select your location" }
+        if password.isEmpty { return "Please enter a password" }
+        if password.count < 6 { return "Password must be at least 6 characters" }
+        if confirmPassword.isEmpty { return "Please confirm your password" }
+        if password != confirmPassword { return "Passwords do not match" }
         return nil
     }
 
@@ -388,7 +380,6 @@ class SignUpViewController: BaseClassVc {
 
         if let errorMessage = validateForm() {
             showFieldError(errorMessage)
-//            showAlert(errorMessage)
             return
         }
 
@@ -414,7 +405,7 @@ class SignUpViewController: BaseClassVc {
                 UserDefaults.standard.set(self.locationField.text, forKey: "user_loc")
                 self.pushVC(TripsTabBarController.self, from: .Home)
             } else {
-//                self.showAlert(errMsg)
+                // self.showAlert(errMsg)
             }
         }
     }
@@ -437,7 +428,7 @@ class SignUpViewController: BaseClassVc {
             self.request.name = name
             self.request.profile_image = profileImage
             self.request.deviceToken = Constants.device_Config.deviceToken
-            self.request.deviceType = Constants.device_Config.deviceToken
+            self.request.deviceType = Constants.device_Config.deviceType
             self.request.social_type = "google"
             self.request.social_id = socialId
 
@@ -451,6 +442,18 @@ class SignUpViewController: BaseClassVc {
                 }
             }
         }
+    }
+
+    // MARK: - Apple Sign In
+
+    @objc private func handleAppleLogin() {
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
 
     // MARK: - Setup
@@ -474,7 +477,6 @@ class SignUpViewController: BaseClassVc {
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            // pins content width to scroll view width so vertical-only scrolling works
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
 
@@ -486,7 +488,7 @@ class SignUpViewController: BaseClassVc {
             passwordTitle, passwordField,
             confirmPasswordTitle, confirmPasswordField,
             errorLabel,
-            loginButton, googleButton,
+            loginButton, googleButton, appleButton,
             signupLabel
         ].forEach {
             contentView.addSubview($0)
@@ -567,9 +569,68 @@ class SignUpViewController: BaseClassVc {
             googleButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             googleButton.heightAnchor.constraint(equalToConstant: 50),
 
-            signupLabel.topAnchor.constraint(equalTo: googleButton.bottomAnchor, constant: 20),
+            appleButton.topAnchor.constraint(equalTo: googleButton.bottomAnchor, constant: 14),
+            appleButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+            appleButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
+            appleButton.heightAnchor.constraint(equalToConstant: 50),
+
+            signupLabel.topAnchor.constraint(equalTo: appleButton.bottomAnchor, constant: 20),
             signupLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             signupLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
         ])
+    }
+}
+
+extension SignUpViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return self.view.window!
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+
+        if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
+
+            let userId = credential.user
+            let savedEmail = UserDefaults.standard.string(forKey: "apple_email")
+
+            let safeUserId = userId
+                .replacingOccurrences(of: "[^A-Za-z0-9]", with: "", options: .regularExpression)
+
+            let email = credential.email
+                ?? savedEmail
+                ?? "\(safeUserId)@privaterelay.appleid.com"
+
+            let fullName = credential.fullName
+            let name = "\(fullName?.givenName ?? "") \(fullName?.familyName ?? "")"
+
+            if let email = credential.email {
+                UserDefaults.standard.set(email, forKey: "apple_email")
+            }
+
+            let finalName = name.trimmingCharacters(in: .whitespaces).isEmpty ? "Apple User" : name
+
+            self.request.email = email
+            self.request.name = finalName
+            self.request.profile_image = ""
+            self.request.deviceToken = Constants.device_Config.deviceToken
+            self.request.deviceType = Constants.device_Config.deviceType
+            self.request.social_type = "apple"
+            self.request.social_id = userId
+
+            self.request.socialLogin { loginUser, errMsg, errCode in
+                if errCode == 200 {
+                    DispatchQueue.main.async {
+                        self.pushVC(TripsTabBarController.self, from: .Home)
+                    }
+                } else {
+                    self.showAlert(errMsg)
+                }
+            }
+        }
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        // Toast.show(message: error.localizedDescription, view: self.view)
     }
 }

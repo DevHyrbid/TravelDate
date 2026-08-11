@@ -145,8 +145,8 @@ class LoginViewController: BaseClassVc {
             self.request.email =  email
             self.request.name =  name
             self.request.profile_image =  profileImage
+            self.request.deviceType = Constants.device_Config.deviceType
             self.request.deviceToken = Constants.device_Config.deviceToken
-            self.request.deviceType = Constants.device_Config.deviceToken
             self.request.social_type = "google"
             self.request.social_id = socialId
             
@@ -368,7 +368,7 @@ extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizatio
             self.request.name =  finalName
             self.request.profile_image =  ""
             self.request.deviceToken = Constants.device_Config.deviceToken
-            self.request.deviceType = Constants.device_Config.deviceToken
+            self.request.deviceType = Constants.device_Config.deviceType
             self.request.social_type = "apple"
             self.request.social_id = userId
             

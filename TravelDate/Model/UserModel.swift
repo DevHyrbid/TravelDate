@@ -415,6 +415,27 @@ class User : Mappable {
         UserDefaults.standard.synchronize()
     }
     
+    
+    
+    func logout(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.logout, params: [:], method: "PATCH") { responseObject, suces in
+            callBack("logout",200)
+        } faliure: { errMsg, errCode in
+            callBack(errMsg,errCode)
+        }
+
+    }
+    
+    func deleteAccount(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.delete, params: [:], method: "DELETE") { responseObject, suces in
+            callBack("logout",200)
+        } faliure: { errMsg, errCode in
+            callBack(errMsg,errCode)
+        }
+
+    }
     func signUp(callBack:((_ loginUser:User?,_ errMsg:String,_ errCode:Int)->Void)!) {
         
         
@@ -718,28 +739,6 @@ class User : Mappable {
         
     }
     
-    func deleteUserAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
-        
-        NetworkManger.sendRequestUrlSession(
-            url: APiConstant.deleteUser,
-            params: self.toJSON(),
-            method: "DELETE"
-        ) { responseObject, suces in
-            let statusCode = responseObject["code"] as? Int ?? 0
-            
-            guard statusCode == 200 else {
-                let message = responseObject["message"] as? String ?? "Something went wrong"
-                callBack(message, statusCode)
-                return
-            }
-            
-            
-            callBack("updated", 200)
-            
-        } faliure: { errMsg, errCode in
-            callBack(errMsg, errCode)
-        }
-    }
     func editProfileAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
         print(self.toJSON(),"HJHJHJHJHJHJ")
         NetworkManger.sendRequestUrlSession(
@@ -953,7 +952,7 @@ class User : Mappable {
         if type == 0 { // CURRENT
             url  = APiConstant.myGroup// + "current"
         } else  if type == 1 {
-            url  = APiConstant.swipeFeed + "?lat=\(self.latitude ?? 0.0)6&lng=\(self.longitude ?? 0.0)"
+            url  = APiConstant.swipeFeed + "?lat=\(self.latitude ?? 0.0)&lng=\(self.longitude ?? 0.0)"
             print(url,"HEREADDDEDLOCATION FOR TESTING ")
         } else if type == 2 {
             url = APiConstant.matchedGroup
@@ -1732,10 +1731,12 @@ class NotificationItem: Mappable {
     
     var sender: Sender?
     var group: Group?
+    var chatRoom : ChatRoom?
     
     required init?(map: Map) { }
     
     func mapping(map: Map) {
+        chatRoom <- map["chatRoom"]
         id              <- map["id"]
         groupId         <- map["groupId"]
         recipientId     <- map["recipientId"]

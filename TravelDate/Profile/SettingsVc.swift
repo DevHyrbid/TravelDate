@@ -73,8 +73,12 @@ extension SettingsVc {
             break
         case 101:
             self.blurVw.isHidden = true
-            User.resetCurrentUser()
-            self.pushVC(LoginViewController.self, from: .Main)
+            self.request.logout { errMsg, errCode in
+                DispatchQueue.main.async {
+                    User.resetCurrentUser()
+                    self.pushVC(LoginViewController.self, from: .Main)
+                }
+            }
             break
         case 102:
             self.blurVw.isHidden = true

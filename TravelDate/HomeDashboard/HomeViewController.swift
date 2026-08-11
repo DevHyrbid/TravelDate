@@ -499,13 +499,13 @@ extension HomeViewController {
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
-//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-//            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
-//                self.upgradeButtonTapped()
-//            }
-//            
-//            return
-//        }
+        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
+                self.upgradeButtonTapped()
+            }
+            
+            return
+        }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     

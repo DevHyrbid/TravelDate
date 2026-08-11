@@ -106,7 +106,7 @@ extension MySavedGroupVc : UITableViewDelegate, UITableViewDataSource{
         if let url = URL(string: model?.profile_image ?? "") {
             self.loadImage(cell.imgUser, url: url)
         } else {
-            img.image = UIImage(named: "User")
+            cell.imgUser.image = UIImage(named: "User")
         }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true
