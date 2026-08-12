@@ -67,7 +67,7 @@ class SavedGroupCell: UITableViewCell {
 
         // ── "New Strategy" badge — top-left ───────────────────────────────
         badgeLabel.text               = ""
-        badgeLabel.font               = AppFont.medium(13)
+        badgeLabel.font               = AppFont.medium(11)
         badgeLabel.textColor          = .white
         badgeLabel.backgroundColor    = UIColor(white: 0.18, alpha: 0.70)
         badgeLabel.layer.cornerRadius = 15
@@ -103,7 +103,7 @@ class SavedGroupCell: UITableViewCell {
         cardView.addSubview(bookmarkBtn)
 
         // ── Name label ────────────────────────────────────────────────────
-        nameLabel.font          = AppFont.bold(22)
+        nameLabel.font          = AppFont.bold(20)
         nameLabel.textColor     = .white
         nameLabel.numberOfLines = 1
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -111,7 +111,7 @@ class SavedGroupCell: UITableViewCell {
 
         // ── Date row (vertical stack below name) ──────────────────────────
         let timeIcon = makeIcon("calendar")
-        timeLabel.font      = AppFont.regular(14)
+        timeLabel.font      = AppFont.regular(12)
         timeLabel.textColor = UIColor(white: 0.88, alpha: 1)
         let timeRow = hStack([timeIcon, timeLabel], spacing: 8)
         timeRow.translatesAutoresizingMaskIntoConstraints = false
@@ -151,7 +151,7 @@ class SavedGroupCell: UITableViewCell {
         // ── "View Group" button ───────────────────────────────────────────
         // Screenshot: NOT full width — has 16pt margins each side, ~54pt tall
         viewGroupBtn.setTitle("View Group", for: .normal)
-        viewGroupBtn.titleLabel?.font   = AppFont.semibold(17)
+        viewGroupBtn.titleLabel?.font   = AppFont.semibold(15)
         viewGroupBtn.backgroundColor    = .themeOrange
         viewGroupBtn.setTitleColor(.white, for: .normal)
         viewGroupBtn.layer.cornerRadius = 27   // 54 / 2

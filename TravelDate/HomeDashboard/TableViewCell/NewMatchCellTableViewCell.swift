@@ -63,14 +63,14 @@ class NewMatchCellTableViewCell: UITableViewCell {
         ])
         
         // MARK: - Fonts
-        lblMatched.font = AppFont.semibold(12)
-        lblTitle.font = AppFont.bold(22)
-        lblTime.font = AppFont.regular(14)
-        lblLocation.font = AppFont.regular(14)
+        lblMatched.font = AppFont.semibold(11)
+        lblTitle.font = AppFont.bold(20)
+        lblTime.font = AppFont.regular(12)
+        lblLocation.font = AppFont.regular(12)
         
-        lblName.font = AppFont.bold(14)
-        lblTimeSave.font = AppFont.regular(12)
-        lblLocationSave.font = AppFont.regular(12)
+        lblName.font = AppFont.bold(13)
+        lblTimeSave.font = AppFont.regular(11)
+        lblLocationSave.font = AppFont.regular(11)
         
         btnViewGroup.layer.borderWidth = 1
         btnViewGroup.layer.borderColor = UIColor.lightGray.cgColor
