@@ -2,14 +2,19 @@
 //  ChatVideoThumbnailLoader.swift
 //  TravelDate
 //
-//  NEW FILE — nothing existing was touched to add this.
-//
 //  Mirrors ChatImageLoader's cache-by-URL pattern, but generates the
 //  thumbnail itself via AVAssetImageGenerator instead of downloading an
 //  image, since the API doesn't return a separate thumbnail for videos
 //  (same "fileUrl is the only signal" situation as ChatModels.swift).
 //  Works for both a remote fileUrl (server video) and a local file URL
 //  (freshly picked video, before upload finishes).
+//
+//  Two call styles are supported:
+//   - into:imageView   — fire-and-forget, sets the image view directly.
+//   - completion:       — hands you the UIImage (or nil on failure) so the
+//                         caller can size the attachment correctly and can
+//                         ignore the result if the cell has been reused
+//                         (ChatMessageCell does this via its loadToken).
 //
 
 import UIKit
@@ -19,34 +24,61 @@ enum ChatVideoThumbnailLoader {
 
     private static let cache = NSCache<NSString, UIImage>()
 
+    // MARK: - into:imageView (fire-and-forget)
+
     /// `urlString` may be a relative path (resolved against APiConstant.base,
     /// same convention as ChatImageLoader) or an absolute URL.
     static func loadRemote(_ urlString: String, into imageView: UIImageView) {
-        if let cached = cache.object(forKey: urlString as NSString) {
-            imageView.image = cached
-            return
-        }
-        guard let url = resolvedURL(from: urlString) else { return }
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            guard let thumbnail = generateThumbnail(for: url) else { return }
-            cache.setObject(thumbnail, forKey: urlString as NSString)
-            DispatchQueue.main.async { imageView.image = thumbnail }
+        loadRemote(urlString) { thumbnail in
+            guard let thumbnail else { return }
+            imageView.image = thumbnail
         }
     }
 
-    /// For a locally-picked video (before it's uploaded) — synchronous-feeling
-    /// but still generated off the main thread; call from the picker callback.
+    /// For a locally-picked video (before it's uploaded).
     static func loadLocal(_ fileURL: URL, into imageView: UIImageView) {
+        loadLocal(fileURL) { thumbnail in
+            guard let thumbnail else { return }
+            imageView.image = thumbnail
+        }
+    }
+
+    // MARK: - completion-based (cancellation-safe; use in table/collection cells)
+
+    /// Calls `completion` on the main thread with the generated thumbnail,
+    /// or nil on failure. Caller is responsible for checking whether the
+    /// requesting cell/view is still current before applying the result.
+    static func loadRemote(_ urlString: String, completion: @escaping (UIImage?) -> Void) {
+        if let cached = cache.object(forKey: urlString as NSString) {
+            DispatchQueue.main.async { completion(cached) }
+            return
+        }
+        guard let url = resolvedURL(from: urlString) else {
+            DispatchQueue.main.async { completion(nil) }
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let thumbnail = generateThumbnail(for: url)
+            if let thumbnail {
+                cache.setObject(thumbnail, forKey: urlString as NSString)
+            }
+            DispatchQueue.main.async { completion(thumbnail) }
+        }
+    }
+
+    static func loadLocal(_ fileURL: URL, completion: @escaping (UIImage?) -> Void) {
         let key = fileURL.absoluteString as NSString
         if let cached = cache.object(forKey: key) {
-            imageView.image = cached
+            DispatchQueue.main.async { completion(cached) }
             return
         }
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let thumbnail = generateThumbnail(for: fileURL) else { return }
-            cache.setObject(thumbnail, forKey: key)
-            DispatchQueue.main.async { imageView.image = thumbnail }
+            let thumbnail = generateThumbnail(for: fileURL)
+            if let thumbnail {
+                cache.setObject(thumbnail, forKey: key)
+            }
+            DispatchQueue.main.async { completion(thumbnail) }
         }
     }
 

@@ -58,6 +58,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     let membersView = MembersProgressView()
     private var tabBarHideTimer: Timer?
     private let tabBarAutoHideDuration: TimeInterval = 3 // seconds
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()

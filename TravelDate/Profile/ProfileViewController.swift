@@ -47,13 +47,7 @@ class ProfileViewController: BaseClassVc {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
         
-        if User.curentUser?.isVerified ?? 0 == 1 {
-            self.vwPercentage.isHidden = true
-            self.imgTick.isHidden = false
-        } else {
-            self.vwPercentage.isHidden = false
-            self.imgTick.isHidden = true
-        }
+       
         
 //        let vc = TravelListViewController()
 //        navigationController?.pushViewController(vc, animated: true)
@@ -214,6 +208,30 @@ class ProfileViewController: BaseClassVc {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             self.lblPercentage.text = "\(percentage)%"
         }
+        
+        let isVerified = User.curentUser?.isVerified == 1
+
+        let hasSelfie = !(User.curentUser?.selfie ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
+
+       
+        if isVerified && hasSelfie  {
+            self.vwPercentage.isHidden = true
+            self.imgTick.isHidden = false
+        } else {
+            self.vwPercentage.isHidden = false
+            self.imgTick.isHidden = true
+        }
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
+        vwPercentage.isUserInteractionEnabled = true
+        vwPercentage.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func percentageViewTapped() {
+        // Open your screen here
+        let vc = GetVerifiedVc()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func viewDidLayoutSubviews() {

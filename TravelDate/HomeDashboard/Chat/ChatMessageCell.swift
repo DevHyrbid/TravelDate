@@ -1,10 +1,3 @@
-//
-//
-//  ChatMessageCell.swift
-//  TravelDate
-//
-//  Renders incoming and outgoing bubbles with optional image attachments.
-//
 import UIKit
 
 final class ChatMessageCell: UITableViewCell {
@@ -23,8 +16,9 @@ final class ChatMessageCell: UITableViewCell {
     private let attachmentView  = UIImageView()   // ← image OR video-thumbnail attachment
     private let timeLabel       = UILabel()
     private let failedLabel     = UILabel()
+    private let attachmentSpinner = UIActivityIndicatorView(style: .medium)
 
-    // MARK: - Video overlay (NEW — sits on top of attachmentView, only
+    // MARK: - Video overlay (sits on top of attachmentView, only
     // shown when the attachment is a video; image messages never touch these)
     private let playIconView    = UIImageView()
     private let durationLabel   = UILabel()
@@ -39,19 +33,38 @@ final class ChatMessageCell: UITableViewCell {
     private var timeLeading: NSLayoutConstraint!
     private var timeTrailing: NSLayoutConstraint!
 
-    // attachment height — 0 when no image
+    // attachment height/width — 0 when no image
     private var attachmentHeight: NSLayoutConstraint!
     private var attachmentWidth: NSLayoutConstraint!
 
     var onRetryTapped: (() -> Void)?
-    var onImageTapped: ((UIImage?) -> Void)?   // ← for full-screen preview
-    var onVideoTapped: ((_ remoteURL: String?, _ localURL: URL?) -> Void)?   // ← NEW, for video playback
+    var onImageTapped: ((UIImage?) -> Void)?
+    var onVideoTapped: ((_ remoteURL: String?, _ localURL: URL?) -> Void)?
     var onImageLongPressed: ((UIImage?) -> Void)?
-    // Kept from the last configure(with:) call so the single tap gesture on
-    // attachmentView knows whether to fire onImageTapped or onVideoTapped.
+
+    /// Called whenever the attachment's final size is resolved AFTER an async
+    /// load (remote image / remote or local video thumbnail). The table view
+    /// should respond to this by recalculating this row's height WITHOUT a
+    /// full reloadData — e.g.:
+    ///   cell.onAttachmentSizeResolved = { [weak tableView] in
+    ///       tableView?.beginUpdates()
+    ///       tableView?.endUpdates()
+    ///   }
+    /// or, if using diffable / async height caching, invalidate just that
+    /// index path. Skipping this hookup is why cells looked "stretched"
+    /// until the next scroll — the constraint updated but the table view
+    /// never knew the row height changed.
+    var onAttachmentSizeResolved: (() -> Void)?
+
     private var currentMessageType = 1
     private var currentVideoRemoteURL: String?
     private var currentVideoLocalURL: URL?
+
+    // Bumped every configure(with:) call. Async load completions capture the
+    // token they were started with and bail out if it no longer matches —
+    // this is what stops a slow-loading previous cell's image/thumbnail from
+    // flashing onto a reused cell that has since scrolled to a new message.
+    private var loadToken = 0
 
     // MARK: - Init
 
@@ -89,19 +102,34 @@ final class ChatMessageCell: UITableViewCell {
         bubbleView.layer.cornerRadius = 16
         bubbleView.clipsToBounds = true
 
-        // Attachment image
+        // Attachment image — aspectFit is safe now because the box we size
+        // it to (see attachmentSize(for:)) always matches the image's own
+        // aspect ratio, so there's never letterboxing left for the bubble's
+        // background color to show through.
         attachmentView.contentMode = .scaleAspectFit
         attachmentView.clipsToBounds = true
-        attachmentView.backgroundColor = .clear
         attachmentView.layer.cornerRadius = 16
         attachmentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        attachmentView.isUserInteractionEnabled = true
+
+        // Single tap → image preview or video playback (this was completely
+        // missing before, which is why tapping an attachment did nothing).
+        attachmentView.addGestureRecognizer(
+            UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+        )
         attachmentView.addGestureRecognizer(
             UILongPressGestureRecognizer(target: self, action: #selector(imageLongPressed(_:)))
         )
 
-        // Video overlay (NEW) — added on top of attachmentView, hidden by
-        // default. Nothing about attachmentView's own setup above changed.
+        // Loading spinner shown while a remote image/thumbnail is fetching,
+        // so the user sees "loading" instead of a bare bubble-colored box.
+        attachmentSpinner.translatesAutoresizingMaskIntoConstraints = false
+        attachmentSpinner.hidesWhenStopped = true
+        attachmentSpinner.color = .white
+        attachmentView.addSubview(attachmentSpinner)
+
+        // Video overlay — added on top of attachmentView, hidden by default.
         attachmentView.addSubview(playIconView)
         attachmentView.addSubview(durationLabel)
         playIconView.translatesAutoresizingMaskIntoConstraints = false
@@ -136,31 +164,49 @@ final class ChatMessageCell: UITableViewCell {
             UITapGestureRecognizer(target: self, action: #selector(retryTapped))
         )
     }
-    
-    private func updateImageSize(_ image: UIImage) {
+
+    /// Computes an attachment box that ALWAYS preserves the image's own
+    /// aspect ratio. The previous version clamped width to maxWidth and
+    /// height to maxHeight independently, which could distort the ratio and
+    /// leave gaps around the image (the bubble's orange background showing
+    /// through — the "orange border" look in your screenshot).
+    private func attachmentSize(for imageSize: CGSize) -> CGSize {
         let maxWidth: CGFloat  = UIScreen.main.bounds.width * 0.68
+        let maxHeight: CGFloat = 320
         let minWidth: CGFloat  = 140
         let minHeight: CGFloat = 120
-        let maxHeight: CGFloat = 320
 
-        guard image.size.width > 0, image.size.height > 0 else {
-            attachmentWidth.constant  = maxWidth
-            attachmentHeight.constant = minHeight
-            return
+        guard imageSize.width > 0, imageSize.height > 0 else {
+            return CGSize(width: maxWidth, height: minHeight)
         }
 
-        let aspectRatio = image.size.width / image.size.height // W / H
+        let aspect = imageSize.width / imageSize.height
 
-        var width = maxHeight * aspectRatio
-        width = min(width, maxWidth)
-        width = max(width, minWidth)
+        // Fit into the max box, preserving aspect ratio.
+        var width  = maxWidth
+        var height = width / aspect
+        if height > maxHeight {
+            height = maxHeight
+            width  = height * aspect
+        }
 
-        var height = width / aspectRatio
-        height = min(height, maxHeight)
-        height = max(height, minHeight)
+        // If below minimum, scale UP uniformly (never independently) so the
+        // aspect ratio never changes.
+        if width < minWidth || height < minHeight {
+            let scale = max(minWidth / width, minHeight / height, 1.0)
+            width  *= scale
+            height *= scale
+        }
 
-        attachmentWidth.constant  = width
-        attachmentHeight.constant = height
+        return CGSize(width: width, height: height)
+    }
+
+    private func applyAttachmentSize(_ size: CGSize, notifyTable: Bool) {
+        attachmentWidth.constant  = size.width
+        attachmentHeight.constant = size.height
+        if notifyTable {
+            onAttachmentSizeResolved?()
+        }
     }
 
     // MARK: - Setup constraints
@@ -168,7 +214,7 @@ final class ChatMessageCell: UITableViewCell {
     private func setupConstraints() {
         let maxWidth = UIScreen.main.bounds.width * 0.68
 
-        attachmentWidth = attachmentView.widthAnchor.constraint(equalToConstant: maxWidth)
+        attachmentWidth  = attachmentView.widthAnchor.constraint(equalToConstant: maxWidth)
         attachmentHeight = attachmentView.heightAnchor.constraint(equalToConstant: 0)
 
         NSLayoutConstraint.activate([
@@ -189,7 +235,7 @@ final class ChatMessageCell: UITableViewCell {
             attachmentView.topAnchor.constraint(equalTo: bubbleView.topAnchor),
             attachmentView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor),
             attachmentView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor),
-            attachmentHeight,   // toggled to 0 or 220
+            attachmentHeight,   // toggled to 0 or the resolved image/video height
 
             // Message — below attachment (gap = 0 when no image)
             messageLabel.topAnchor.constraint(equalTo: attachmentView.bottomAnchor, constant: 0),
@@ -205,7 +251,11 @@ final class ChatMessageCell: UITableViewCell {
             failedLabel.centerYAnchor.constraint(equalTo: timeLabel.centerYAnchor),
             failedLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor),
 
-            // Video overlay (NEW) — always-active constraints, nothing toggled.
+            // Spinner
+            attachmentSpinner.centerXAnchor.constraint(equalTo: attachmentView.centerXAnchor),
+            attachmentSpinner.centerYAnchor.constraint(equalTo: attachmentView.centerYAnchor),
+
+            // Video overlay — always-active constraints, nothing toggled.
             // Both views just stay hidden for non-video attachments.
             playIconView.centerXAnchor.constraint(equalTo: attachmentView.centerXAnchor),
             playIconView.centerYAnchor.constraint(equalTo: attachmentView.centerYAnchor),
@@ -232,8 +282,8 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Configure
 
     func configure(with item: ChatItem) {
+        loadToken += 1
         timeLabel.text = ChatDate.bubbleTime(item.createdAt)
-
 
         currentMessageType    = item.messageType
         currentVideoRemoteURL = item.videoURL
@@ -250,80 +300,96 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Attachment
 
     private func configureAttachment(_ item: ChatItem) {
-        
+        let token = loadToken
         let hasImage = item.imageURL != nil || item.localImage != nil
-        let hasVideo = item.videoURL != nil || item.localVideoURL != nil   // NEW
+        let hasVideo = item.videoURL != nil || item.localVideoURL != nil
         let hasText  = !(item.content ?? "").isEmpty
 
         messageLabel.isHidden = !hasText
         messageLabel.text     = hasText ? item.content : nil
 
-        // Video overlay defaults to hidden; only the video branch below turns it on.
         playIconView.isHidden  = true
         durationLabel.isHidden = true
+        attachmentSpinner.stopAnimating()
+
+        // Round all four corners when the attachment is the whole bubble
+        // (no caption below it); only the top two when text follows it.
+        attachmentView.layer.maskedCorners = hasText
+            ? [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            : [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
 
         if hasImage {
-            attachmentHeight.constant = 220
-            attachmentView.isHidden   = false
-            attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)   // reset in case this cell last showed a video
+            attachmentView.isHidden = false
+            attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
 
             if let local = item.localImage {
                 attachmentView.image = local
-                updateImageSize(local)
+                applyAttachmentSize(attachmentSize(for: local.size), notifyTable: false)
             } else if let str = item.imageURL, let url = URL(string: "\(APiConstant.base)\(str)") {
-                
                 attachmentView.image = nil
-                print(url,"sksksks")
-//               /* ImageLoader.setImageKing(attachmentView, urlString: "\(APiConstant.base)*/\(url.absoluteString)")
+                // Placeholder size until the real dimensions come back, so
+                // the cell doesn't render at zero height while loading.
+                applyAttachmentSize(CGSize(width: UIScreen.main.bounds.width * 0.68, height: 220), notifyTable: false)
+                attachmentSpinner.startAnimating()
+
                 attachmentView.kf.setImage(with: url) { [weak self] result in
-
+                    guard let self, self.loadToken == token else { return }
+                    self.attachmentSpinner.stopAnimating()
                     switch result {
-
                     case .success(let value):
-                        self?.updateImageSize(value.image)
-
+                        self.applyAttachmentSize(self.attachmentSize(for: value.image.size), notifyTable: true)
                     case .failure:
-                        self?.attachmentHeight.constant = 220
+                        break // keep placeholder size
                     }
                 }
             }
         } else if hasVideo {
-            // Same slot/height as an image attachment — just a thumbnail
-            // plus a play icon + duration pill on top.
-            attachmentHeight.constant = 220
-            attachmentView.isHidden   = false
+            attachmentView.isHidden = false
             attachmentView.backgroundColor = .black
             playIconView.isHidden  = false
             durationLabel.isHidden = (item.videoDuration == nil)
             if let seconds = item.videoDuration {
                 durationLabel.text = "  " + Self.formattedDuration(seconds) + "  "
             }
+            applyAttachmentSize(CGSize(width: UIScreen.main.bounds.width * 0.68, height: 220), notifyTable: false)
 
             if let localURL = item.localVideoURL {
                 if let thumb = item.videoThumbnail {
                     attachmentView.image = thumb
+                    applyAttachmentSize(attachmentSize(for: thumb.size), notifyTable: false)
                 } else {
                     attachmentView.image = nil
-                    ChatVideoThumbnailLoader.loadLocal(localURL, into: attachmentView)
+                    attachmentSpinner.startAnimating()
+                    ChatVideoThumbnailLoader.loadLocal(localURL) { [weak self] thumb in
+                        guard let self, self.loadToken == token else { return }
+                        self.attachmentSpinner.stopAnimating()
+                        guard let thumb else { return }
+                        self.attachmentView.image = thumb
+                        self.applyAttachmentSize(self.attachmentSize(for: thumb.size), notifyTable: true)
+                    }
                 }
             } else if let remote = item.videoURL {
                 attachmentView.image = nil
-                ChatVideoThumbnailLoader.loadRemote(remote, into: attachmentView)
+                attachmentSpinner.startAnimating()
+                ChatVideoThumbnailLoader.loadRemote(remote) { [weak self] thumb in
+                    guard let self, self.loadToken == token else { return }
+                    self.attachmentSpinner.stopAnimating()
+                    guard let thumb else { return }
+                    self.attachmentView.image = thumb
+                    self.applyAttachmentSize(self.attachmentSize(for: thumb.size), notifyTable: true)
+                }
             }
         } else {
-            attachmentHeight.constant = 0
-            attachmentView.isHidden   = true
-            attachmentView.image      = nil
+            applyAttachmentSize(.zero, notifyTable: false)
+            attachmentView.isHidden = true
+            attachmentView.image    = nil
         }
-        
     }
-    
-    
+
     @objc private func imageLongPressed(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         onImageLongPressed?(attachmentView.image)
     }
-    
 
     private static func formattedDuration(_ seconds: Int) -> String {
         String(format: "%d:%02d", seconds / 60, seconds % 60)
@@ -355,10 +421,8 @@ final class ChatMessageCell: UITableViewCell {
         avatarView.isHidden = false
         nameLabel.isHidden  = false
         nameLabel.text      = item.senderName
-        print(item.profile_image,"SHSHSHSSHSH")
+
         if let str = item.senderImage, let url = URL(string: str) {
-//            avatarView.image = UIImage(named: "User")
-            
             ChatImageLoader.load(url: url, into: avatarView)
         } else {
             avatarView.image = UIImage(named: "User")
@@ -399,8 +463,6 @@ final class ChatMessageCell: UITableViewCell {
     @objc private func retryTapped() { onRetryTapped?() }
 
     @objc private func imageTapped() {
-        // Same gesture recognizer as before — now branches on message type
-        // so video bubbles open the player instead of the image preview.
         if currentMessageType == 3 {
             onVideoTapped?(currentVideoRemoteURL, currentVideoLocalURL)
         } else {
@@ -412,17 +474,20 @@ final class ChatMessageCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        loadToken += 1 // invalidates any in-flight closures from this cell
         avatarView.image          = nil
         attachmentView.image      = nil
         attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        attachmentSpinner.stopAnimating()
         messageLabel.text         = nil
         messageLabel.isHidden     = false
         attachmentHeight.constant = 0
+        attachmentWidth.constant  = UIScreen.main.bounds.width * 0.68
         attachmentView.isHidden   = true
         onRetryTapped = nil
         onImageTapped = nil
         onVideoTapped = nil
-        // Video overlay reset (NEW)
+        onAttachmentSizeResolved = nil
         playIconView.isHidden     = true
         durationLabel.isHidden    = true
         durationLabel.text        = nil
