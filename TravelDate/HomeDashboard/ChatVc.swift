@@ -335,8 +335,27 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
 
     @objc private func didTapReportOption(_ indx:IndexPath) {
         let model = chatData[indx.row]
-        let popup = BlockReportPopupViewController(mode: .report(username: model.name ?? "",id:model.groupDetails?.id ?? ""), delegate: self)
-        present(popup, animated: false)
+        
+        if model.isReported == 1 {
+            self.showAlert("You have already reported this.")
+        } else {
+            
+            if model.type == "DIRECT" {
+                
+                let popup = BlockReportPopupViewController(
+                    mode: .reportUser(
+                        username: model.name ?? "",
+                        id: model.chatUserId ?? ""
+                    ),
+                    delegate: self
+                )
+                
+                present(popup, animated: false)
+            } else {
+                let popup = BlockReportPopupViewController(mode: .report(username: model.name ?? "",id:model.groupDetails?.id ?? ""), delegate: self)
+                present(popup, animated: false)
+            }
+        }
     }
 }
 extension ChatVc: BlockReportPopupDelegate {
@@ -351,6 +370,8 @@ extension ChatVc: BlockReportPopupDelegate {
     }
 
     func blockReportPopup(_ popup: BlockReportPopupViewController, didSubmitReportForUser username: String, reason: String, otherText: String?) {
+        
+        print(username,reason)
         // yahan apna report API call karo
 //        ReportService.reportUser(username: username, reason: reason, details: otherText) { success in
 //            if success {

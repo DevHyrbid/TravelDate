@@ -18,6 +18,7 @@ import UIKit
 enum BlockReportPopupMode {
     case block(username: String,id:String)
     case report(username: String,id:String)
+    case reportUser(username: String,id:String)
 }
 
 // MARK: - Report Reason Model
@@ -43,15 +44,15 @@ extension BlockReportPopupDelegate {
 }
 
 final class BlockReportPopupViewController: BaseClassVc {
-
+    
     // MARK: - Public
-
+    
     weak var delegate: BlockReportPopupDelegate?
-
+    
     // MARK: - Config
-
+    
     private let mode: BlockReportPopupMode
-
+    
     private let reportReasons: [ReportReason] = [
         ReportReason(title: "Spam or scam", isOtherOption: false),
         ReportReason(title: "Inappropriate photos", isOtherOption: false),
@@ -60,18 +61,18 @@ final class BlockReportPopupViewController: BaseClassVc {
         ReportReason(title: "Underage user", isOtherOption: false),
         ReportReason(title: "Other", isOtherOption: true)
     ]
-
+    
     private var selectedReasonIndex: Int? = nil
-
+    
     // MARK: - UI - Shared
-
+    
     private let dimmingView: UIVisualEffectView = {
         let blur = UIBlurEffect(style: .dark)
         let view = UIVisualEffectView(effect: blur)
         view.alpha = 0
         return view
     }()
-
+    
     private let cardView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(white: 0.11, alpha: 1.0)
@@ -79,14 +80,14 @@ final class BlockReportPopupViewController: BaseClassVc {
         view.clipsToBounds = true
         return view
     }()
-
+    
     private let handleBar: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(white: 1.0, alpha: 0.2)
         view.layer.cornerRadius = 2.5
         return view
     }()
-
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .semibold)
@@ -95,7 +96,7 @@ final class BlockReportPopupViewController: BaseClassVc {
         label.numberOfLines = 2
         return label
     }()
-
+    
     private let subtitleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .regular)
@@ -104,24 +105,24 @@ final class BlockReportPopupViewController: BaseClassVc {
         label.numberOfLines = 0
         return label
     }()
-
+    
     private var cardBottomConstraint: NSLayoutConstraint!
-
+    
     // MARK: - UI - Block Mode
-
+    
     private let blockButtonsStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 12
         return stack
     }()
-
+    
     private lazy var blockButton: UIButton = {
         let button = makeGradientButton(title: "Block", isDestructive: true)
         button.addTarget(self, action: #selector(didTapBlock), for: .touchUpInside)
         return button
     }()
-
+    
     private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Cancel", for: .normal)
@@ -133,9 +134,9 @@ final class BlockReportPopupViewController: BaseClassVc {
         button.addTarget(self, action: #selector(didTapCancel), for: .touchUpInside)
         return button
     }()
-
+    
     // MARK: - UI - Report Mode
-
+    
     private let reasonsTableView: UITableView = {
         let table = UITableView(frame: .zero, style: .plain)
         table.backgroundColor = .clear
@@ -144,9 +145,9 @@ final class BlockReportPopupViewController: BaseClassVc {
         table.register(ReportReasonCell.self, forCellReuseIdentifier: ReportReasonCell.reuseIdentifier)
         return table
     }()
-
+    
     private var reasonsTableHeightConstraint: NSLayoutConstraint!
-
+    
     private let otherTextView: UITextView = {
         let tv = UITextView()
         tv.backgroundColor = UIColor(white: 1.0, alpha: 0.08)
@@ -157,7 +158,7 @@ final class BlockReportPopupViewController: BaseClassVc {
         tv.isHidden = true
         return tv
     }()
-
+    
     private let otherPlaceholderLabel: UILabel = {
         let label = UILabel()
         label.text = "Tell us more (optional)"
@@ -166,7 +167,7 @@ final class BlockReportPopupViewController: BaseClassVc {
         label.isHidden = true
         return label
     }()
-
+    
     private lazy var submitButton: UIButton = {
         let button = makeGradientButton(title: "Submit", isDestructive: false)
         button.addTarget(self, action: #selector(didTapSubmit), for: .touchUpInside)
@@ -174,9 +175,9 @@ final class BlockReportPopupViewController: BaseClassVc {
         button.alpha = 0.5
         return button
     }()
-
+    
     // MARK: - Init
-
+    
     init(mode: BlockReportPopupMode, delegate: BlockReportPopupDelegate? = nil) {
         self.mode = mode
         self.delegate = delegate
@@ -184,23 +185,23 @@ final class BlockReportPopupViewController: BaseClassVc {
         modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Lifecycle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDimmingView()
         setupCard()
         configureContent()
-
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapDimmingView))
         dimmingView.addGestureRecognizer(tap)
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         UIView.animate(withDuration: 0.25) {
@@ -211,9 +212,9 @@ final class BlockReportPopupViewController: BaseClassVc {
             self.view.layoutIfNeeded()
         }
     }
-
+    
     // MARK: - Setup
-
+    
     private func setupDimmingView() {
         view.backgroundColor = .clear
         view.addSubview(dimmingView)
@@ -225,43 +226,43 @@ final class BlockReportPopupViewController: BaseClassVc {
             dimmingView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
+    
     private func setupCard() {
         view.addSubview(cardView)
         cardView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         cardBottomConstraint = cardView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 400)
-
+        
         NSLayoutConstraint.activate([
             cardView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
             cardView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
             cardBottomConstraint
         ])
-
+        
         cardView.addSubview(handleBar)
         cardView.addSubview(titleLabel)
         cardView.addSubview(subtitleLabel)
-
+        
         handleBar.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             handleBar.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 10),
             handleBar.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
             handleBar.widthAnchor.constraint(equalToConstant: 40),
             handleBar.heightAnchor.constraint(equalToConstant: 5),
-
+            
             titleLabel.topAnchor.constraint(equalTo: handleBar.bottomAnchor, constant: 20),
             titleLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-
+            
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             subtitleLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
             subtitleLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20)
         ])
     }
-
+    
     private func configureContent() {
         switch mode {
         case .block(let username):
@@ -272,18 +273,23 @@ final class BlockReportPopupViewController: BaseClassVc {
             titleLabel.text = "Report"
             subtitleLabel.text = "Select a reason. Your report is anonymous."
             setupReportUI()
+            
+        case .reportUser(let username):
+            titleLabel.text = "Report User"
+            subtitleLabel.text = "Select a reason. Your report is anonymous."
+            setupReportUI()
         }
     }
-
+    
     // MARK: - Block UI
-
+    
     private func setupBlockUI() {
         blockButtonsStack.addArrangedSubview(blockButton)
         blockButtonsStack.addArrangedSubview(cancelButton)
-
+        
         cardView.addSubview(blockButtonsStack)
         blockButtonsStack.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             blockButtonsStack.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 24),
             blockButtonsStack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
@@ -291,50 +297,50 @@ final class BlockReportPopupViewController: BaseClassVc {
             blockButtonsStack.bottomAnchor.constraint(equalTo: cardView.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
     }
-
+    
     // MARK: - Report UI
-
+    
     private func setupReportUI() {
         reasonsTableView.dataSource = self
         reasonsTableView.delegate = self
-
+        
         cardView.addSubview(reasonsTableView)
         cardView.addSubview(otherTextView)
         cardView.addSubview(otherPlaceholderLabel)
         cardView.addSubview(submitButton)
-
+        
         reasonsTableView.translatesAutoresizingMaskIntoConstraints = false
         otherTextView.translatesAutoresizingMaskIntoConstraints = false
         otherPlaceholderLabel.translatesAutoresizingMaskIntoConstraints = false
         submitButton.translatesAutoresizingMaskIntoConstraints = false
-
+        
         reasonsTableHeightConstraint = reasonsTableView.heightAnchor.constraint(equalToConstant: CGFloat(reportReasons.count) * 50)
-
+        
         NSLayoutConstraint.activate([
             reasonsTableView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 12),
             reasonsTableView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
             reasonsTableView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
             reasonsTableHeightConstraint,
-
+            
             otherTextView.topAnchor.constraint(equalTo: reasonsTableView.bottomAnchor, constant: 4),
             otherTextView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
             otherTextView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
             otherTextView.heightAnchor.constraint(equalToConstant: 80),
-
+            
             otherPlaceholderLabel.topAnchor.constraint(equalTo: otherTextView.topAnchor, constant: 10),
             otherPlaceholderLabel.leadingAnchor.constraint(equalTo: otherTextView.leadingAnchor, constant: 14),
-
+            
             submitButton.topAnchor.constraint(equalTo: otherTextView.bottomAnchor, constant: 16),
             submitButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
             submitButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
             submitButton.bottomAnchor.constraint(equalTo: cardView.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
-
+        
         otherTextView.delegate = self
     }
-
+    
     // MARK: - Helpers
-
+    
     private func makeGradientButton(title: String, isDestructive: Bool) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(title, for: .normal)
@@ -343,24 +349,24 @@ final class BlockReportPopupViewController: BaseClassVc {
         button.layer.cornerRadius = 14
         button.clipsToBounds = true
         button.heightAnchor.constraint(equalToConstant: 50).isActive = true
-
+        
         let gradient = CAGradientLayer()
         gradient.colors = isDestructive
-            ? [UIColor.systemRed.cgColor, UIColor(red: 0.85, green: 0.15, blue: 0.25, alpha: 1).cgColor]
-            : [UIColor(red: 0.99, green: 0.29, blue: 0.42, alpha: 1).cgColor, UIColor(red: 0.95, green: 0.45, blue: 0.2, alpha: 1).cgColor]
+        ? [UIColor.systemRed.cgColor, UIColor(red: 0.85, green: 0.15, blue: 0.25, alpha: 1).cgColor]
+        : [UIColor(red: 0.99, green: 0.29, blue: 0.42, alpha: 1).cgColor, UIColor(red: 0.95, green: 0.45, blue: 0.2, alpha: 1).cgColor]
         gradient.startPoint = CGPoint(x: 0, y: 0)
         gradient.endPoint = CGPoint(x: 1, y: 1)
         gradient.name = "gradientLayer"
         button.layer.insertSublayer(gradient, at: 0)
         button.layoutIfNeeded()
-
+        
         // Update gradient frame after layout
         DispatchQueue.main.async {
             gradient.frame = button.bounds
         }
         return button
     }
-
+    
     private func updateSubmitButtonState() {
         let hasSelection = selectedReasonIndex != nil
         submitButton.isEnabled = hasSelection
@@ -368,7 +374,7 @@ final class BlockReportPopupViewController: BaseClassVc {
             self.submitButton.alpha = hasSelection ? 1.0 : 0.5
         }
     }
-
+    
     private func dismissPopup(completion: (() -> Void)? = nil) {
         cardBottomConstraint.constant = 400
         UIView.animate(withDuration: 0.25, animations: {
@@ -378,57 +384,114 @@ final class BlockReportPopupViewController: BaseClassVc {
             self.dismiss(animated: false, completion: completion)
         }
     }
-
+    
     // MARK: - Actions
-
+    
     @objc private func didTapBlock() {
-//        guard case .block(let username) = mode else { return }
-//        dismissPopup {
-//            self.request.blockGroupAPi { err, code in
-//                if  code == 200 {
-//                    self.delegate?.blockReportPopup(self, didConfirmBlockUser: username,id:"")
-//                }
-//            }
-           
-//        }/
+        //        guard case .block(let username) = mode else { return }
+        //        dismissPopup {
+        //            self.request.blockGroupAPi { err, code in
+        //                if  code == 200 {
+        //                    self.delegate?.blockReportPopup(self, didConfirmBlockUser: username,id:"")
+        //                }
+        //            }
+        
+        //        }/
     }
-
+    
     @objc private func didTapCancel() {
         dismissPopup {
             self.delegate?.blockReportPopupDidCancel(self)
         }
     }
-
+    
     @objc private func didTapDimmingView() {
         dismissPopup {
             self.delegate?.blockReportPopupDidCancel(self)
         }
     }
-
+    
     @objc private func didTapSubmit() {
+        
         guard let index = selectedReasonIndex else { return }
+        
         let reason = reportReasons[index].title
-        let otherText = reportReasons[index].isOtherOption ? otherTextView.text : nil
-        guard case let .report(username, groupId) = mode else { return }
+        let otherText = reportReasons[index].isOtherOption
+        ? otherTextView.text
+        : nil
+        
+        switch mode {
+            
+            // MARK: - Report User
+        case .reportUser(let username, let userId):
+            
+            self.request.reported_user = userId
+            self.request.reason = reason
+            
+            self.request.reportUserAPi { err, code in
+                
+                if code == 201 {
+                    
+                    DispatchQueue.main.async {
+                        self.showAlertAction(err) {
+                            self.delegate?.blockReportPopup(
+                                self,
+                                didSubmitReportForUser: username,
+                                reason: reason,
+                                otherText: otherText
+                            )
+                            self.dismissPopup()
+                        }
+                    }
+                    
+                } else {
+                    
+                    DispatchQueue.main.async {
+                        self.showAlertAction(err) {
+                            self.dismissPopup()
+                        }
+                        
+                    }
+                }
+            }
+            
+            // MARK: - Report Match / Group
+        case .report(let username, let groupId):
+            
             self.request.reason = reason
             self.request.reportType = "match"
             self.request.matchId = groupId
+            
             self.request.reportGroupAPi { err, code in
+                
                 if code == 201 {
-                    self.showAlert("Report Submitted")
-                    self.delegate?.blockReportPopup(
-                        self,
-                        didSubmitReportForUser: username,
-                        reason: reason,
-                        otherText: otherText
-                    )
+                    
+                    DispatchQueue.main.async {
+                        self.showAlert("Report Submitted")
+                        
+                        self.delegate?.blockReportPopup(
+                            self,
+                            didSubmitReportForUser: username,
+                            reason: reason,
+                            otherText: otherText
+                        )
+                        
+                        self.dismissPopup()
+                    }
+                    
                 } else {
+                    
                     DispatchQueue.main.async {
                         self.showAlert(err)
                         self.dismissPopup()
                     }
                 }
+            }
+            
+        case .block:
+            break
         }
+        
     }
 }
 

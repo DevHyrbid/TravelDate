@@ -740,6 +740,7 @@
                     </view>
                     <size key="freeformSize" width="393" height="1200"/>
                     <connections>
+                        <outlet property="btnEdit" destination="gGz-al-NtX" id="Spe-ww-FXm"/>
                         <outlet property="btnList" destination="W4p-Sj-m8H" id="48i-NV-qy8"/>
                         <outlet property="height" destination="V1i-gq-Ba1" id="llS-8C-G30"/>
                         <outlet property="hideVw" destination="JiU-xS-Sul" id="q5n-hj-hfq"/>

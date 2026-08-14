@@ -127,6 +127,7 @@ class User : Mappable {
     var swipedId : String?
     var action : String?
     var reason : String?
+    var reported_user : String?
     var latitude :  Double?
     var longitude : Double?
     var location_string :  String?
@@ -189,6 +190,7 @@ class User : Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        reported_user <- map["reported_user"]
         phone_verify <- map["phone_verify"]
         countryIso <- map["countryIso"]
         phone_number <- map["phone_number"]
@@ -536,9 +538,14 @@ class User : Mappable {
                 
                 print(userDict, "USER")
                 
+                
                 // ✅ 5. Map user
                 User.curentUser = Mapper<User>().map(JSON: userDict)
-                
+                if User.curentUser?.isBlockByAdmin == true {
+                    User.resetCurrentUser()
+                    callBack(nil, "You are blocked by admin please cont", 404)
+                    return
+                }
                 callBack(User.curentUser, responseObject["message"] as? String ?? "", 200)
                 
                 
@@ -1057,6 +1064,22 @@ class User : Mappable {
         
     }
     
+    
+    func  reportUserAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        print(APiConstant.reportGroup,"GHJKGH")
+        NetworkManger.sendRequestUrlSession(url: APiConstant.reportUser, params: self.toJSON(), method: "POST") { responseObject, suces in
+            print(responseObject,"sdhjksdjhjskdjhjskdjs",self.toJSON())
+            if  responseObject["code"] as? Int == 201 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
     func  blockGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.blockURl, params: self.toJSON(), method: "POST") { responseObject, suces in
@@ -1326,7 +1349,7 @@ class MemberGroup: Mappable {
     var profile_image :  String?
     var social_type :  String?
     var social_id :  String?
-    
+    var isVerified : Int?
     
     
     var coverImage : String?
@@ -1403,6 +1426,7 @@ class MemberGroup: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        isVerified <- map["isVerified"]
         user <- map["user"]
         travelStyles <- map["travelStyles"]
         members <- map["members"]
@@ -1488,11 +1512,13 @@ struct UserMembers : Mappable {
     var groupId : String?
     var role : String?
     var userId : String?
+    var isVerified : Int?
     init?(map: Map) {
 
     }
 
     mutating func mapping(map: Map) {
+        isVerified <- map["isVerified"]
         userId <- map["userId"]
         role <- map["role"]
         groupId <- map["groupId"]
@@ -1922,6 +1948,8 @@ struct ChatData : Mappable {
     var type : String?
     var name : String?
     var image : String?
+    var chatUserId : String?
+    var isReported : Int?
     var imageArr : [String]?
     var createdAt : String?
     var lastMessageAt : String?
@@ -1935,6 +1963,8 @@ struct ChatData : Mappable {
     }
 
     mutating func mapping(map: Map) {
+        isReported <- map["isReported"]
+        chatUserId <- map["chatUserId"]
         isDeleted <- map["isDeleted"]
         groupDetails <- map["groupDetails"]
         chatRoom <- map["chatRoom"]

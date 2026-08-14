@@ -92,7 +92,8 @@ extension PrivacySecurityVc {
     }
     
     @IBAction func btnGetVerfued(_ sender:UIButton) {
-      
+        let vc = GetVerifiedVc()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     @IBAction func btnDelete(_ sender:UIButton) {

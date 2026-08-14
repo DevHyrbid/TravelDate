@@ -80,6 +80,8 @@ class MyGroupViewController: BaseClassVc {
             if let url = URL(string: res.coverImage ?? "") {
                 loadImage(self.imgTrips, url: url)
             }
+            
+            self.imgTrips.contentMode = .scaleAspectFill
         }
         registerNib()
     }
@@ -162,6 +164,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
             }
             
             
+            
             cell.btnEdit.setTitle("Edit Your Profile", for: .normal)
             cell.btnEdit.backgroundColor = .clear
             cell.btnEdit.addTarget(self, action: #selector(editUser(_:)), for: .touchUpInside)
@@ -174,7 +177,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
             cell.btnEdit.addTarget(self, action: #selector(openChat(_:)), for: .touchUpInside)
         }
     
-        
+        cell.imgVerify.isHidden = model?.userMembers?.isVerified != 1
         cell.styles = model?.userMembers?.travelStyles ?? []
         
         
@@ -236,10 +239,11 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
                     viewModel: viewModel,
                     participants: model?.participantsUser ?? [],
                     roomId: model?.id ?? "", //. ID HERE
-                    roomTitle: selectedUser.name ?? "Chat",
+                    roomTitle: selectedUser.userMembers?.name ?? "Chat",
                     type: .individual
                 )
                 
+                vc.roomImageURL = selectedUser.userMembers?.profile_image ?? ""
                 self.navigationController?.pushViewController(vc, animated: true)
             }
         }

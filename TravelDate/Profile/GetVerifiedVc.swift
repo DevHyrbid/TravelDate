@@ -1,5 +1,3 @@
-
-
 //
 //  GetVerifiedVc.swift
 //  TravelDate
@@ -106,6 +104,23 @@ class GetVerifiedVc: BaseClassVc {
         return iv
     }()
 
+    // --- Rejection banner ---
+    private lazy var rejectionBanner: UIView = {
+        let v = UIView()
+        v.backgroundColor    = UIColor(hex: "#3A1414")
+        v.layer.cornerRadius = 12
+        v.isHidden           = true
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
+    private lazy var rejectionLabel: UILabel = {
+        let l = makeLabel("Your verification was rejected. Please re-upload clear documents.",
+                          font: .semibold, size: 13,
+                          color: UIColor(hex: "#FF6B6B"))
+        l.numberOfLines = 2
+        return l
+    }()
+
     // --- Bottom ---
     private lazy var continueButton: UIButton = {
         let b = UIButton(type: .system)
@@ -148,7 +163,20 @@ class GetVerifiedVc: BaseClassVc {
     }
     
     private func loadUploadedImagesIfAvailable() {
+        let isRejected = User.curentUser?.verificationStatus == "rejected"
+        let isApproved = User.curentUser?.verificationStatus == "approved"
 
+        if isRejected {
+            self.continueButton.setTitle("Resubmit for Verification", for: .normal)
+            rejectionBanner.isHidden = false
+        } else if isApproved {
+            self.continueButton.setTitle("Verified", for: .normal)
+            self.continueButton.isUserInteractionEnabled = false
+            rejectionBanner.isHidden = true
+        } else {
+            rejectionBanner.isHidden = true
+        }
+        
         if let front = User.curentUser?.front, !front.isEmpty {
             frontImageName = front
             request.front = front
@@ -174,15 +202,15 @@ class GetVerifiedVc: BaseClassVc {
 
         selfiePreviewImage.isHidden = selfieImageName.isEmpty
 
-        govIDUploadIcon.isHidden = !frontImageName.isEmpty || !backImageName.isEmpty
-        selfieUploadIcon.isHidden = !selfieImageName.isEmpty
+        govIDUploadIcon.isHidden = !isRejected && (!frontImageName.isEmpty || !backImageName.isEmpty)
+        selfieUploadIcon.isHidden = !isRejected && !selfieImageName.isEmpty
 
         if !frontImageName.isEmpty || !backImageName.isEmpty {
-            govIDUploadLabel.text = "ID Uploaded ✓ Tap to replace"
+            govIDUploadLabel.text = isRejected ? "ID Rejected — Tap to re-upload" : "ID Uploaded ✓ Tap to replace"
         }
 
         if !selfieImageName.isEmpty {
-            selfieUploadLabel.text = "Selfie Uploaded ✓ Tap to replace"
+            selfieUploadLabel.text = isRejected ? "Selfie Rejected — Tap to re-upload" : "Selfie Uploaded ✓ Tap to replace"
         }
 
         // This will automatically enable the button if all 3 images exist
@@ -192,19 +220,33 @@ class GetVerifiedVc: BaseClassVc {
     }
     
     private func lockVerificationUploads() {
-        let hasGovID = !frontImageName.isEmpty && !backImageName.isEmpty
+        let isRejected = User.curentUser?.verificationStatus == "rejected"
+        let isApproved = User.curentUser?.verificationStatus == "approved"
+
+        let hasGovID  = !frontImageName.isEmpty && !backImageName.isEmpty
         let hasSelfie = !selfieImageName.isEmpty
 
+        // Rejected uploads stay tappable so the user can re-upload;
+        // everything else locks once a document/selfie is present.
         if hasGovID {
-            govIDUploadArea.isUserInteractionEnabled = false
-            govIDUploadLabel.text = "Government ID Uploaded ✓"
-            govIDUploadIcon.isHidden = true
+            govIDUploadArea.isUserInteractionEnabled = isRejected
+            govIDUploadLabel.text = isRejected
+                ? "Government ID Rejected — Tap to re-upload"
+                : "Government ID Uploaded ✓"
+            govIDUploadIcon.isHidden = !isRejected
         }
 
         if hasSelfie {
+            selfieUploadArea.isUserInteractionEnabled = isRejected
+            selfieUploadLabel.text = isRejected
+                ? "Selfie Rejected — Tap to re-upload"
+                : "Selfie Uploaded ✓"
+            selfieUploadIcon.isHidden = !isRejected
+        }
+
+        if isApproved {
+            govIDUploadArea.isUserInteractionEnabled  = false
             selfieUploadArea.isUserInteractionEnabled = false
-            selfieUploadLabel.text = "Selfie Uploaded ✓"
-            selfieUploadIcon.isHidden = true
         }
 
         updateContinueButton()
@@ -293,7 +335,16 @@ class GetVerifiedVc: BaseClassVc {
         let govSection      = buildGovIDCard()
         let selfieSection   = buildSelfieCard()
 
-        [profileSection, whySection, stepsSection,
+        rejectionLabel.translatesAutoresizingMaskIntoConstraints = false
+        rejectionBanner.addSubview(rejectionLabel)
+        NSLayoutConstraint.activate([
+            rejectionLabel.topAnchor.constraint(equalTo: rejectionBanner.topAnchor, constant: 12),
+            rejectionLabel.leadingAnchor.constraint(equalTo: rejectionBanner.leadingAnchor, constant: 12),
+            rejectionLabel.trailingAnchor.constraint(equalTo: rejectionBanner.trailingAnchor, constant: -12),
+            rejectionLabel.bottomAnchor.constraint(equalTo: rejectionBanner.bottomAnchor, constant: -12),
+        ])
+
+        [profileSection, rejectionBanner, whySection, stepsSection,
          stepsProgressBar, govSection, selfieSection,
          continueButton, privacyLabel].forEach {
             contentView.addSubview($0)
@@ -306,8 +357,13 @@ class GetVerifiedVc: BaseClassVc {
             profileSection.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             profileSection.heightAnchor.constraint(equalToConstant: 190),
 
+            // Rejection banner
+            rejectionBanner.topAnchor.constraint(equalTo: profileSection.bottomAnchor, constant: 16),
+            rejectionBanner.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            rejectionBanner.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+
             // Why section
-            whySection.topAnchor.constraint(equalTo: profileSection.bottomAnchor, constant: 24),
+            whySection.topAnchor.constraint(equalTo: rejectionBanner.bottomAnchor, constant: 16),
             whySection.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             whySection.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
@@ -610,6 +666,7 @@ class GetVerifiedVc: BaseClassVc {
 
                 DispatchQueue.main.async {
                     self.frontPreviewImage.image = img
+                    self.frontPreviewImage.isHidden = false
                     self.govIDPreviewStack.isHidden = false
                     self.updateProgressUI()
                     self.askForBackSide()
@@ -643,6 +700,7 @@ class GetVerifiedVc: BaseClassVc {
 
                 DispatchQueue.main.async {
                     self.backPreviewImage.image = img
+                    self.backPreviewImage.isHidden = false
                     self.govIDUploadLabel.text = "ID Uploaded ✓  Tap to replace"
                     self.updateProgressUI()
                     self.updateContinueButton()
@@ -696,11 +754,13 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     private func updateContinueButton() {
+        let isApproved = User.curentUser?.verificationStatus == "approved"
         let allDone = !frontImageName.isEmpty && !backImageName.isEmpty && !selfieImageName.isEmpty
+        let enabled = allDone && !isApproved
         UIView.animate(withDuration: 0.25) {
-            self.continueButton.alpha = allDone ? 1.0 : 0.5
+            self.continueButton.alpha = enabled ? 1.0 : 0.5
         }
-        continueButton.isUserInteractionEnabled = allDone
+        continueButton.isUserInteractionEnabled = enabled
     }
 
     // MARK: - User Profile
@@ -720,7 +780,7 @@ class GetVerifiedVc: BaseClassVc {
         request.front  = frontImageName
         request.back   = backImageName
         request.selfie = selfieImageName
-
+        request.idVerificationStatus = "resubmitted"
         showLoader()
         request.editProfileAPi { [weak self] msg, code in
             guard let self else { return }

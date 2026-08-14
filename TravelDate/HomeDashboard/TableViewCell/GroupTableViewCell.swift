@@ -14,6 +14,7 @@ class GroupTableViewCell: UITableViewCell {
     @IBOutlet weak var btnEdit:UIButton!
     @IBOutlet weak var lblLocation:UILabel!
     @IBOutlet weak var imgUser:UIImageView!
+    @IBOutlet weak var imgVerify:UIImageView!
     @IBOutlet weak var collectionVw:UICollectionView!
     @IBOutlet weak var lbl1:UILabel!
     @IBOutlet weak var lbl2:UILabel!

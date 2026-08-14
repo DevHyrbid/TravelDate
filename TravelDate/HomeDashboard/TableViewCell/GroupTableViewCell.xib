@@ -27,6 +27,13 @@
                                     <constraint firstAttribute="height" constant="120" id="ob3-hV-Ocv"/>
                                 </constraints>
                             </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgVerified" translatesAutoresizingMaskIntoConstraints="NO" id="lSG-OB-7VI">
+                                <rect key="frame" x="168.66666666666666" y="105" width="25" height="25"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="25" id="bNc-Ev-frc"/>
+                                    <constraint firstAttribute="width" constant="25" id="dIk-4p-W17"/>
+                                </constraints>
+                            </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="You (22)" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hzP-vA-PNR">
                                 <rect key="frame" x="20" y="160" width="237" height="66"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
@@ -219,10 +226,12 @@
                             <constraint firstAttribute="trailing" secondItem="KYm-jP-CEj" secondAttribute="trailing" constant="20" id="Ml2-gE-TwD"/>
                             <constraint firstItem="saM-Y3-zBX" firstAttribute="top" secondItem="4JL-uO-3vd" secondAttribute="bottom" id="RjI-37-Ic1"/>
                             <constraint firstItem="S3X-Ng-F5z" firstAttribute="top" secondItem="uRT-x6-sQB" secondAttribute="bottom" constant="20" id="Rtq-Mg-YCm"/>
+                            <constraint firstItem="lSG-OB-7VI" firstAttribute="bottom" secondItem="3Vx-tv-GdT" secondAttribute="bottom" constant="-10" id="VF5-a1-ibe"/>
                             <constraint firstItem="saM-Y3-zBX" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="20" id="Xdw-R6-2PL"/>
                             <constraint firstItem="uRT-x6-sQB" firstAttribute="width" secondItem="9Vw-Kx-e2g" secondAttribute="width" id="YW3-WW-YQD"/>
                             <constraint firstItem="uRT-x6-sQB" firstAttribute="leading" secondItem="9Vw-Kx-e2g" secondAttribute="trailing" constant="10" id="aud-cY-0lT"/>
                             <constraint firstItem="4JL-uO-3vd" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="15" id="bEI-rH-vh0"/>
+                            <constraint firstItem="lSG-OB-7VI" firstAttribute="trailing" secondItem="3Vx-tv-GdT" secondAttribute="trailing" constant="-5" id="fc6-V5-HGU"/>
                             <constraint firstAttribute="trailing" secondItem="saM-Y3-zBX" secondAttribute="trailing" constant="20" id="fdJ-F8-i7w"/>
                             <constraint firstItem="4JL-uO-3vd" firstAttribute="top" secondItem="hzP-vA-PNR" secondAttribute="bottom" constant="10" id="mD1-nh-Uw1"/>
                             <constraint firstItem="hzP-vA-PNR" firstAttribute="leading" secondItem="z9y-zo-aYZ" secondAttribute="leading" constant="20" id="q6L-m6-q2i"/>
@@ -254,6 +263,7 @@
                 <outlet property="btnEdit" destination="S3X-Ng-F5z" id="bvz-Mj-tl8"/>
                 <outlet property="collectionVw" destination="saM-Y3-zBX" id="aHx-31-LIW"/>
                 <outlet property="imgUser" destination="3Vx-tv-GdT" id="gUM-KT-sPs"/>
+                <outlet property="imgVerify" destination="lSG-OB-7VI" id="OMA-j8-gjJ"/>
                 <outlet property="lbl1" destination="9Vw-Kx-e2g" id="nng-fa-xuC"/>
                 <outlet property="lbl2" destination="uRT-x6-sQB" id="FSQ-N3-3nL"/>
                 <outlet property="lbl3" destination="Hi4-v2-IAv" id="cad-zn-fuj"/>
@@ -268,6 +278,7 @@
     <resources>
         <image name="imgLady" width="186.66667175292969" height="186.66667175292969"/>
         <image name="imgLocation" width="10.666666984558105" height="16"/>
+        <image name="imgVerified" width="341.33334350585938" height="341.33334350585938"/>
         <namedColor name="ThemeTxt">
             <color red="0.082000002264976501" green="0.090000003576278687" blue="0.093999996781349182" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

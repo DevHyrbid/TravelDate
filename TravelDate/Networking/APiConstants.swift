@@ -49,7 +49,9 @@ class APiConstant : NSObject {
     static let historyTrips = baseUrl + "groups/my-trips"
     static let leaveChat = baseUrl + "chat/"
     
+    
     static let reportGroup = baseUrl + "report/group"
+    static let reportUser = baseUrl + "report/user"
     static let blockURl = baseUrl + "user/block"
     static let unblockURl = baseUrl + "user/unblock"
     

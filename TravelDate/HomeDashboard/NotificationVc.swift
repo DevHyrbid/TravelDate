@@ -67,22 +67,31 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
             cell.lblDesc.text = model.message ?? ""
             cell.lblTitle.text = model.title ?? ""
             cell.lblTime.text = timeAgo(from: model.createdAt ?? "")
-            if let profileImage = model.sender?.profileImage,
-               let url = URL(string: "\(profileImage)") {
-                if url.absoluteString.contains("https://lh3.googleuserconten") {
-                    self.loadImage(cell.imgVw, url: url)
-                } //\(APiConstant.base)
-                else {
-                    if profileImage != "" {
-                        self.loadImage(cell.imgVw, url: URL(string: "\(profileImage)")!)
-                    }
-                    
-                }
-                 
-            } else {
-                cell.imgVw.image = UIImage(named: "User")
-            }
             
+            
+            switch model.type {
+            case "VERIFICATION":
+                cell.imgVw.image = UIImage(systemName: "checkmark.shield.fill")
+                cell.imgVw.tintColor = .themeOrange
+                cell.imgVw.contentMode = .center
+            case "MISSED_CHANCE":
+                cell.imgVw.image = UIImage(systemName: "exclamationmark.circle.fill")
+                cell.imgVw.tintColor = .themeOrange
+                cell.imgVw.contentMode = .center
+            case "alert":
+                cell.imgVw.image = UIImage(systemName: "bell.fill")
+                cell.imgVw.tintColor = .themeOrange
+                cell.imgVw.contentMode = .center
+            default:
+                if let profileImage = model.sender?.profileImage,
+                   !profileImage.isEmpty,
+                   let url = URL(string: profileImage) {
+                    self.loadImage(cell.imgVw, url: url)
+                } else {
+                    cell.imgVw.image = UIImage(named: "User")
+                }
+                cell.imgVw.contentMode = .scaleAspectFit
+            }
         }
         cell.imgVw.layer.cornerRadius = 12
         return cell
@@ -146,43 +155,44 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
         print(notification.chatRoom?.type,type,"tyhujkil")
 
         switch type {
-
+            
         case "CHAT_MESSAGE":
-
+            
             // Direct or Match chat
             
-                
-                openDirectChat(at: indx)
+            openDirectChat(at: indx)
             
-
+            
         case "MATCH":
-
+            
             // Group matched with another group
             if let groupId = notification.groupId,
                !groupId.isEmpty {
-
+                
                 
             }
-
+            
         case "GROUP_JOIN",
-             "GROUP_LEAVE":
-
+            "GROUP_LEAVE":
+            
             if let groupId = notification.groupId,
                !groupId.isEmpty {
-
-//                openGroupFromNotification(
-//                    groupId: groupId
-//                )
+                
+                //                openGroupFromNotification(
+                //                    groupId: groupId
+                //                )
             }
-
+            
         case "VERIFICATION":
             // Open verification screen if you have one
+            let vc = GetVerifiedVc()
+            navigationController?.pushViewController(vc, animated: true)
             break
-
+            
         case "MISSED_CHANCE":
             // Open missed chance screen if you have one
             break
-
+            
         default:
             break
         }
@@ -224,7 +234,6 @@ extension NotificationVc : UITableViewDelegate, UITableViewDataSource{
     func openDirectChat(at indexPath: IndexPath) {
 
         let item = notifications?[indexPath.row]
-        print(item,"hwreeee")
         if item?.type == "MATCH" {
 
             let viewModel = ChatViewModel(

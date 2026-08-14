@@ -46,7 +46,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var lblActive:UILabel!
     @IBOutlet weak var lblNew:UILabel!
     @IBOutlet weak var lblSaved:UILabel!
-    
+    @IBOutlet weak var btnEdit:UIButton!
     
     // MARK: - Properties
     var timer: Timer?
@@ -333,7 +333,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     self.dataArray = model?.dataGroup ?? []
                     
                     if let groups = model?.dataGroup, !groups.isEmpty {
-
+                        self.btnEdit.isHidden = false
                         self.btnList.menu = makeTripMenu(trips: groups)
                         self.btnList.showsMenuAsPrimaryAction = true
 
@@ -351,6 +351,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         self.btnList.isHidden = false
 
                     } else {
+                        self.btnEdit.isHidden = true
                         self.btnList.isHidden = true
                         self.hideVw.isHidden = false
                         self.height.constant = 100
@@ -358,7 +359,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     
                 }
             } else {
-                
+                self.btnEdit.isHidden = true
                 DispatchQueue.main.async {
                     self.btnList.isHidden = true
                     self.showAlert(msg)
