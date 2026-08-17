@@ -747,7 +747,7 @@ class User : Mappable {
     }
     
     func editProfileAPi(callBack: ((_ errMsg: String, _ errCode: Int) -> Void)!) {
-        print(self.toJSON(),"HJHJHJHJHJHJ")
+        
         NetworkManger.sendRequestUrlSession(
             url: APiConstant.updateUser,
             params: self.toJSON(),

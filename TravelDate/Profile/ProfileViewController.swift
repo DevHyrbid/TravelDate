@@ -46,12 +46,6 @@ class ProfileViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
-        
-       
-        
-//        let vc = TravelListViewController()
-//        navigationController?.pushViewController(vc, animated: true)
-//        
         collectionVw.register(TravelStyleCell.self,
                                       forCellWithReuseIdentifier: TravelStyleCell.identifier)
     }

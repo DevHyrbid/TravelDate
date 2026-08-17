@@ -21,6 +21,11 @@ class NetworkManger {
         faliure: ((String, Int) -> Void)!
     ) {
         let ignorePaths = [
+            APiConstant.myGroup,
+            APiConstant.swipeFeed,
+            APiConstant.matchedGroup,
+            APiConstant.pastGroups,
+            APiConstant.dashboardAPi,
             "users/profile",
             "filter=mygroup",
             "filter=match"
@@ -196,10 +201,14 @@ class NetworkManger {
             return
         }
         
-        
-        
-        
+        let ignorePaths = [
+            APiConstant.profile
+        ]
+
+        if !ignorePaths.contains(where: { urlPath.contains($0) }) {
             AppLoader.show(text: "")
+        }
+        
         
         
         var request = URLRequest(url: URL(string: urlPath.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!)

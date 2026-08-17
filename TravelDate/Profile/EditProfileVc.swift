@@ -263,6 +263,21 @@ class EditProfileVc: BaseClassVc {
             request.dob = dob
         }
         
+        
+        print("Name:", txtName.text ?? "NIL")
+        print("Username:", txtUserName.text ?? "NIL")
+        print("Phone:", txtPhone.text ?? "NIL")
+        print("Location:", txtLocation.text ?? "NIL")
+        print("Gender:", txtGender.text ?? "NIL")
+        print("DOB:", txtDob.text ?? "NIL")
+        
+//        if [txtName, txtUserName, txtPhone, txtLocation, txtGender, txtDob]
+//            .contains(where: { !($0.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) }) {
+//            self.showAlert("Please add all the fields.")
+//            // Update profile
+//            return
+//        }
+        
         request.editProfileAPi { msg, errCode in
             
             DispatchQueue.main.async {

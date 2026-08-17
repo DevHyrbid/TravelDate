@@ -350,9 +350,9 @@ final class SubscriptionPresenter {
 
             guard status == 200 else { return }
 
-            User.curentUser?.plan = plan
-            User.curentUser?.endDate = request.planEndDate
-            User.curentUser?.isSubscribed = isSubscribed ? 1 : 0
+//            User.curentUser?.plan = plan
+//            User.curentUser?.endDate = request.planEndDate
+//            User.curentUser?.isSubscribed = isSubscribed ? 1 : 0
         }
     }
 }

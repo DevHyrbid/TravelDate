@@ -10,7 +10,7 @@
 //
 
 import UIKit
-
+import IQKeyboardManagerSwift
 final class ChatMessageVc: BaseClassVc {
 
     // MARK: - UI
@@ -110,6 +110,14 @@ final class ChatMessageVc: BaseClassVc {
         tripsTabBarController?.hideTabBar()
         ChatState.shared.isChatOpen = true
         ChatState.shared.activeRoomId = viewModel.roomId
+        
+       
+            IQKeyboardManager.shared.isEnabled = false
+        
+
+        
+            
+        
     }
     
     
@@ -138,6 +146,7 @@ final class ChatMessageVc: BaseClassVc {
         ChatState.shared.activeRoomId = nil
         // Restore the nav bar for the rest of the app.
         navigationController?.setNavigationBarHidden(false, animated: animated)
+        IQKeyboardManager.shared.isEnabled = true
     }
 
     deinit {
@@ -356,6 +365,7 @@ final class ChatMessageVc: BaseClassVc {
         }
 
     }
+    
     
     
     func didTapManageGroup(_ type:GroupManageType) {

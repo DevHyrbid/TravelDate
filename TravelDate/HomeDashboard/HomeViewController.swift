@@ -47,6 +47,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var lblNew:UILabel!
     @IBOutlet weak var lblSaved:UILabel!
     @IBOutlet weak var btnEdit:UIButton!
+    @IBOutlet weak var imgVerify:UIImageView!
+    private let refreshControl = UIRefreshControl()
     
     // MARK: - Properties
     var timer: Timer?
@@ -63,31 +65,27 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-        getGroups()
-        membersView.translatesAutoresizingMaskIntoConstraints = false
-        vwMembers.addSubview(membersView)
+        
 
+        setupPullToRefresh()
         
-        NSLayoutConstraint.activate([
-            membersView.leadingAnchor.constraint(equalTo: vwMembers.leadingAnchor),
-            membersView.trailingAnchor.constraint(equalTo: vwMembers.trailingAnchor),
-            membersView.topAnchor.constraint(equalTo: vwMembers.topAnchor),
-            membersView.bottomAnchor.constraint(equalTo: vwMembers.bottomAnchor),
-        ])
-
-        
-        tblVw.register(PastTableViewCell.self)
-        getGroups()
-        getPastGroups()
-        
-        NotificationCenter.default.addObserver(
+    }
+    
+    private func setupPullToRefresh() {
+        refreshControl.tintColor = .white
+        refreshControl.addTarget(
             self,
-            selector: #selector(handleValueUpdated(_:)),
-            name: .valueUpdated,
-            object: nil
+            action: #selector(handlePullToRefresh),
+            for: .valueChanged
         )
 
-        
+        scrollVw.refreshControl = refreshControl
+    }
+    
+    @objc private func handlePullToRefresh() {
+        getGroups()
+        getPastGroups()
+        getDashboard()
     }
     
     private func showTabBarTemporarily() {
@@ -110,8 +108,6 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     
     @objc private func handleValueUpdated(_ notification: Notification) {
-       
-        
         getGroups()
         getPastGroups()
     }
@@ -250,7 +246,35 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblDay.setFont(.bold, size: 16.0)
         lblGreating.setFont(.regular, size: 12.0)
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
-        imgProfile.contentMode = .scaleToFill
+        imgProfile.contentMode = .scaleAspectFill
+        getGroups()
+        AppLoader.show(text: "")
+        membersView.translatesAutoresizingMaskIntoConstraints = false
+        vwMembers.addSubview(membersView)
+        if User.curentUser?.isVerified == 1 {
+            imgVerify.isHidden = false
+        } else {
+            imgVerify.isHidden = true
+        }
+        
+        NSLayoutConstraint.activate([
+            membersView.leadingAnchor.constraint(equalTo: vwMembers.leadingAnchor),
+            membersView.trailingAnchor.constraint(equalTo: vwMembers.trailingAnchor),
+            membersView.topAnchor.constraint(equalTo: vwMembers.topAnchor),
+            membersView.bottomAnchor.constraint(equalTo: vwMembers.bottomAnchor),
+        ])
+
+        
+        tblVw.register(PastTableViewCell.self)
+        getGroups()
+        getPastGroups()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleValueUpdated(_:)),
+            name: .valueUpdated,
+            object: nil
+        )
     }
     
     func setupCountdown(startDateString: String) {
@@ -336,20 +360,20 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         self.btnEdit.isHidden = false
                         self.btnList.menu = makeTripMenu(trips: groups)
                         self.btnList.showsMenuAsPrimaryAction = true
-
+                        
                         let savedId = UserDefaults.standard.string(forKey: "selectedGroupId")
-
+                        
                         // Find previously selected group
                         let selectedGroup = groups.first {
                             $0.id == savedId
                         } ?? groups.first!
-
+                        
                         self.didSelectTrip(selectedGroup)
-
+                        
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
-
+                        
                     } else {
                         self.btnEdit.isHidden = true
                         self.btnList.isHidden = true
@@ -366,6 +390,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 }
                 
             }
+        }
+        
+        DispatchQueue.main.async {
+            self.refreshControl.endRefreshing()
         }
     }
     
@@ -501,13 +529,13 @@ extension HomeViewController {
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
-        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
-                self.upgradeButtonTapped()
-            }
-            
-            return
-        }
+//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+//            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
+//                self.upgradeButtonTapped()
+//            }
+//            
+//            return
+//        }
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     

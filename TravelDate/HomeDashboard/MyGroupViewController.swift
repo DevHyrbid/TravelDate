@@ -191,6 +191,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true
+        cell.imgUser.contentMode  = .scaleAspectFill
         return cell
     }
     

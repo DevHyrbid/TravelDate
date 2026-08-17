@@ -145,6 +145,9 @@ class GetVerifiedVc: BaseClassVc {
         return l
     }()
 
+    let isRejected = User.curentUser?.verificationStatus == "rejected"
+    let isApproved = User.curentUser?.verificationStatus == "approved"
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -164,7 +167,7 @@ class GetVerifiedVc: BaseClassVc {
     
     private func loadUploadedImagesIfAvailable() {
         let isRejected = User.curentUser?.verificationStatus == "rejected"
-        let isApproved = User.curentUser?.verificationStatus == "approved"
+        let isApproved = User.curentUser?.verificationStatus == "verified"
 
         if isRejected {
             self.continueButton.setTitle("Resubmit for Verification", for: .normal)
@@ -220,8 +223,7 @@ class GetVerifiedVc: BaseClassVc {
     }
     
     private func lockVerificationUploads() {
-        let isRejected = User.curentUser?.verificationStatus == "rejected"
-        let isApproved = User.curentUser?.verificationStatus == "approved"
+      
 
         let hasGovID  = !frontImageName.isEmpty && !backImageName.isEmpty
         let hasSelfie = !selfieImageName.isEmpty
@@ -754,7 +756,7 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     private func updateContinueButton() {
-        let isApproved = User.curentUser?.verificationStatus == "approved"
+        let isApproved = User.curentUser?.verificationStatus == "verified"
         let allDone = !frontImageName.isEmpty && !backImageName.isEmpty && !selfieImageName.isEmpty
         let enabled = allDone && !isApproved
         UIView.animate(withDuration: 0.25) {
@@ -780,7 +782,9 @@ class GetVerifiedVc: BaseClassVc {
         request.front  = frontImageName
         request.back   = backImageName
         request.selfie = selfieImageName
-        request.idVerificationStatus = "resubmitted"
+        if isRejected {
+            request.idVerificationStatus = "resubmitted"
+        }
         showLoader()
         request.editProfileAPi { [weak self] msg, code in
             guard let self else { return }

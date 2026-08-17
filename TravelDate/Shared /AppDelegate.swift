@@ -123,7 +123,7 @@ extension AppDelegate: MessagingDelegate {
     }
 }
 
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension AppDelegate: UNUserNotificationCenterDelegate  {
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -135,47 +135,85 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
         print("📩 Foreground Push:", userInfo)
 
+        let pushEnabled = User.curentUser?.is_push_notification == true
+
         guard let type = userInfo["type"] as? String else {
-            completionHandler([.banner, .sound, .badge])
+            
+            // No type → only show notification if user has enabled push
+            if pushEnabled {
+                completionHandler([.banner, .sound, .badge])
+            } else {
+                completionHandler([])
+            }
+            
             return
         }
 
-        // CHAT PUSH
+        // MARK: - CHAT MESSAGE
         if type == "CHAT_MESSAGE" {
 
+            // Always update chat internally
             NotificationCenter.default.post(
                 name: .didReceiveChatMessage,
                 object: nil,
                 userInfo: userInfo
             )
 
-            // If already inside chat screen → no banner
+            // If push notifications are disabled → don't show anything
+            guard pushEnabled else {
+                completionHandler([])
+                return
+            }
+
+            // If already inside chat → sound only
             if ChatState.shared.isChatOpen {
 
                 completionHandler([.sound])
 
             } else {
 
-                // Outside chat screen → show banner
+                // Outside chat → banner + sound + badge
                 completionHandler([.banner, .sound, .badge])
             }
 
             return
         }
-        
+
+        // MARK: - GROUP JOIN
         if type == "GROUP_JOIN" {
+
+            // Always update app data internally
             NotificationCenter.default.post(
                 name: .valueUpdated,
                 object: nil,
-                userInfo: [:]
+                userInfo: userInfo
             )
+
+            // Push disabled → no banner
+            guard pushEnabled else {
+                completionHandler([])
+                return
+            }
+
+            // Push enabled → show notification
             completionHandler([.banner, .sound, .badge])
-            
-            
+
             return
         }
 
-        completionHandler([.banner, .sound, .badge])
+        // MARK: - OTHER NOTIFICATIONS
+
+        // Your app can still process/update data here if required.
+
+        if pushEnabled {
+            completionHandler([.banner, .sound, .badge])
+        } else {
+            completionHandler([])
+        }
+    }
+    
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
     }
 }
 

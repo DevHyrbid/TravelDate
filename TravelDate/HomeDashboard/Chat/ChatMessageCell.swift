@@ -99,7 +99,7 @@ final class ChatMessageCell: UITableViewCell {
         nameLabel.font = UIFont(name: "Poppins-Medium", size: 13) ?? .systemFont(ofSize: 13)
         nameLabel.textColor = UIColor.white.withAlphaComponent(0.7)
 
-        bubbleView.layer.cornerRadius = 16
+        bubbleView.layer.cornerRadius = 10
         bubbleView.clipsToBounds = true
 
         // Attachment image — aspectFit is safe now because the box we size
@@ -108,7 +108,9 @@ final class ChatMessageCell: UITableViewCell {
         // background color to show through.
         attachmentView.contentMode = .scaleAspectFit
         attachmentView.clipsToBounds = true
-        attachmentView.layer.cornerRadius = 16
+        attachmentView.layer.cornerRadius = 10
+        attachmentView.layer.borderWidth = 1.2
+        attachmentView.layer.borderColor = UIColor(hex: "F76606").cgColor
         attachmentView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         attachmentView.backgroundColor = UIColor.white.withAlphaComponent(0.08)
         attachmentView.isUserInteractionEnabled = true
@@ -239,7 +241,7 @@ final class ChatMessageCell: UITableViewCell {
 
             // Message — below attachment (gap = 0 when no image)
             messageLabel.topAnchor.constraint(equalTo: attachmentView.bottomAnchor, constant: 0),
-            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -10),
+            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: 0),
             messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 14),
             messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -14),
 
