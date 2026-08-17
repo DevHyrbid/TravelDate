@@ -144,10 +144,20 @@ class ForgotPasswordViewController: BaseClassVc {
             shakeField()
             return
         }
+        self.request.email = email
+        self.request.forgotPasswordAPi { errMsg, errCode in
+            if errCode == 200 {
+                self.showAlertAction(errMsg) {
+                    self.backTapped()
+                }
+            } else {
+                self.showAlert(errMsg)
+            }
+        }
         // Navigate to Email Verification
-        let vc = EmailVerificationViewController()
-        vc.email = email
-        navigationController?.pushViewController(vc, animated: true)
+//        let vc = EmailVerificationViewController()
+//        vc.email = email
+//        navigationController?.pushViewController(vc, animated: true)
     }
 
     @objc private func goToSignUp() {

@@ -11,7 +11,6 @@ struct TravelItem {
     let status: String
 }
 import UIKit
-
 class ProfileViewController: BaseClassVc {
     
     // MARK: - IBoutlets
@@ -42,12 +41,14 @@ class ProfileViewController: BaseClassVc {
     var selectedTravelStyles: [TravelStyle] = []
     var data = [TravelItem]()
     
+    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
         lblProfileTitle.setFont(.medium, size: 18.0)
         collectionVw.register(TravelStyleCell.self,
                                       forCellWithReuseIdentifier: TravelStyleCell.identifier)
+        
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

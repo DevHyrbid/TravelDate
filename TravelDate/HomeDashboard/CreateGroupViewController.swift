@@ -342,7 +342,7 @@ class CreateGroupViewController: BaseClassVc {
 
         let imgView = UIImageView(image: UIImage(systemName: "photo.on.rectangle"))
         imgView.tintColor    = .appOrange
-        imgView.contentMode  = .scaleAspectFit
+        imgView.contentMode  = .scaleAspectFill
         imgView.tag          = 1001
 
         let uploadTitle = UILabel()

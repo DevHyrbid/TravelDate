@@ -14,7 +14,7 @@ class APiConstant : NSObject {
     static let baseUrlImg = baseUrl + "uploads/"
     static let loginAPi = baseUrl + "users/login"
     static let registerAPi = baseUrl + "users/create"
-    static let forgotPassword = baseUrl + "auth/forgot-password"
+    static let forgotPassword = baseUrl + "users/reset-password"
     static let checkEmail = baseUrl + "auth/check-email"
     static let createGroup = baseUrl + "groups"
     static let myGroup = baseUrl + "groups/my-groups"

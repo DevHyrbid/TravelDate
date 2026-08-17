@@ -56,18 +56,7 @@ class BaseClassVc: UIViewController {
     }
     
     @objc func upgradeButtonTapped() {
-        let subscriptionVC = SubscriptionViewController()
-        let nav = UINavigationController(rootViewController: subscriptionVC)
-        nav.modalPresentationStyle = .pageSheet // or .fullScreen if you want it locked
-
-        // Adds a close (X) button since there's no back button in a modal
-        subscriptionVC.navigationItem.leftBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .close,
-            target: self,
-            action: #selector(dismissSubscription)
-        )
-
-        present(nav, animated: true)
+        self.pushVC(PreiumController.self, from: .Settings,hideTabBar: true)
     }
     
     override func viewDidLoad() {

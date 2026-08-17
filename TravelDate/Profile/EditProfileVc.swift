@@ -65,7 +65,7 @@ class EditProfileVc: BaseClassVc {
         }
         
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
-        imgProfile.contentMode  = .scaleToFill
+        imgProfile.contentMode  = .scaleAspectFill
         txtName.text = User.curentUser?.name ?? ""
         txtUserName.text = "\(User.curentUser?.userName ?? "")"
         txtLocation.text = User.curentUser?.locationString ?? ""
