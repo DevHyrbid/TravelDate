@@ -85,6 +85,7 @@ protocol SubscriptionView: AnyObject {
 @MainActor
 final class SubscriptionPresenter {
 
+    
     // MARK: Dependencies
 
     weak var view: SubscriptionView?
@@ -106,6 +107,10 @@ final class SubscriptionPresenter {
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
     }()
+
+    private var lastSyncedEndDate: Date?
+
+    
 
     // MARK: Init
 
@@ -268,25 +273,89 @@ final class SubscriptionPresenter {
     /// skipping anything expired or refunded. Also syncs the result to
     /// the backend.
     func refreshSubscriptionStatus() async {
+
+        print("🔵 REFRESH SUBSCRIPTION START")
+        print("Current Date:", Date())
+
+        var activeTransaction: Transaction?
+
         for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result else { continue }
-            guard transaction.productType == .autoRenewable else { continue }
-            guard transaction.revocationDate == nil else { continue }
 
-            if let expiry = transaction.expirationDate,
-               expiry > Date() {
+            switch result {
 
-                syncBackend(
-                    plan: transaction.productID,
-                    startDate: transaction.purchaseDate,
-                    endDate: expiry,
-                    isSubscribed: true
-                )
+            case .verified(let transaction):
 
-                view?.subscriptionStatusChanged(isSubscribed: true)
-                return
+                print("================================")
+                print("✅ PRODUCT:", transaction.productID)
+                print("✅ TYPE:", transaction.productType)
+                print("✅ PURCHASE:", transaction.purchaseDate)
+                print("✅ EXPIRY:", transaction.expirationDate as Any)
+                print("✅ REVOCATION:", transaction.revocationDate as Any)
+                print("================================")
+
+                guard transaction.productType == .autoRenewable else {
+                    continue
+                }
+
+                guard transaction.revocationDate == nil else {
+                    continue
+                }
+
+                guard transaction.isUpgraded == false else {
+                    continue
+                }
+
+                guard let expiry = transaction.expirationDate else {
+                    continue
+                }
+
+                guard expiry > Date() else {
+                    print("❌ EXPIRED:", transaction.productID)
+                    continue
+                }
+
+                activeTransaction = transaction
+                break
+
+            case .unverified(_, let error):
+
+                print("❌ UNVERIFIED TRANSACTION:")
+                print(error.localizedDescription)
             }
         }
+
+        // MARK: Active Subscription
+
+        if let transaction = activeTransaction {
+
+            let tier = SubscriptionTier(rawValue: transaction.productID)
+
+            activeTier = tier
+
+            print("🟢 ACTIVE SUBSCRIPTION")
+            print("Plan:", transaction.productID)
+            print("Tier:", tier?.title ?? "Unknown")
+            print("Expiry:", transaction.expirationDate as Any)
+
+            syncBackend(
+                plan: transaction.productID,
+                startDate: transaction.purchaseDate,
+                endDate: transaction.expirationDate,
+                isSubscribed: true
+            )
+
+            view?.subscriptionStatusChanged(isSubscribed: true)
+
+            print("🔵 REFRESH SUBSCRIPTION END - ACTIVE")
+
+            return
+        }
+
+        // MARK: No Active Subscription
+
+        activeTier = nil
+
+        print("🔴 NO ACTIVE SUBSCRIPTION")
 
         syncBackend(
             plan: "free",
@@ -296,20 +365,29 @@ final class SubscriptionPresenter {
         )
 
         view?.subscriptionStatusChanged(isSubscribed: false)
+
+        print("🔴 REFRESH SUBSCRIPTION END - FREE")
     }
 
     // MARK: - Transaction Updates
 
     /// Catches renewals, refunds, and purchases made on another device.
     private func observeTransactionUpdates() -> Task<Void, Never> {
-        Task(priority: .background) { [weak self] in
+        Task { [weak self] in
             guard let self else { return }
 
             for await result in Transaction.updates {
-                guard case .verified(let transaction) = result else { continue }
+
+                guard case .verified(let transaction) = result else {
+                    continue
+                }
+
+                print("🔔 TRANSACTION UPDATE:", transaction.productID)
 
                 await transaction.finish()
+
                 await self.refreshSubscriptionStatus()
+
                 self.view?.reloadPlans()
             }
         }
@@ -324,9 +402,22 @@ final class SubscriptionPresenter {
         isSubscribed: Bool
     ) {
 
-        guard !isSyncing else { return }
+        print("📡 SYNC BACKEND")
+        print("Plan:", plan)
+        print("Subscribed:", isSubscribed)
+        print("Start:", startDate as Any)
+        print("End:", endDate as Any)
 
-        guard lastSyncedPlan != plan || lastSyncedIsSubscribed != isSubscribed else {
+        guard !isSyncing else {
+            print("⚠️ SYNC ALREADY IN PROGRESS")
+            return
+        }
+
+        if lastSyncedPlan == plan &&
+           lastSyncedIsSubscribed == isSubscribed &&
+           lastSyncedEndDate == endDate {
+
+            print("⚠️ SAME STATE ALREADY SYNCED")
             return
         }
 
@@ -334,25 +425,39 @@ final class SubscriptionPresenter {
 
         lastSyncedPlan = plan
         lastSyncedIsSubscribed = isSubscribed
+        lastSyncedEndDate = endDate
 
         let request = User.new()
+
         request.plan = plan
-//        request.isSubscribed = isSubscribed ? 1 : 0
-        request.planStartDate = startDate.map { isoFormatter.string(from: $0) }
-        request.planEndDate = endDate.map { isoFormatter.string(from: $0) }
+
+        request.planStartDate = startDate.map {
+            isoFormatter.string(from: $0)
+        }
+
+        request.planEndDate = endDate.map {
+            isoFormatter.string(from: $0)
+        }
 
         request.editProfileAPi { [weak self] response, status in
-            guard let self else { return }
 
-            self.isSyncing = false
+            guard let self else {
+                return
+            }
 
-            print(status, response as Any)
+            Task { @MainActor in
 
-            guard status == 200 else { return }
+                self.isSyncing = false
 
-//            User.curentUser?.plan = plan
-//            User.curentUser?.endDate = request.planEndDate
-//            User.curentUser?.isSubscribed = isSubscribed ? 1 : 0
+                print("📡 BACKEND STATUS:", status)
+                print("📡 BACKEND RESPONSE:", response as Any)
+
+                if status == 200 {
+                    print("✅ SUBSCRIPTION SYNC SUCCESS")
+                } else {
+                    print("❌ SUBSCRIPTION SYNC FAILED")
+                }
+            }
         }
     }
 }

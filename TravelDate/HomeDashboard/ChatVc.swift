@@ -316,7 +316,14 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
                     self.didTapReportOption(indexPath)
                 }
             )
-            let config = UISwipeActionsConfiguration(actions: [block,report])
+            
+            let blockChat = UIContextualAction(
+                style: .destructive,
+                title: "Block", handler: {_,_,_ in
+                    self.didTapBlockOption(indexPath)
+                }
+            )
+            let config = UISwipeActionsConfiguration(actions: [block,blockChat,report])
             config.performsFirstActionWithFullSwipe = false
             return config
         } else {            
@@ -327,10 +334,19 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
     
     @objc private func didTapBlockOption(_ indx:IndexPath) {
         let model = chatData[indx.row]
-        let popup = BlockReportPopupViewController(mode: .block(username: model.name ?? "",id:model.chatId ?? ""), delegate: self)
+        
+        if model.type == "Match" {
+            request.groupId = model.groupDetails?.id
+            request.blockGroupAPi { errMsg, errCode in
+                
+            }
+        }
         
         
-        present(popup, animated: false)  // animated: false zaroori hai, popup khud animate karta hai
+//        request.blockedId = model.id
+//        request.blockGroupAPi { errMsg, errCode in
+//            
+//        }
     }
 
     @objc private func didTapReportOption(_ indx:IndexPath) {

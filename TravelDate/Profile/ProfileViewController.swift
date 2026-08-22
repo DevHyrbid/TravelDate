@@ -219,8 +219,11 @@ class ProfileViewController: BaseClassVc {
             self.imgTick.isHidden = true
         }
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
-        vwPercentage.isUserInteractionEnabled = true
-        vwPercentage.addGestureRecognizer(tapGesture)
+        imgProfile.isUserInteractionEnabled = true
+        imgProfile.addGestureRecognizer(tapGesture)
+        
+        imgTick.isUserInteractionEnabled = true
+        imgTick.addGestureRecognizer(tapGesture)
     }
     
     @objc private func percentageViewTapped() {
@@ -228,6 +231,7 @@ class ProfileViewController: BaseClassVc {
         let vc = GetVerifiedVc()
         navigationController?.pushViewController(vc, animated: true)
     }
+
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()

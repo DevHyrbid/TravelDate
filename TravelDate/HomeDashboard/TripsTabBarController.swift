@@ -20,13 +20,53 @@ class TripsTabBarController: UIViewController {
     private var blurAdded = false
 
     // MARK: - Tab Items Config
-    private let tabItems: [TripsTabItem] = [
+     let tabItems: [TripsTabItem] = [
         TripsTabItem(icon: "imgHome",    selectedIcon: "imgHome",    tag: 0),
         TripsTabItem(icon: "imgGroup",   selectedIcon: "imgGroup",   tag: 1),
         TripsTabItem(icon: "imgMatch",   selectedIcon: "imgMatch",   tag: 2),
         TripsTabItem(icon: "imgChat2",   selectedIcon: "imgChat2",   tag: 3),
         TripsTabItem(icon: "imgprofile", selectedIcon: "imgprofile", tag: 4),
     ]
+    
+    var homeTabButton: UIButton? {
+        guard tabButtons.indices.contains(0) else {
+            return nil
+        }
+
+        return tabButtons[0]
+    }
+
+    var groupsTabButton: UIButton? {
+        guard tabButtons.indices.contains(1) else {
+            return nil
+        }
+
+        return tabButtons[1]
+    }
+
+    var discoverTabButton: UIButton? {
+        guard tabButtons.indices.contains(2) else {
+            return nil
+        }
+
+        return tabButtons[2]
+    }
+
+    var chatTabButton: UIButton? {
+        guard tabButtons.indices.contains(3) else {
+            return nil
+        }
+
+        return tabButtons[3]
+    }
+
+    var profileTabButton: UIButton? {
+        guard tabButtons.indices.contains(4) else {
+            return nil
+        }
+
+        return tabButtons[4]
+    }
 
     // MARK: - ViewControllers
     private lazy var viewControllers: [UIViewController] = [

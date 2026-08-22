@@ -388,15 +388,15 @@ final class BlockReportPopupViewController: BaseClassVc {
     // MARK: - Actions
     
     @objc private func didTapBlock() {
-        //        guard case .block(let username) = mode else { return }
-        //        dismissPopup {
-        //            self.request.blockGroupAPi { err, code in
-        //                if  code == 200 {
-        //                    self.delegate?.blockReportPopup(self, didConfirmBlockUser: username,id:"")
-        //                }
-        //            }
+                guard case .block(let username) = mode else { return }
+                dismissPopup {
+                    self.request.blockGroupAPi { err, code in
+                        if  code == 200 {
+//                            self.delegate?.blockReportPopup(self, didConfirmBlockUser: username,id:"")
+                        }
+                    }
         
-        //        }/
+                }
     }
     
     @objc private func didTapCancel() {
@@ -611,22 +611,3 @@ final class ReportReasonCell: UITableViewCell {
             : UIColor(white: 1.0, alpha: 0.4).cgColor
     }
 }
-
-// MARK: - Usage Example
-//
-// Block:
-// let popup = BlockReportPopupViewController(mode: .block(username: "priya_23"), delegate: self)
-// present(popup, animated: false)
-//
-// Report:
-// let popup = BlockReportPopupViewController(mode: .report(username: "priya_23"), delegate: self)
-// present(popup, animated: false)
-//
-// extension YourViewController: BlockReportPopupDelegate {
-//     func blockReportPopup(_ popup: BlockReportPopupViewController, didConfirmBlockUser username: String) {
-//         // call your block API here
-//     }
-//     func blockReportPopup(_ popup: BlockReportPopupViewController, didSubmitReportForUser username: String, reason: String, otherText: String?) {
-//         // call your report API here
-//     }
-// }

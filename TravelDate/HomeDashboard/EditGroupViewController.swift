@@ -261,8 +261,8 @@ class EditGroupViewController: CreateGroupViewController {
     // MARK: - Cover Image Load
     private func loadCoverImage(from path: String) {
         guard !path.isEmpty else { return }
-        let base      = "http://187.124.251.134:9800"
-        let urlString = path.hasPrefix("http") ? path : base + path
+        let base      = "https://api.tripsapp.io"
+        let urlString = path.hasPrefix("https") ? path : base + path
         guard let url = URL(string: urlString) else { return }
 
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
@@ -374,7 +374,7 @@ class EditGroupViewController: CreateGroupViewController {
         latitude: Double,
         longitude: Double
     ) {
-        let urlString = "http://187.124.251.134:9800/api/v1/groups/\(groupId)"
+        let urlString = "https://api.tripsapp.io/api/v1/groups/\(groupId)"
         guard let url = URL(string: urlString) else { AppLoader.hide(); return }
 
         let apiFmt = DateFormatter()

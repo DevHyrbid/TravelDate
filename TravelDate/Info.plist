@@ -60,9 +60,9 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera</string>
+	<string>Allow camera access to upload your profile photo and trips photos </string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo</string>
+	<string>Allow photo access to upload your profile photo and trips photos </string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -81,6 +81,8 @@
 	<key>CFBundleDisplayName</key>
 	<string>Trips</string>
 	<key>NSContactsUsageDescription</key>
-	<string>Need Access</string>
+	<string>Allow access to your contacts to find friends who are already on the app</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

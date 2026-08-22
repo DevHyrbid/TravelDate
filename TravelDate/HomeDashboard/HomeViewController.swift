@@ -48,7 +48,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var lblSaved:UILabel!
     @IBOutlet weak var btnEdit:UIButton!
     @IBOutlet weak var imgVerify:UIImageView!
+    @IBOutlet weak var btnCreateGroup:UIButton!
     private let refreshControl = UIRefreshControl()
+    
     
     // MARK: - Properties
     var timer: Timer?
@@ -65,10 +67,19 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-        
-
+       
         setupPullToRefresh()
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
         
+        
+        imgVerify.isUserInteractionEnabled = true
+        imgVerify.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc private func percentageViewTapped() {
+        // Open your screen here
+        let vc = GetVerifiedVc()
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     private func setupPullToRefresh() {
@@ -162,14 +173,19 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        getDashboard()
+        
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            getDashboard()
             return
         }
 
         Task {
-            await appDelegate.subscriptionPresenter?.refreshSubscriptionStatus()
-        }
+               await appDelegate.subscriptionPresenter?.refreshSubscriptionStatus()
+
+               await MainActor.run {
+                   self.getDashboard()
+               }
+           }
         
         print(hasPaidSubscription,"hJkhjk")
         lblName.text = User.curentUser?.name ?? ""
@@ -193,6 +209,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         showTabBarTemporarily()
+//        startTripsAppTutorial()
+        
     }
     
     deinit {
@@ -539,7 +557,71 @@ extension HomeViewController {
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
-    
+    private func startTripsAppTutorial() {
+
+        guard let tabBar = tripsTabBarController else {
+            return
+        }
+
+        guard
+            let groupsButton = tabBar.groupsTabButton,
+            let discoverButton = tabBar.discoverTabButton,
+            let chatButton = tabBar.chatTabButton,
+            let profileButton = tabBar.profileTabButton
+        else {
+            return
+        }
+
+        let steps: [TutorialStep] = [
+
+            TutorialStep(
+                title: "Welcome to TripsApp 👋",
+                message: "Let's take a quick tour and show you how TripsApp works.",
+                customFrame: CGRect(
+                    x: 20,
+                    y: 200,
+                    width: view.bounds.width - 40,
+                    height: 100
+                )
+            )/*,
+
+            TutorialStep(
+                title: "Create Your Trip ✈️",
+                message: "Create your next trip by adding your destination, dates and travel preferences.",
+                targetView: btnCreateGroup
+            ),
+
+            TutorialStep(
+                title: "Travel Groups 👥",
+                message: "Join existing travel groups or create your own group.",
+                targetView: groupsButton
+            ),
+
+            TutorialStep(
+                title: "Discover 🔎",
+                message: "Explore trips and travelers that match your interests.",
+                targetView: discoverButton
+            ),
+
+            TutorialStep(
+                title: "Chat 💬",
+                message: "Connect and chat with other travelers to plan your journey.",
+                targetView: chatButton
+            )*/,
+
+            TutorialStep(
+                title: "Your Profile 👤",
+                message: "Complete your profile and add your travel preferences.",
+                targetView: profileButton
+            )
+        ]
+
+        TutorialManager.shared.start(
+            from: self,
+            steps: steps,
+            userId: User.curentUser?.id ?? ""
+        )
+    }
     
 }
 

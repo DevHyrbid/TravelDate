@@ -653,7 +653,7 @@ class User : Mappable {
         
         NetworkManger.sendRequestAF(urlPath: APiConstant.forgotPassword, type: .post, parms: self.toJSON()) { responseObject, suces in
             print(responseObject)
-            if responseObject["statusCode"] as? Int ?? 0 == 200 {
+            if responseObject["code"] as? Int ?? 0 == 200 {
                 
                 callBack(responseObject["message"] as? String ?? "",200)
                 
@@ -1080,7 +1080,24 @@ class User : Mappable {
         }
         
     }
+    
     func  blockGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.blockGroupURl, params: self.toJSON(), method: "POST") { responseObject, suces in
+            print(responseObject,"FGHJKLFGHJKFGHJ")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  blockUserAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
         
         NetworkManger.sendRequestUrlSession(url: APiConstant.blockURl, params: self.toJSON(), method: "POST") { responseObject, suces in
             print(responseObject,"FGHJKLFGHJKFGHJ")
@@ -1096,6 +1113,37 @@ class User : Mappable {
         
     }
     
+    func  unblockGroupAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.unblockGroup, params: self.toJSON(), method: "POST") { responseObject, suces in
+            print(responseObject,"FGHJKLFGHJKFGHJ")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
+    
+    func  unblockUserAPi(callBack:((_ errMsg:String,_ errCode:Int)->Void)!) {
+        
+        NetworkManger.sendRequestUrlSession(url: APiConstant.unblockURl, params: self.toJSON(), method: "POST") { responseObject, suces in
+            print(responseObject,"FGHJKLFGHJKFGHJ")
+            if  responseObject["code"] as? Int == 200 {
+                print("USER")
+                callBack(responseObject["message"] as? String ?? "",200)
+            } else {
+                callBack(responseObject["message"] as? String ?? "",404)
+            }
+        } faliure: { errMsg, errCode in
+            callBack(errMsg, errCode)
+        }
+        
+    }
     
     func swipeAPi(callBack: @escaping (_ result: SwipeResult?, _ errMsg: String, _ errCode: Int) -> Void) {
 

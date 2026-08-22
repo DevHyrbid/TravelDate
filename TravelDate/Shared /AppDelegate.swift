@@ -113,6 +113,7 @@ extension AppDelegate: MessagingDelegate {
         _ messaging: Messaging,
         didReceiveRegistrationToken fcmToken: String?
     ) {
+        
         guard let token = fcmToken else { return }
 
         print("🔥 Firebase FCM Token:", token)
@@ -227,7 +228,7 @@ extension AppDelegate {
     ) {
 
         let userInfo = response.notification.request.content.userInfo
-
+        UIApplication.shared.applicationIconBadgeNumber = 0
         print("📩 Notification Clicked:", userInfo)
 
         NotificationCenter.default.post(

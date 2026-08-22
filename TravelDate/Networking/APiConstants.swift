@@ -10,7 +10,7 @@ class APiConstant : NSObject {
     static let port  = 9800
     static let base = "https://api.tripsapp.io"
     static let baseUrl = "https://api.tripsapp.io/api/v1/"
-    //"http://187.124.251.134:\(port)/api/v1/"
+    static let devUrl = "http://187.124.251.134:9800"
     static let baseUrlImg = baseUrl + "uploads/"
     static let loginAPi = baseUrl + "users/login"
     static let registerAPi = baseUrl + "users/create"
@@ -53,7 +53,9 @@ class APiConstant : NSObject {
     static let reportGroup = baseUrl + "report/group"
     static let reportUser = baseUrl + "report/user"
     static let blockURl = baseUrl + "user/block"
+    static let blockGroupURl = baseUrl + "user/block-group"
     static let unblockURl = baseUrl + "user/unblock"
+    static let unblockGroup = baseUrl + "user/unblock-group"
     
     static let bulkDeleteNotifications = baseUrl + "notifications/bulk-delete"
     
