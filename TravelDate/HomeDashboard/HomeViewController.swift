@@ -209,8 +209,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         showTabBarTemporarily()
-//        startTripsAppTutorial()
-        
+        //        startTripsAppTutorial()
     }
     
     deinit {
