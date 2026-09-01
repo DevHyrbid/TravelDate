@@ -32,7 +32,7 @@ struct OnboardingStep {
     let illustration: UIImage?
     let title: String
     let description: String
-
+    let tabIndex: Int?
     var tooltipPosition: OnboardingTooltipPosition = .above
 
     /// Button displayed on this step.
@@ -45,6 +45,7 @@ struct OnboardingStep {
         description: String,
         tooltipPosition: OnboardingTooltipPosition = .above,
         action: OnboardingAction = .next
+        ,tabIndex: Int? = nil
     ) {
         self.style = style
         self.illustration = illustration
@@ -52,6 +53,7 @@ struct OnboardingStep {
         self.description = description
         self.tooltipPosition = tooltipPosition
         self.action = action
+        self.tabIndex = tabIndex
     }
 }
 

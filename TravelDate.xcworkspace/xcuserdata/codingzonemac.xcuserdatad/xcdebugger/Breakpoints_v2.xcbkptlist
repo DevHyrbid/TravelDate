@@ -78,9 +78,9 @@
             filePath = "TravelDate/HomeDashboard/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "709"
-            endingLineNumber = "709"
-            landmarkName = "startTripsAppTutorial()"
+            startingLineNumber = "618"
+            endingLineNumber = "618"
+            landmarkName = "btnOpenGroupChat()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -94,9 +94,9 @@
             filePath = "TravelDate/HomeDashboard/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "713"
-            endingLineNumber = "713"
-            landmarkName = "startTripsAppTutorial()"
+            startingLineNumber = "622"
+            endingLineNumber = "622"
+            landmarkName = "btnOpenGroupChat()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -110,9 +110,9 @@
             filePath = "TravelDate/HomeDashboard/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "722"
-            endingLineNumber = "722"
-            landmarkName = "startTripsAppTutorial()"
+            startingLineNumber = "631"
+            endingLineNumber = "631"
+            landmarkName = "btnCreateGroup(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -126,9 +126,9 @@
             filePath = "TravelDate/HomeDashboard/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "719"
-            endingLineNumber = "719"
-            landmarkName = "startTripsAppTutorial()"
+            startingLineNumber = "628"
+            endingLineNumber = "628"
+            landmarkName = "btnNotification(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -142,9 +142,9 @@
             filePath = "TravelDate/HomeDashboard/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "710"
-            endingLineNumber = "710"
-            landmarkName = "startTripsAppTutorial()"
+            startingLineNumber = "619"
+            endingLineNumber = "619"
+            landmarkName = "btnOpenGroupChat()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
