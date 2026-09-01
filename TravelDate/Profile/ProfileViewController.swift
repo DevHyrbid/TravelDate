@@ -218,16 +218,31 @@ class ProfileViewController: BaseClassVc {
             self.vwPercentage.isHidden = false
             self.imgTick.isHidden = true
         }
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
-        imgProfile.isUserInteractionEnabled = true
-        imgProfile.addGestureRecognizer(tapGesture)
-        
-        imgTick.isUserInteractionEnabled = true
-        imgTick.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
+//        lblPercentage.isUserInteractionEnabled = true
+//        lblPercentage.addGestureRecognizer(tapGesture)
+//        
+//        vwPercentage.isUserInteractionEnabled = true
+//        vwPercentage.addGestureRecognizer(tapGesture)
+//        
+//        imgTick.isUserInteractionEnabled = true
+//        imgTick.addGestureRecognizer(tapGesture)
+        let percentageTap = UITapGestureRecognizer(
+            target: self,
+            action: #selector(percentageViewTapped)
+        )
+        vwPercentage.addGestureRecognizer(percentageTap)
+
+        let tickTap = UITapGestureRecognizer(
+            target: self,
+            action: #selector(percentageViewTapped)
+        )
+        imgTick.addGestureRecognizer(tickTap)
     }
     
     @objc private func percentageViewTapped() {
         // Open your screen here
+        print("HHHHHHHH")
         let vc = GetVerifiedVc()
         navigationController?.pushViewController(vc, animated: true)
     }

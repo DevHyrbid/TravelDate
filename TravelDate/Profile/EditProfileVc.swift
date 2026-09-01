@@ -193,7 +193,7 @@ class EditProfileVc: BaseClassVc {
         
         // Minimum age 13 years
         let calendar = Calendar.current
-        let maxDate = calendar.date(byAdding: .year, value: -13, to: Date())
+        let maxDate = calendar.date(byAdding: .year, value: -18, to: Date())
         
         dobPicker.maximumDate = maxDate
         

@@ -4,6 +4,7 @@
 //
 //  Created by Dev CodingZone on 20/08/26.
 //
+
 import UIKit
 
 final class TutorialOverlayView: UIView {
@@ -16,9 +17,11 @@ final class TutorialOverlayView: UIView {
     private let cardView = UIView()
     private let titleLabel = UILabel()
     private let messageLabel = UILabel()
+
     private let nextButton = UIButton(type: .system)
     private let previousButton = UIButton(type: .system)
     private let skipButton = UIButton(type: .system)
+
     private let pageLabel = UILabel()
 
     // MARK: - Callbacks
@@ -32,9 +35,6 @@ final class TutorialOverlayView: UIView {
     private var currentStep: TutorialStep?
     private var currentIndex = 0
     private var totalSteps = 0
-
-    private var cardBottomConstraint: NSLayoutConstraint!
-    private var cardTopConstraint: NSLayoutConstraint!
 
     // MARK: - Init
 
@@ -54,56 +54,63 @@ final class TutorialOverlayView: UIView {
 
         backgroundColor = .clear
 
-        // ------------------------------------------------
-        // DIM VIEW
-        // ------------------------------------------------
+        // MARK: Dim View
 
-        dimView.backgroundColor = UIColor.black.withAlphaComponent(0.72)
-        dimView.translatesAutoresizingMaskIntoConstraints = false
+        dimView.backgroundColor =
+            UIColor.black.withAlphaComponent(0.72)
+
+        dimView.frame = bounds
+        dimView.autoresizingMask = [
+            .flexibleWidth,
+            .flexibleHeight
+        ]
 
         addSubview(dimView)
 
-        NSLayoutConstraint.activate([
-            dimView.topAnchor.constraint(equalTo: topAnchor),
-            dimView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            dimView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            dimView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
+        // MARK: Spotlight
 
-        // ------------------------------------------------
-        // SPOTLIGHT
-        // ------------------------------------------------
+        spotlightView.backgroundColor =
+            UIColor.white.withAlphaComponent(0.10)
 
-        spotlightView.backgroundColor = .clear
-        spotlightView.layer.borderWidth = 2
-        spotlightView.layer.borderColor = UIColor.white.cgColor
-        spotlightView.layer.shadowColor = UIColor.white.cgColor
-        spotlightView.layer.shadowOpacity = 0.9
+        spotlightView.layer.borderWidth = 2.5
+        spotlightView.layer.borderColor =
+            UIColor.white.cgColor
+
+        spotlightView.layer.shadowColor =
+            UIColor.white.cgColor
+
+        spotlightView.layer.shadowOpacity = 1
         spotlightView.layer.shadowRadius = 10
+        spotlightView.layer.shadowOffset = .zero
+
         spotlightView.isUserInteractionEnabled = false
 
         addSubview(spotlightView)
 
-        // ------------------------------------------------
-        // CARD
-        // ------------------------------------------------
+        // MARK: Card
 
-        cardView.backgroundColor = .systemBackground
-        cardView.layer.cornerRadius = 18
-        cardView.layer.shadowColor = UIColor.black.cgColor
-        cardView.layer.shadowOpacity = 0.25
-        cardView.layer.shadowRadius = 12
-        cardView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        cardView.backgroundColor =
+            UIColor.systemBackground.withAlphaComponent(0.97)
+
+        cardView.layer.cornerRadius = 16
+
+        cardView.layer.shadowColor =
+            UIColor.black.cgColor
+
+        cardView.layer.shadowOpacity = 0.3
+        cardView.layer.shadowRadius = 10
+        cardView.layer.shadowOffset =
+            CGSize(width: 0, height: 4)
 
         cardView.translatesAutoresizingMaskIntoConstraints = false
 
         addSubview(cardView)
 
-        // ------------------------------------------------
-        // TITLE
-        // ------------------------------------------------
+        // MARK: Title
 
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 21)
+        titleLabel.font =
+            UIFont.boldSystemFont(ofSize: 17)
+
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 0
 
@@ -111,11 +118,11 @@ final class TutorialOverlayView: UIView {
 
         cardView.addSubview(titleLabel)
 
-        // ------------------------------------------------
-        // MESSAGE
-        // ------------------------------------------------
+        // MARK: Message
 
-        messageLabel.font = UIFont.systemFont(ofSize: 15)
+        messageLabel.font =
+            UIFont.systemFont(ofSize: 14)
+
         messageLabel.textColor = .secondaryLabel
         messageLabel.numberOfLines = 0
 
@@ -123,23 +130,21 @@ final class TutorialOverlayView: UIView {
 
         cardView.addSubview(messageLabel)
 
-        // ------------------------------------------------
-        // PAGE
-        // ------------------------------------------------
+        // MARK: Page
 
-        pageLabel.font = UIFont.systemFont(
-            ofSize: 13,
-            weight: .medium
-        )
+        pageLabel.font =
+            UIFont.systemFont(
+                ofSize: 12,
+                weight: .medium
+            )
 
         pageLabel.textColor = .secondaryLabel
+
         pageLabel.translatesAutoresizingMaskIntoConstraints = false
 
         cardView.addSubview(pageLabel)
 
-        // ------------------------------------------------
-        // PREVIOUS
-        // ------------------------------------------------
+        // MARK: Previous
 
         previousButton.setTitle(
             "Previous",
@@ -148,7 +153,7 @@ final class TutorialOverlayView: UIView {
 
         previousButton.titleLabel?.font =
             UIFont.systemFont(
-                ofSize: 15,
+                ofSize: 13,
                 weight: .medium
             )
 
@@ -162,9 +167,7 @@ final class TutorialOverlayView: UIView {
 
         cardView.addSubview(previousButton)
 
-        // ------------------------------------------------
-        // NEXT
-        // ------------------------------------------------
+        // MARK: Next
 
         nextButton.setTitle(
             "Next",
@@ -173,7 +176,7 @@ final class TutorialOverlayView: UIView {
 
         nextButton.titleLabel?.font =
             UIFont.systemFont(
-                ofSize: 16,
+                ofSize: 14,
                 weight: .bold
             )
 
@@ -187,9 +190,7 @@ final class TutorialOverlayView: UIView {
 
         cardView.addSubview(nextButton)
 
-        // ------------------------------------------------
-        // SKIP
-        // ------------------------------------------------
+        // MARK: Skip
 
         skipButton.setTitle(
             "Skip",
@@ -197,7 +198,7 @@ final class TutorialOverlayView: UIView {
         )
 
         skipButton.titleLabel?.font =
-            UIFont.systemFont(ofSize: 14)
+            UIFont.systemFont(ofSize: 13)
 
         skipButton.addTarget(
             self,
@@ -209,21 +210,7 @@ final class TutorialOverlayView: UIView {
 
         addSubview(skipButton)
 
-        // ------------------------------------------------
-        // CARD CONSTRAINTS
-        // ------------------------------------------------
-
-        cardTopConstraint = cardView.topAnchor.constraint(
-            equalTo: safeAreaLayoutGuide.topAnchor,
-            constant: 20
-        )
-
-        cardBottomConstraint = cardView.bottomAnchor.constraint(
-            equalTo: safeAreaLayoutGuide.bottomAnchor,
-            constant: -20
-        )
-
-        cardBottomConstraint.isActive = true
+        // MARK: Card Constraints
 
         NSLayoutConstraint.activate([
 
@@ -237,24 +224,28 @@ final class TutorialOverlayView: UIView {
                 constant: -20
             ),
 
+            cardView.heightAnchor.constraint(
+                greaterThanOrEqualToConstant: 150
+            ),
+
             titleLabel.topAnchor.constraint(
                 equalTo: cardView.topAnchor,
-                constant: 20
+                constant: 16
             ),
 
             titleLabel.leadingAnchor.constraint(
                 equalTo: cardView.leadingAnchor,
-                constant: 20
+                constant: 16
             ),
 
             titleLabel.trailingAnchor.constraint(
                 equalTo: cardView.trailingAnchor,
-                constant: -20
+                constant: -16
             ),
 
             messageLabel.topAnchor.constraint(
                 equalTo: titleLabel.bottomAnchor,
-                constant: 10
+                constant: 7
             ),
 
             messageLabel.leadingAnchor.constraint(
@@ -267,7 +258,7 @@ final class TutorialOverlayView: UIView {
 
             pageLabel.topAnchor.constraint(
                 equalTo: messageLabel.bottomAnchor,
-                constant: 18
+                constant: 10
             ),
 
             pageLabel.leadingAnchor.constraint(
@@ -276,7 +267,7 @@ final class TutorialOverlayView: UIView {
 
             previousButton.topAnchor.constraint(
                 equalTo: pageLabel.bottomAnchor,
-                constant: 15
+                constant: 10
             ),
 
             previousButton.leadingAnchor.constraint(
@@ -285,7 +276,7 @@ final class TutorialOverlayView: UIView {
 
             previousButton.bottomAnchor.constraint(
                 equalTo: cardView.bottomAnchor,
-                constant: -18
+                constant: -14
             ),
 
             nextButton.centerYAnchor.constraint(
@@ -298,7 +289,7 @@ final class TutorialOverlayView: UIView {
 
             skipButton.topAnchor.constraint(
                 equalTo: safeAreaLayoutGuide.topAnchor,
-                constant: 15
+                constant: 12
             ),
 
             skipButton.trailingAnchor.constraint(
@@ -328,11 +319,12 @@ final class TutorialOverlayView: UIView {
         previousButton.isHidden = index == 0
 
         nextButton.setTitle(
-            index == total - 1 ? "Finish" : "Next",
+            index == total - 1
+            ? "Finish"
+            : "Next",
             for: .normal
         )
 
-        // Make sure layout has happened
         layoutIfNeeded()
 
         updateSpotlight(step: step)
@@ -344,31 +336,32 @@ final class TutorialOverlayView: UIView {
         step: TutorialStep
     ) {
 
+        // No target view
         guard let targetView = step.targetView else {
 
             if let customFrame = step.customFrame {
 
                 spotlightView.isHidden = false
 
-                spotlightView.frame = customFrame.insetBy(
-                    dx: -8,
-                    dy: -8
-                )
+                spotlightView.frame =
+                    customFrame.insetBy(
+                        dx: -8,
+                        dy: -8
+                    )
+
+                spotlightView.layer.cornerRadius = 14
 
             } else {
 
                 spotlightView.isHidden = true
             }
 
-            positionCard(for: nil)
+            positionCardAboveBottom()
 
             return
         }
 
-        // IMPORTANT:
-        // Convert target coordinates directly
-        // into this overlay's coordinate system.
-
+        // Convert target button frame
         let convertedFrame = targetView.convert(
             targetView.bounds,
             to: self
@@ -379,80 +372,110 @@ final class TutorialOverlayView: UIView {
             return
         }
 
-        var frame = convertedFrame.insetBy(
-            dx: -8,
+        // Make highlight slightly bigger
+        let frame = convertedFrame.insetBy(
+            dx: -10,
             dy: -8
-        )
-
-        // Keep spotlight inside overlay
-        frame.origin.x = max(
-            4,
-            min(
-                frame.origin.x,
-                bounds.width - frame.width - 4
-            )
-        )
-
-        frame.origin.y = max(
-            4,
-            min(
-                frame.origin.y,
-                bounds.height - frame.height - 4
-            )
         )
 
         spotlightView.isHidden = false
         spotlightView.frame = frame
 
-        spotlightView.layer.cornerRadius = 12
+        spotlightView.layer.cornerRadius = 14
 
-        positionCard(for: frame)
+        // Put tooltip above highlighted tab
+        positionCardAboveTab(
+            targetFrame: frame
+        )
 
         bringSubviewToFront(spotlightView)
         bringSubviewToFront(cardView)
         bringSubviewToFront(skipButton)
     }
 
-    // MARK: - Card Position
+    // MARK: - Tooltip Position
 
-    private func positionCard(
-        for targetFrame: CGRect?
+    private func positionCardAboveTab(
+        targetFrame: CGRect
     ) {
 
-        cardTopConstraint.isActive = false
-        cardBottomConstraint.isActive = false
+        // Remove constraints temporarily
+        cardView.translatesAutoresizingMaskIntoConstraints = true
 
-        guard let targetFrame else {
+        let cardWidth =
+            bounds.width - 40
 
-            cardBottomConstraint.isActive = true
+        let cardHeight: CGFloat = 155
 
-            layoutIfNeeded()
+        let spacing: CGFloat = 14
 
-            return
+        var x =
+            bounds.midX - cardWidth / 2
+
+        var y =
+            targetFrame.minY -
+            cardHeight -
+            spacing
+
+        // Keep inside screen
+        x = max(
+            20,
+            min(
+                x,
+                bounds.width - cardWidth - 20
+            )
+        )
+
+        // If there isn't enough space above,
+        // show it above the tab bar area
+        if y < safeAreaInsets.top + 50 {
+
+            y = targetFrame.maxY + spacing
         }
 
-        let safeTop = safeAreaInsets.top + 70
-        let safeBottom = bounds.height - safeAreaInsets.bottom
+        // Prevent going below screen
+        if y + cardHeight >
+            bounds.height - safeAreaInsets.bottom {
 
-        let spaceAbove = targetFrame.minY - safeTop
-        let spaceBelow = safeBottom - targetFrame.maxY
-
-        if spaceBelow >= 220 {
-
-            cardTopConstraint.isActive = false
-            cardBottomConstraint.isActive = true
-
-        } else if spaceAbove >= 220 {
-
-            cardBottomConstraint.isActive = false
-            cardTopConstraint.isActive = true
-
-        } else {
-
-            cardBottomConstraint.isActive = true
+            y =
+                bounds.height -
+                safeAreaInsets.bottom -
+                cardHeight -
+                10
         }
 
-        layoutIfNeeded()
+        cardView.frame = CGRect(
+            x: x,
+            y: y,
+            width: cardWidth,
+            height: cardHeight
+        )
+
+        cardView.setNeedsLayout()
+        cardView.layoutIfNeeded()
+    }
+
+    // MARK: - Bottom Position
+
+    private func positionCardAboveBottom() {
+
+        cardView.translatesAutoresizingMaskIntoConstraints = true
+
+        let width = bounds.width - 40
+        let height: CGFloat = 155
+
+        cardView.frame = CGRect(
+            x: 20,
+            y: bounds.height
+                - safeAreaInsets.bottom
+                - height
+                - 20,
+            width: width,
+            height: height
+        )
+
+        cardView.setNeedsLayout()
+        cardView.layoutIfNeeded()
     }
 
     // MARK: - Actions

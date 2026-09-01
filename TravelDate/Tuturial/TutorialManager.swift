@@ -16,13 +16,10 @@ final class TutorialManager {
     // MARK: - Properties
 
     private var steps: [TutorialStep] = []
-
     private var currentIndex: Int = 0
 
     private weak var presentingViewController: UIViewController?
-
     private var overlayView: TutorialOverlayView?
-
     private var userId: String?
 
     // MARK: - Start
@@ -32,24 +29,45 @@ final class TutorialManager {
         steps: [TutorialStep],
         userId: String
     ) {
-//
-//        guard !steps.isEmpty else {
-//            return
-//        }
 
-//        guard !isCompleted(for: userId) else {
-//            return
-//        }
+        // Do not start if there are no steps
+        guard !steps.isEmpty else {
+            return
+        }
+
+        // Do not show tutorial again
+        guard !isCompleted(for: userId) else {
+            return
+        }
+
+        // Remove any existing tutorial
+        overlayView?.removeFromSuperview()
+        overlayView = nil
 
         self.steps = steps
-
         self.currentIndex = 0
-
         self.presentingViewController = viewController
-
         self.userId = userId
 
         showOverlay()
+    }
+
+    // MARK: - Force Start
+
+    /// Use this when the user selects "Replay Tutorial"
+    func startAgain(
+        from viewController: UIViewController,
+        steps: [TutorialStep],
+        userId: String
+    ) {
+
+        reset(for: userId)
+
+        start(
+            from: viewController,
+            steps: steps,
+            userId: userId
+        )
     }
 
     // MARK: - Show Overlay
@@ -87,9 +105,7 @@ final class TutorialManager {
 
         overlay.alpha = 0
 
-        UIView.animate(
-            withDuration: 0.25
-        ) {
+        UIView.animate(withDuration: 0.25) {
             overlay.alpha = 1
         }
 
@@ -100,7 +116,13 @@ final class TutorialManager {
 
     private func showCurrentStep() {
 
-        guard currentIndex < steps.count else {
+        guard !steps.isEmpty else {
+            finish()
+            return
+        }
+
+        guard currentIndex >= 0,
+              currentIndex < steps.count else {
             finish()
             return
         }
@@ -119,15 +141,13 @@ final class TutorialManager {
     private func next() {
 
         if currentIndex >= steps.count - 1 {
-
             finish()
-
-        } else {
-
-            currentIndex += 1
-
-            animateStep()
+            return
         }
+
+        currentIndex += 1
+
+        animateStep()
     }
 
     // MARK: - Previous
@@ -152,13 +172,15 @@ final class TutorialManager {
             animations: {
                 self.overlayView?.alpha = 0.3
             },
-            completion: { _ in
+            completion: { [weak self] _ in
+
+                guard let self = self else {
+                    return
+                }
 
                 self.showCurrentStep()
 
-                UIView.animate(
-                    withDuration: 0.2
-                ) {
+                UIView.animate(withDuration: 0.2) {
                     self.overlayView?.alpha = 1
                 }
             }
@@ -168,7 +190,6 @@ final class TutorialManager {
     // MARK: - Skip
 
     private func skip() {
-
         finish()
     }
 
@@ -195,15 +216,19 @@ final class TutorialManager {
             animations: {
                 self.overlayView?.alpha = 0
             },
-            completion: { _ in
+            completion: { [weak self] _ in
+
+                guard let self = self else {
+                    return
+                }
 
                 self.overlayView?.removeFromSuperview()
-
                 self.overlayView = nil
 
                 self.steps.removeAll()
-
                 self.currentIndex = 0
+                self.presentingViewController = nil
+                self.userId = nil
             }
         )
     }
@@ -211,27 +236,24 @@ final class TutorialManager {
     // MARK: - UserDefaults
 
     private func key(for userId: String) -> String {
-
         return "tripsapp_tutorial_completed_\(userId)"
     }
 
-    private func isCompleted(
-        for userId: String
-    ) -> Bool {
+    private func isCompleted(for userId: String) -> Bool {
 
         return UserDefaults.standard.bool(
             forKey: key(for: userId)
         )
     }
 
-    private func markCompleted(
-        for userId: String
-    ) {
+    private func markCompleted(for userId: String) {
 
         UserDefaults.standard.set(
             true,
             forKey: key(for: userId)
         )
+
+        UserDefaults.standard.synchronize()
     }
 
     // MARK: - Reset Tutorial
@@ -241,5 +263,11 @@ final class TutorialManager {
         UserDefaults.standard.removeObject(
             forKey: key(for: userId)
         )
+    }
+
+    // MARK: - Check Status
+
+    func hasCompleted(for userId: String) -> Bool {
+        return isCompleted(for: userId)
     }
 }

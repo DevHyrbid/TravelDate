@@ -749,6 +749,7 @@
                     </view>
                     <size key="freeformSize" width="394" height="1200"/>
                     <connections>
+                        <outlet property="btnCreateGroup" destination="xyS-qK-jK4" id="4a4-YQ-yY8"/>
                         <outlet property="btnEdit" destination="gGz-al-NtX" id="Spe-ww-FXm"/>
                         <outlet property="btnList" destination="W4p-Sj-m8H" id="48i-NV-qy8"/>
                         <outlet property="height" destination="V1i-gq-Ba1" id="llS-8C-G30"/>

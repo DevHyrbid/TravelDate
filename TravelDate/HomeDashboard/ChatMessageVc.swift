@@ -62,7 +62,8 @@ final class ChatMessageVc: BaseClassVc {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 70
         if #available(iOS 15.0, *) {
             view.keyboardLayoutGuide.followsUndockedKeyboard = false
         }
@@ -483,7 +484,7 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         ) as! ChatMessageCell
 
         let item = viewModel.sections[indexPath.section].items[indexPath.row]
-        cell.configure(with: item)
+       
         cell.onImageTapped = { [weak self] image in
             let preview = ImagePreviewVC(image: image!)
             self?.present(preview, animated: true)
@@ -521,6 +522,15 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             self.present(alert, animated: true)
         }
+        cell.onAttachmentSizeResolved = { [weak tableView] in
+            guard let tableView else { return }
+
+            DispatchQueue.main.async {
+                tableView.beginUpdates()
+                tableView.endUpdates()
+            }
+        }
+        cell.configure(with: item)
         return cell
     }
     

@@ -3086,7 +3086,7 @@
         <image name="imgTod" width="472" height="334.66665649414062"/>
         <image name="imgTrip" width="472" height="488"/>
         <image name="imgVerfiy" width="34" height="34"/>
-        <image name="imgVerified" width="170.66667175292969" height="170.66667175292969"/>
+        <image name="imgVerified" width="341.33334350585938" height="341.33334350585938"/>
         <image name="imgView" width="34" height="34"/>
         <image name="lock" catalog="system" width="111" height="128"/>
         <image name="mail" catalog="system" width="128" height="93"/>

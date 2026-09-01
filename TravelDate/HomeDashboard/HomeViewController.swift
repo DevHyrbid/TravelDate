@@ -187,7 +187,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                }
            }
         
-        print(hasPaidSubscription,"hJkhjk")
+        print(hasPaidSubscription)
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
@@ -199,18 +199,164 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         
         setupUi()
         
-        if let font = UIFont(name: "Poppins-Regular", size: 16) {
-            print("✅ Font loaded: \(font.fontName)")
-        } else {
-            print("❌ Font not loaded")
-        }
+       
     }
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        super.viewDidAppear(animated)
+//
+//        showTabBarTemporarily()
+//
+//        guard let userId = User.curentUser?.id,
+//              !userId.isEmpty else {
+//            print("❌ Tutorial: User ID missing")
+//            return
+//        }
+//
+//        print("✅ Tutorial User ID:", userId)
+//
+//        TutorialManager.shared.reset(for: userId)
+//
+//        startTripsAppTutorial()
+//    }
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        super.viewDidAppear(animated)
+//
+//        let steps: [OnboardingStep] = [
+//
+//            // 1. Create Your Trip
+//            OnboardingStep(
+//                style: .card,
+//                illustration: UIImage(named: "onboard_create_trip"),
+//                title: "Create your trip",
+//                description: "Start your trip in just one tap. Add your destination, dates, and travel preferences to get started.",
+//                tooltipPosition: .above
+//            ),
+//
+//            // 2. Match With People
+//            OnboardingStep(
+//                style: .card,
+//                illustration: UIImage(named: "onboard_match_people"),
+//                title: "Match with people who travel like you",
+//                description: "Find travelers and groups that match your travel style, interests, and plans."
+//            ),
+//
+//            // 3. New Matches & Saved Groups
+//            OnboardingStep(
+//                style: .card,
+//                illustration: UIImage(named: "onboard_matches"),
+//                title: "Discover new matches & save groups",
+//                description: "See your latest matches, discover new travel groups, and save groups you want to join later."
+//            ),
+//
+//            // 4. Update Profile
+//            OnboardingStep(
+//                style: .card,
+//                illustration: UIImage(named: "onboard_profile"),
+//                title: "Keep your profile updated",
+//                description: "Update your profile, travel preferences, interests, and account details so we can find better matches for you."
+//            )
+//        ]
+//
+//        OnboardingCoachMarkManager.shared.start(
+//            flowID: "home_v2",
+//            steps: steps,
+//            in: self.view.window ?? self.view
+//        )
+//    }
+    
+
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        showTabBarTemporarily()
-        //        startTripsAppTutorial()
+
+        let steps: [OnboardingStep] = [
+
+            // 1. Create Your Trip
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+                    self?.btnCreateGroup
+                }),
+                illustration: UIImage(named: "onboard_create_trip"),
+                title: "Create your trip",
+                description: "Start your trip in just one tap. Add your destination, dates, and travel preferences to get started.",
+                tooltipPosition: .above
+            ),
+
+            // 2. Match With People
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+//                    self?.btnMatch
+                    self?.btnEdit
+                }),
+                illustration: UIImage(named: "onboard_match_people"),
+                title: "Match with people who travel like you",
+                description: "Discover travelers and groups that match your travel style, interests, and travel plans.",
+                tooltipPosition: .above
+            ),
+
+            // 3. New Matches & Saved Groups
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+//                    self?.btnGroups
+                    self?.btnEdit
+                }),
+                illustration: UIImage(named: "onboard_matches"),
+                title: "New matches & saved groups",
+                description: "See your new matches and save travel groups that you'd like to explore or join later.",
+                tooltipPosition: .above
+            ),
+
+            // 4. Profile
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+//                    self?.btnProfile
+                    self?.btnEdit
+                }),
+                illustration: UIImage(named: "onboard_profile"),
+                title: "Update your profile",
+                description: "Keep your profile, interests, and travel preferences updated so you can get better matches.",
+                tooltipPosition: .above,
+                action: .done
+            )
+        ]
+
+        OnboardingCoachMarkManager.shared.start(
+            flowID: "home_v2",
+            steps: steps,
+            in: self.view.window ?? self.view
+        )
     }
+    
+
+    
+//    override func viewDidAppear(_ animated: Bool) {
+//        super.viewDidAppear(animated)
+//
+//        let steps: [OnboardingStep] = [
+//            OnboardingStep(
+////                style: .spotlight(target: { [weak self] in self?.btnCreateGroup }),
+//                style:.card,
+//                illustration: UIImage(named: "onboard_create_trip"),
+//                title: "Start a trip in 1 tap",
+//                description: "Match with travel groups going your way — tap here to begin.",
+//                tooltipPosition: .above
+//            ),
+//            OnboardingStep(
+//                style: .card,
+//                illustration: UIImage(named: "onboard_welcome"),
+//                title: "Hey \(User.curentUser?.name ?? "")",
+//                description: "Welcome to your homepage. Your matched groups and trips are right here :)"
+//            )
+//        ]
+//
+//        OnboardingCoachMarkManager.shared.start(
+//            flowID: "home_v1",     // bump this string whenever you change the flow so it replays
+//            steps: steps,
+//            in: self.view.window ?? self.view   // use the window if a step targets the tab bar
+//        )
+//    }
     
     deinit {
         tabBarHideTimer?.invalidate()
@@ -556,6 +702,8 @@ extension HomeViewController {
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
+    // MARK: - App Tutorial
+
     private func startTripsAppTutorial() {
 
         guard let tabBar = tripsTabBarController else {
@@ -563,54 +711,80 @@ extension HomeViewController {
         }
 
         guard
-            let groupsButton = tabBar.groupsTabButton,
+            let tripsButton = tabBar.groupsTabButton,
             let discoverButton = tabBar.discoverTabButton,
-            let chatButton = tabBar.chatTabButton,
+            let matchesButton = tabBar.chatTabButton,
             let profileButton = tabBar.profileTabButton
         else {
             return
         }
 
+//        let steps: [TutorialStep] = [
+//
+//            // 1. Welcome
+//            TutorialStep(
+//                title: "Welcome to TravelDate 👋",
+//                message: "Create trips, discover travelers, connect with matches and manage your profile.",
+//                customFrame: CGRect(
+//                    x: 20,
+//                    y: 180,
+//                    width: view.bounds.width - 40,
+//                    height: 120
+//                )
+//            ),
+//
+//            // 2. Trips
+//            TutorialStep(
+//                title: "Create Your Trip ✈️",
+//                message: "Create and manage your trips by adding your destination, dates and travel preferences.",
+//                targetView: tripsButton
+//            ),
+//
+//            // 3. Discover
+//            TutorialStep(
+//                title: "Discover Travelers 🔎",
+//                message: "Find travelers and groups that match your travel style.",
+//                targetView: discoverButton
+//            ),
+//
+//            // 4. Matches
+//            TutorialStep(
+//                title: "Matches & Chat 💬",
+//                message: "See your new matches, active conversations and saved groups here.",
+//                targetView: matchesButton
+//            ),
+//
+//            // 5. Profile
+//            TutorialStep(
+//                title: "Your Profile 👤",
+//                message: "Update your profile, travel styles, about information and preferences.",
+//                targetView: profileButton
+//            )
+//        ]
+        
         let steps: [TutorialStep] = [
 
             TutorialStep(
-                title: "Welcome to TripsApp 👋",
-                message: "Let's take a quick tour and show you how TripsApp works.",
-                customFrame: CGRect(
-                    x: 20,
-                    y: 200,
-                    width: view.bounds.width - 40,
-                    height: 100
-                )
-            )/*,
-
-            TutorialStep(
                 title: "Create Your Trip ✈️",
-                message: "Create your next trip by adding your destination, dates and travel preferences.",
-                targetView: btnCreateGroup
+                message: "Create and manage your trips here.",
+                targetView: tripsButton
             ),
 
             TutorialStep(
-                title: "Travel Groups 👥",
-                message: "Join existing travel groups or create your own group.",
-                targetView: groupsButton
-            ),
-
-            TutorialStep(
-                title: "Discover 🔎",
-                message: "Explore trips and travelers that match your interests.",
+                title: "Discover Travelers 🔎",
+                message: "Find travelers who match your travel style.",
                 targetView: discoverButton
             ),
 
             TutorialStep(
-                title: "Chat 💬",
-                message: "Connect and chat with other travelers to plan your journey.",
-                targetView: chatButton
-            )*/,
+                title: "Matches & Chat 💬",
+                message: "See your new matches, conversations and saved groups here.",
+                targetView: matchesButton
+            ),
 
             TutorialStep(
                 title: "Your Profile 👤",
-                message: "Complete your profile and add your travel preferences.",
+                message: "Update your profile and travel preferences here.",
                 targetView: profileButton
             )
         ]
