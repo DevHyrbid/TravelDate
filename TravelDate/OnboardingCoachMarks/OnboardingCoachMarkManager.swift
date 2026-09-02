@@ -37,9 +37,9 @@ final class OnboardingCoachMarkManager: NSObject {
             return
         }
 
-        if !force && OnboardingSeenStore.hasSeen(flowID) {
-            return
-        }
+//        if !force && OnboardingSeenStore.hasSeen(flowID) {
+//            return
+//        }
 
         self.flowID = flowID
         self.steps = steps
@@ -72,13 +72,28 @@ final class OnboardingCoachMarkManager: NSObject {
         case .spotlight(let targetProvider):
 
             guard let target = targetProvider() else {
-                advance()
-                return
-            }
+                    advance()
+                    return
+                }
 
-            let spotlight = OnboardingSpotlightOverlayView(
-                frame: host.bounds
-            )
+                // NEW: scroll target into view first, if a scrollView was provided
+                if let scrollView = step.scrollView {
+                    let targetFrameInScroll = target.convert(
+                        target.bounds,
+                        to: scrollView
+                    )
+
+                    scrollView.scrollRectToVisible(
+                        targetFrameInScroll.insetBy(dx: 0, dy: -60), // extra padding top/bottom
+                        animated: false
+                    )
+
+                    scrollView.layoutIfNeeded()
+                }
+
+                let spotlight = OnboardingSpotlightOverlayView(
+                    frame: host.bounds
+                )
 
             spotlight.translatesAutoresizingMaskIntoConstraints = false
 

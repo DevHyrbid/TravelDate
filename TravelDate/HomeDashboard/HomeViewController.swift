@@ -205,11 +205,16 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let tabBar = tripsTabBarController else {
-                return
-            }
+            return
+        }
+        
+        
+        // Force tab bar visible + stop auto-hide while onboarding runs
+        tabBar.showTabBar()
+        tabBarHideTimer?.invalidate()
         
         let steps: [OnboardingStep] = [
-
+            
             // 1. Create Your Trip
             OnboardingStep(
                 style: .spotlight(target: { [weak self] in
@@ -218,48 +223,49 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 illustration: UIImage(named: "onboard_create_trip"),
                 title: "Create your trip",
                 description: "Start your trip in just one tap. Add your destination, dates, and travel preferences to get started.",
-                tooltipPosition: .above
+                tooltipPosition: .above,    scrollView: self.scrollVw
             ),
-
+            
             // 2. Match With People
-                    OnboardingStep(
-                        style: .spotlight(target: { [weak tabBar] in
-                            tabBar?.discoverTabButton
-                        }),
-                        illustration: UIImage(named: "onboard_match_people"),
-                        title: "Match with people who travel like you",
-                        description: "Discover travelers and groups that match your travel style and interests.",
-                        tooltipPosition: .above,
-                        tabIndex: 2
-                    ),
-
-                    // 3. New Matches & Saved Groups
-                    OnboardingStep(
-                        style: .spotlight(target: { [weak tabBar] in
-                            tabBar?.chatTabButton
-                        }),
-                        illustration: UIImage(named: "onboard_matches"),
-                        title: "New matches & saved groups",
-                        description: "See your new matches, conversations and saved groups here.",
-                        tooltipPosition: .above,
-                        tabIndex: 3
-                    ),
-
-                    // 4. Profile
-                    OnboardingStep(
-                        style: .spotlight(target: { [weak tabBar] in
-                            tabBar?.profileTabButton
-                        }),
-                        illustration: UIImage(named: "onboard_profile"),
-                        title: "Update your profile",
-                        description: "Update your profile, travel style, interests and preferences here.",
-                        tooltipPosition: .above,
-                        action: .done,
-                        tabIndex: 4
-                    )
-                ]
-
-
+            OnboardingStep(
+                style: .spotlight(target: { [weak tabBar] in
+                    //                            tabBar?.discoverTabButton
+                    self.btnList
+                }),
+                illustration: UIImage(named: "onboard_match_people"),
+                title: "Match with people who travel like you",
+                description: "Discover travelers and groups that match your travel style and interests.",
+                tooltipPosition: .above,
+                tabIndex: 2
+            ),
+            
+            // 3. New Matches & Saved Groups
+            OnboardingStep(
+                style: .spotlight(target: { [weak tabBar] in
+                    tabBar?.chatTabButton
+                }),
+                illustration: UIImage(named: "onboard_matches"),
+                title: "New matches & saved groups",
+                description: "See your new matches, conversations and saved groups here.",
+                tooltipPosition: .above,
+                tabIndex: 3
+            ),
+            
+            // 4. Profile
+            OnboardingStep(
+                style: .spotlight(target: { [weak tabBar] in
+                    tabBar?.profileTabButton
+                }),
+                illustration: UIImage(named: "onboard_profile"),
+                title: "Update your profile",
+                description: "Update your profile, travel style, interests and preferences here.",
+                tooltipPosition: .above,
+                action: .done,
+                tabIndex: 4
+            )
+        ]
+        
+        
         OnboardingCoachMarkManager.shared.start(
             flowID: "home_v2",
             steps: steps,

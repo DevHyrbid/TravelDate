@@ -34,9 +34,11 @@ struct OnboardingStep {
     let description: String
     let tabIndex: Int?
     var tooltipPosition: OnboardingTooltipPosition = .above
-
-    /// Button displayed on this step.
     var action: OnboardingAction = .next
+
+    /// Pass this when the target view can be off-screen (inside a scroll view).
+    /// Manager will scroll it into view before spotlighting.
+    weak var scrollView: UIScrollView?
 
     init(
         style: OnboardingStepStyle,
@@ -44,8 +46,9 @@ struct OnboardingStep {
         title: String,
         description: String,
         tooltipPosition: OnboardingTooltipPosition = .above,
-        action: OnboardingAction = .next
-        ,tabIndex: Int? = nil
+        action: OnboardingAction = .next,
+        tabIndex: Int? = nil,
+        scrollView: UIScrollView? = nil
     ) {
         self.style = style
         self.illustration = illustration
@@ -54,6 +57,7 @@ struct OnboardingStep {
         self.tooltipPosition = tooltipPosition
         self.action = action
         self.tabIndex = tabIndex
+        self.scrollView = scrollView
     }
 }
 
