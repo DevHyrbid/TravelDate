@@ -204,125 +204,126 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
        
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-    }
 
     func showAll(hasGroups: Bool) {
-        guard let tabBar = tripsTabBarController else {
-            return
-        }
-
-        tabBar.showTabBar()
-        tabBarHideTimer?.invalidate()
-
-        var steps: [OnboardingStep] = [
-
-
-           
-
-           
-            // 1. First
-            OnboardingStep(
-                style: .spotlight(target: { [weak self] in
-                    self?.view.layoutIfNeeded()
-                    return self?.imgProfile
-                }),
-                illustration: UIImage(named: "trips"),
-                title: "Hey there !",
-                description: "Welcome to Trips. Here’s what you need to know to get started !",
-                tooltipPosition: .above
-            )
-            ,
-            OnboardingStep(
-                style: .spotlight(target: { [weak self] in
-                    self?.view.layoutIfNeeded()
-                    return self?.btnCreateGroup
-                }),
-                illustration: UIImage(named: "onboard_create_trip"),
-                title: "Create or join your group",
-                description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
-                tooltipPosition: .above,
-                scrollView: self.scrollVw
-            )
-        ]
-
-        // Sirf tab dikhao jab kam se kam ek group ho — warna btnList
-        // hidden hi hota hai (getGroups() mein), spotlight galat jagah dikhega
-        if hasGroups {
-            steps.append(
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            
+            guard let tabBar = self?.tripsTabBarController else {
+                return
+            }
+            
+            tabBar.showTabBar()
+            self?.tabBarHideTimer?.invalidate()
+            
+            var steps: [OnboardingStep] = [
+                
+                
+                
+                
+                
+                // 1. First
                 OnboardingStep(
                     style: .spotlight(target: { [weak self] in
-                        self?.btnList
+                        self?.view.layoutIfNeeded()
+                        return self?.imgProfile
+                    }),
+                    illustration: UIImage(named: "trips"),
+                    title: "Hey there !",
+                    description: "Welcome to Trips. Here’s what you need to know to get started !",
+                    tooltipPosition: .above
+                )
+                ,
+                OnboardingStep(
+                    style: .spotlight(target: { [weak self] in
+                        self?.view.layoutIfNeeded()
+                        return self?.btnCreateGroup
+                    }),
+                    illustration: UIImage(named: "onboard_create_trip"),
+                    title: "Create or join your group",
+                    description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
+                    tooltipPosition: .above,
+                    scrollView: self?.scrollVw
+                )
+            ]
+            
+            // Sirf tab dikhao jab kam se kam ek group ho — warna btnList
+            // hidden hi hota hai (getGroups() mein), spotlight galat jagah dikhega
+            if hasGroups {
+                steps.append(
+                    OnboardingStep(
+                        style: .spotlight(target: { [weak self] in
+                            self?.btnList
+                        }),
+                        illustration: UIImage(named: "imgGroup"),
+                        title: "See all your groups",
+                        description: "Tap here to view and switch between all your groups.",
+                        tooltipPosition: .above,
+                        tabIndex: 1
+                    )
+                )
+            }
+            
+            steps.append(contentsOf: [
+                
+                // New Matches & Saved Groups
+                OnboardingStep(
+                    style: .spotlight(target: { [weak tabBar] in
+                        tabBar?.groupsTabButton
                     }),
                     illustration: UIImage(named: "imgGroup"),
-                    title: "See all your groups",
-                    description: "Tap here to view and switch between all your groups.",
+                    title: "New matches & saved groups",
+                    description: "See your new matches and saved groups here.",
                     tooltipPosition: .above,
                     tabIndex: 1
+                ),
+                
+                // Match With People
+                OnboardingStep(
+                    style: .spotlight(target: { [weak tabBar] in
+                        tabBar?.discoverTabButton
+                    }),
+                    illustration: UIImage(named: "imgMatch"),
+                    title: "Match with people who travel like you",
+                    description: "Discover travelers and groups that match your travel style and interests.",
+                    tooltipPosition: .above,
+                    tabIndex: 2
+                ),
+                
+                // Chat
+                OnboardingStep(
+                    style: .spotlight(target: { [weak tabBar] in
+                        tabBar?.chatTabButton
+                    }),
+                    illustration: UIImage(named: "imgChat2"),
+                    title: "Chat with people & groups",
+                    description: "Message your group chat and matched groups.",
+                    tooltipPosition: .above,
+                    tabIndex: 3
+                ),
+                
+                // Profile
+                OnboardingStep(
+                    style: .spotlight(target: { [weak tabBar] in
+                        tabBar?.profileTabButton
+                    }),
+                    illustration: UIImage(named: "imgprofile"),
+                    title: "Update your profile",
+                    description: "Update your profile, travel style, interests and preferences here.",
+                    tooltipPosition: .above,
+                    action: .done,
+                    tabIndex: 4
                 )
+            ])
+            
+            let flowID = hasGroups ? "home_v2_with_group" : "home_v2_no_group"
+            
+            OnboardingCoachMarkManager.shared.start(
+                flowID: flowID,
+                steps: steps,
+                in: self?.view.window ?? self?.view ?? tabBar.view
             )
         }
-
-        steps.append(contentsOf: [
-
-            // New Matches & Saved Groups
-            OnboardingStep(
-                style: .spotlight(target: { [weak tabBar] in
-                    tabBar?.groupsTabButton
-                }),
-                illustration: UIImage(named: "imgGroup"),
-                title: "New matches & saved groups",
-                description: "See your new matches and saved groups here.",
-                tooltipPosition: .above,
-                tabIndex: 1
-            ),
-
-            // Match With People
-            OnboardingStep(
-                style: .spotlight(target: { [weak tabBar] in
-                    tabBar?.discoverTabButton
-                }),
-                illustration: UIImage(named: "imgMatch"),
-                title: "Match with people who travel like you",
-                description: "Discover travelers and groups that match your travel style and interests.",
-                tooltipPosition: .above,
-                tabIndex: 2
-            ),
-
-            // Chat
-            OnboardingStep(
-                style: .spotlight(target: { [weak tabBar] in
-                    tabBar?.chatTabButton
-                }),
-                illustration: UIImage(named: "imgChat2"),
-                title: "Chat with people & groups",
-                description: "Message your group chat and matched groups.",
-                tooltipPosition: .above,
-                tabIndex: 3
-            ),
-
-            // Profile
-            OnboardingStep(
-                style: .spotlight(target: { [weak tabBar] in
-                    tabBar?.profileTabButton
-                }),
-                illustration: UIImage(named: "imgprofile"),
-                title: "Update your profile",
-                description: "Update your profile, travel style, interests and preferences here.",
-                tooltipPosition: .above,
-                action: .done,
-                tabIndex: 4
-            )
-        ])
-
-        let flowID = hasGroups ? "home_v2_with_group" : "home_v2_no_group"
-
-        OnboardingCoachMarkManager.shared.start(
-            flowID: flowID,
-            steps: steps,
-            in: self.view.window ?? self.view
-        )
     }
     
     deinit {
