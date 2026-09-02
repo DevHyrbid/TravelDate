@@ -32,7 +32,7 @@ class NetworkManger {
         ]
 
         if !ignorePaths.contains(where: { url.contains($0) }) {
-            AppLoader.show(text: "")
+//            AppLoader.show(text: "")
         }
        
         

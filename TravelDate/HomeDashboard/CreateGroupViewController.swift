@@ -978,6 +978,7 @@ class CreateGroupViewController: BaseClassVc {
 
                 DispatchQueue.main.async {
                     if errCode == 200 {
+                        AppData.shared.justAuthenticated = true
                         self.pushVC(InviteVc.self, from: .Home) {
                             $0.joinCode = code ?? ""
                         }

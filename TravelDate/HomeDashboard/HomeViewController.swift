@@ -55,6 +55,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     // MARK: - Properties
     var timer: Timer?
     private var hasTriggeredOnboarding = false
+    private var previousGroupCount: Int? = nil
     var targetDate: Date?
     var data: GroupsData? = nil
     var dataArray: [Group]? = nil
@@ -217,10 +218,26 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
 
         var steps: [OnboardingStep] = [
 
-            // 1. Create Your Group
+
+           
+
+           
+            // 1. First
             OnboardingStep(
                 style: .spotlight(target: { [weak self] in
-                    self?.btnCreateGroup
+                    self?.view.layoutIfNeeded()
+                    return self?.imgProfile
+                }),
+                illustration: UIImage(named: "trips"),
+                title: "Hey there !",
+                description: "Welcome to Trips. Here’s what you need to know to get started !",
+                tooltipPosition: .above
+            )
+            ,
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+                    self?.view.layoutIfNeeded()
+                    return self?.btnCreateGroup
                 }),
                 illustration: UIImage(named: "onboard_create_trip"),
                 title: "Create or join your group",
@@ -361,7 +378,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleAspectFill
         getGroups()
-        AppLoader.show(text: "")
+        
         membersView.translatesAutoresizingMaskIntoConstraints = false
         vwMembers.addSubview(membersView)
         if User.curentUser?.isVerified == 1 {
@@ -379,7 +396,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
 
         
         tblVw.register(PastTableViewCell.self)
-        getGroups()
+        
         getPastGroups()
         
         NotificationCenter.default.addObserver(
@@ -495,15 +512,31 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     }
                     
                     self.view.layoutIfNeeded()
-                    
+
+                    let newGroupCount = self.dataArray?.count ?? 0
+
+                    // Case 1: fresh login/signup — show 5 or 6 steps
+                    // depending on whatever the group count is right now.
                     if !hasTriggeredOnboarding && AppData.shared.justAuthenticated {
                         hasTriggeredOnboarding = true
                         AppData.shared.justAuthenticated = false
                         OnboardingCoachMarkManager.shared.reset(flowID: "home_v2_no_group")
                         OnboardingCoachMarkManager.shared.reset(flowID: "home_v2_with_group")
-                        
-                        showAll(hasGroups: !(self.dataArray?.isEmpty ?? true))
+
+                        showAll(hasGroups: newGroupCount > 0)
+
+                    // Case 2: user just created/joined their FIRST group
+                    // (count went 0 -> 1+) in this same session, independent
+                    // of login. Re-play the 6-step flow once for that.
+                    } else if let previous = previousGroupCount,
+                              previous == 0,
+                              newGroupCount > 0 {
+
+                        OnboardingCoachMarkManager.shared.reset(flowID: "home_v2_with_group")
+                        showAll(hasGroups: true)
                     }
+
+                    previousGroupCount = newGroupCount
                 }
             } else {
                 self.btnEdit.isHidden = true
@@ -602,7 +635,7 @@ extension HomeViewController {
     
     @IBAction func editGroupTapped(_ sender:UIButton) {
         if selected == nil {
-            return 
+            return
         }
         self.editGroupTappedfunc(self.selected!.toJSON())
     }
