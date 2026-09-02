@@ -204,6 +204,15 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        if dataArray?.count == 1 {
+            showAll(true)
+        } else {
+            showAll(false)
+        }
+        
+    }
+    
+    func showAll(_ bo:Bool) {
         guard let tabBar = tripsTabBarController else {
             return
         }
@@ -271,7 +280,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 }),
                 illustration: UIImage(named: "imgChat2"),
                 title: "Chat with people & groups",
-                description: "Message your matches  or chat into a group chat with fellow travelers.",
+                description: "Message your group chat and matched groups.",
                 tooltipPosition: .above,
                 tabIndex: 3
             ),
