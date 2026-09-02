@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,
+                 initial-scale=1.0,
+                 maximum-scale=1.0,
+                 user-scalable=no"
+    >
+
+    <meta name="theme-color" content="#0D0B0A">
+
+    <title>Trips — Legal</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            background: #0D0B0A;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 50% -10%,
+                    rgba(255, 91, 0, 0.20) 0%,
+                    rgba(255, 48, 79, 0.08) 25%,
+                    rgba(13, 11, 10, 0) 55%
+                ),
+                #0D0B0A;
+
+            color: #FFFFFF;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "SF Pro Display",
+                "SF Pro Text",
+                Helvetica,
+                Arial,
+                sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 680px;
+
+            margin: 0 auto;
+
+            padding:
+                32px
+                20px
+                50px;
+        }
+
+        /* --------------------------------
+           HEADER
+        -------------------------------- */
+
+        .header {
+            text-align: center;
+
+            padding-top: 10px;
+            padding-bottom: 34px;
+        }
+
+        .logo {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            width: 52px;
+            height: 52px;
+
+            border-radius: 16px;
+
+            background: #090909;
+
+            border: 1px solid rgba(255,255,255,0.10);
+
+            box-shadow:
+                0 10px 35px rgba(0,0,0,0.35),
+                0 0 30px rgba(255,91,0,0.08);
+
+            margin-bottom: 22px;
+        }
+
+        .logo span {
+            font-size: 17px;
+            font-weight: 800;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #FF6A00,
+                    #FF304F
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        h1 {
+            margin: 0;
+
+            font-size: 38px;
+            line-height: 1.08;
+
+            letter-spacing: -1.4px;
+
+            font-weight: 750;
+        }
+
+        .gradient {
+            background:
+                linear-gradient(
+                    90deg,
+                    #FF6A00,
+                    #FF304F
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        .intro {
+            margin: 13px auto 0;
+
+            max-width: 420px;
+
+            font-size: 16px;
+            line-height: 1.5;
+
+            color: #A9A5A3;
+        }
+
+        /* --------------------------------
+           SECTION
+        -------------------------------- */
+
+        .section-title {
+            margin: 26px 4px 12px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+
+            color: #77716E;
+        }
+
+        /* --------------------------------
+           CARDS
+        -------------------------------- */
+
+        .card {
+            position: relative;
+
+            display: block;
+
+            width: 100%;
+
+            margin-bottom: 12px;
+
+            padding: 18px;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,0.065),
+                    rgba(255,255,255,0.035)
+                );
+
+            border: 1px solid rgba(255,255,255,0.075);
+
+            text-decoration: none;
+            color: #FFFFFF;
+
+            overflow: hidden;
+
+            transition:
+                transform 0.15s ease,
+                background 0.15s ease,
+                border-color 0.15s ease;
+        }
+
+        .card::before {
+            content: "";
+
+            position: absolute;
+
+            width: 120px;
+            height: 120px;
+
+            top: -70px;
+            left: -50px;
+
+            background:
+                radial-gradient(
+                    circle,
+                    rgba(255,106,0,0.15),
+                    transparent 70%
+                );
+
+            pointer-events: none;
+        }
+
+        .card:active {
+            transform: scale(0.985);
+
+            background:
+                rgba(255,255,255,0.08);
+
+            border-color:
+                rgba(255,106,0,0.25);
+        }
+
+        .card-content {
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+        .icon {
+            flex: 0 0 auto;
+
+            width: 46px;
+            height: 46px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,106,0,0.18),
+                    rgba(255,48,79,0.12)
+                );
+
+            border: 1px solid
+                rgba(255,106,0,0.16);
+
+            font-size: 20px;
+        }
+
+        .text {
+            flex: 1;
+
+            min-width: 0;
+        }
+
+        .title {
+            font-size: 17px;
+
+            font-weight: 650;
+
+            letter-spacing: -0.2px;
+
+            margin-bottom: 4px;
+        }
+
+        .description {
+            font-size: 14px;
+
+            line-height: 1.4;
+
+            color: #8E8987;
+        }
+
+        .arrow {
+            flex: 0 0 auto;
+
+            color: #6F6A68;
+
+            font-size: 23px;
+            font-weight: 300;
+
+            margin-left: 5px;
+        }
+
+        /* --------------------------------
+           SUBSCRIPTION BOX
+        -------------------------------- */
+
+        .subscription {
+            margin-top: 28px;
+
+            padding: 20px;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(255,106,0,0.10),
+                    rgba(255,48,79,0.055)
+                );
+
+            border: 1px solid
+                rgba(255,106,0,0.14);
+        }
+
+        .subscription-header {
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            margin-bottom: 12px;
+        }
+
+        .subscription-icon {
+            width: 34px;
+            height: 34px;
+
+            border-radius: 10px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #FF6A00,
+                    #FF304F
+                );
+
+            font-size: 16px;
+        }
+
+        .subscription-title {
+            font-size: 17px;
+            font-weight: 650;
+        }
+
+        .subscription p {
+            margin: 7px 0;
+
+            color: #AAA5A2;
+
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        /* --------------------------------
+           FOOTER
+        -------------------------------- */
+
+        .footer {
+            text-align: center;
+
+            margin-top: 42px;
+        }
+
+        .footer-brand {
+            font-size: 14px;
+
+            font-weight: 700;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #FF6A00,
+                    #FF304F
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        .footer-text {
+            margin-top: 7px;
+
+            font-size: 12px;
+
+            color: #55514F;
+        }
+
+        /* --------------------------------
+           LIGHT MODE
+        -------------------------------- */
+
+        @media (prefers-color-scheme: light) {
+
+            html {
+                background: #F7F5F3;
+            }
+
+            body {
+                background:
+                    radial-gradient(
+                        circle at 50% -10%,
+                        rgba(255,106,0,0.12),
+                        transparent 55%
+                    ),
+                    #F7F5F3;
+
+                color: #151312;
+            }
+
+            .logo {
+                background: #FFFFFF;
+                border-color: rgba(0,0,0,0.08);
+            }
+
+            .intro {
+                color: #716D6A;
+            }
+
+            .section-title {
+                color: #918B87;
+            }
+
+            .card {
+                background: rgba(255,255,255,0.80);
+
+                border-color:
+                    rgba(0,0,0,0.07);
+
+                box-shadow:
+                    0 8px 30px rgba(0,0,0,0.04);
+            }
+
+            .card:active {
+                background: #FFFFFF;
+            }
+
+            .description {
+                color: #77716E;
+            }
+
+            .arrow {
+                color: #A29D99;
+            }
+
+            .subscription {
+                background:
+                    linear-gradient(
+                        135deg,
+                        rgba(255,106,0,0.07),
+                        rgba(255,48,79,0.04)
+                    );
+
+                border-color:
+                    rgba(255,106,0,0.12);
+            }
+
+            .subscription p {
+                color: #706B68;
+            }
+
+            .footer-text {
+                color: #96908C;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="logo">
+            <span>Trips</span>
+        </div>
+
+        <h1>
+            Travel <span class="gradient">with confidence.</span>
+        </h1>
+
+        <div class="intro">
+            Everything you need to know about your privacy,
+            terms, and Trips subscriptions.
+        </div>
+
+    </header>
+
+
+    <!-- DOCUMENTS -->
+
+    <div class="section-title">
+        Your information
+    </div>
+
+    <a
+        class="card"
+        href="https://tripsapp.io/privacy"
+        target="_blank"
+    >
+
+        <div class="card-content">
+
+            <div class="icon">
+                🔒
+            </div>
+
+            <div class="text">
+
+                <div class="title">
+                    Privacy Policy
+                </div>
+
+                <div class="description">
+                    How Trips collects, uses, and protects
+                    your personal information.
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </div>
+
+    </a>
+
+
+    <!-- TERMS -->
+
+    <div class="section-title">
+        Terms & agreements
+    </div>
+
+    <a
+        class="card"
+        href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+        target="_blank"
+    >
+
+        <div class="card-content">
+
+            <div class="icon">
+                ✦
+            </div>
+
+            <div class="text">
+
+                <div class="title">
+                    Terms of Use
+                </div>
+
+                <div class="description">
+                    Apple Standard Terms of Use (EULA)
+                    for your Trips subscription.
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </div>
+
+    </a>
+
+
+    <!-- SUBSCRIPTIONS -->
+
+    <div class="subscription">
+
+        <div class="subscription-header">
+
+            <div class="subscription-icon">
+                ✦
+            </div>
+
+            <div class="subscription-title">
+                Subscriptions
+            </div>
+
+        </div>
+
+        <p>
+            Trips offers auto-renewable subscriptions.
+            Payment is charged to your Apple ID account
+            when you confirm your purchase.
+        </p>
+
+        <p>
+            Your subscription automatically renews unless
+            auto-renewal is turned off at least 24 hours
+            before the end of the current subscription period.
+        </p>
+
+        <p>
+            You can manage or cancel your subscription
+            through your Apple ID account settings.
+        </p>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+        <div class="footer-brand">
+            Trips
+        </div>
+
+        <div class="footer-text">
+            Travel together. Make memories.
+        </div>
+
+    </footer>
+
+</div>
+
+</body>
+</html>

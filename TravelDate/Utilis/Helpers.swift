@@ -1252,3 +1252,122 @@ class DesignableLabel: UILabel {
     }
 
 }
+
+
+
+
+class CustomTextField: UIView {
+
+     let textField = UITextField()
+    private let iconView = UIImageView()
+    private let eyeButton = UIButton()
+
+    var text: String? {
+        return textField.text
+    }
+
+    init(placeholder: String, icon: String, isSecure: Bool = false) {
+        super.init(frame: .zero)
+
+        backgroundColor = UIColor.white.withAlphaComponent(0.06)
+        layer.cornerRadius = 25
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.clear.cgColor   // 👈 default no border
+
+        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        iconView.image = UIImage(systemName: icon, withConfiguration: config)
+        iconView.tintColor = .lightGray
+        iconView.contentMode = .scaleAspectFit
+
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.6)]
+        )
+        textField.textColor = .white
+        textField.setFont(.regular, size: 12)
+        textField.isSecureTextEntry = isSecure
+
+        addSubview(iconView)
+        addSubview(textField)
+
+        // 👇 Track text changes
+        textField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+
+        if isSecure {
+            let eyeConfig = UIImage.SymbolConfiguration(pointSize: 18)
+            eyeButton.setImage(UIImage(systemName: "eye", withConfiguration: eyeConfig), for: .normal)
+            eyeButton.tintColor = .lightGray
+            eyeButton.addTarget(self, action: #selector(togglePassword), for: .touchUpInside)
+            addSubview(eyeButton)
+        }
+
+        layoutUI(isSecure: isSecure)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    // MARK: - Border change logic
+    @objc private func textDidChange() {
+        if let text = textField.text, !text.isEmpty {
+            layer.borderColor = UIColor.orange.cgColor
+        } else {
+            layer.borderColor = UIColor.clear.cgColor
+        }
+    }
+
+    private func layoutUI(isSecure: Bool) {
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        eyeButton.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 18),
+            iconView.heightAnchor.constraint(equalToConstant: 18),
+
+            textField.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
+            textField.centerYAnchor.constraint(equalTo: centerYAnchor),
+            textField.trailingAnchor.constraint(equalTo: isSecure ? eyeButton.leadingAnchor : trailingAnchor, constant: -14),
+        ])
+
+        if isSecure {
+            NSLayoutConstraint.activate([
+                eyeButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+                eyeButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+                eyeButton.widthAnchor.constraint(equalToConstant: 22),
+                eyeButton.heightAnchor.constraint(equalToConstant: 22)
+            ])
+        }
+    }
+
+    @objc private func togglePassword() {
+        textField.isSecureTextEntry.toggle()
+        let iconName = textField.isSecureTextEntry ? "eye" : "eye.slash"
+        eyeButton.setImage(UIImage(systemName: iconName), for: .normal)
+    }
+}
+class CustomButton: UIButton {
+
+    init(title: String, filled: Bool, hasIcon: Bool = false) {
+        super.init(frame: .zero)
+
+        setTitle(title, for: .normal)
+        layer.cornerRadius = 27
+
+        if filled {
+            backgroundColor = UIColor.themeOrange
+        } else {
+            layer.borderWidth = 1
+            layer.borderColor = UIColor.white.cgColor
+        }
+
+        if hasIcon {
+            setImage(UIImage(systemName: "g.circle.fill"), for: .normal)
+            tintColor = .white
+            imageEdgeInsets = UIEdgeInsets(top: 0, left: -8, bottom: 0, right: 0)
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+}

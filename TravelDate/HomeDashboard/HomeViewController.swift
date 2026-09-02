@@ -67,7 +67,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-       
+        
         setupPullToRefresh()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
         
@@ -613,97 +613,7 @@ extension HomeViewController {
     
     // MARK: - App Tutorial
 
-    private func startTripsAppTutorial() {
-
-        guard let tabBar = tripsTabBarController else {
-            return
-        }
-
-        guard
-            let tripsButton = tabBar.groupsTabButton,
-            let discoverButton = tabBar.discoverTabButton,
-            let matchesButton = tabBar.chatTabButton,
-            let profileButton = tabBar.profileTabButton
-        else {
-            return
-        }
-
-//        let steps: [TutorialStep] = [
-//
-//            // 1. Welcome
-//            TutorialStep(
-//                title: "Welcome to TravelDate 👋",
-//                message: "Create trips, discover travelers, connect with matches and manage your profile.",
-//                customFrame: CGRect(
-//                    x: 20,
-//                    y: 180,
-//                    width: view.bounds.width - 40,
-//                    height: 120
-//                )
-//            ),
-//
-//            // 2. Trips
-//            TutorialStep(
-//                title: "Create Your Trip ✈️",
-//                message: "Create and manage your trips by adding your destination, dates and travel preferences.",
-//                targetView: tripsButton
-//            ),
-//
-//            // 3. Discover
-//            TutorialStep(
-//                title: "Discover Travelers 🔎",
-//                message: "Find travelers and groups that match your travel style.",
-//                targetView: discoverButton
-//            ),
-//
-//            // 4. Matches
-//            TutorialStep(
-//                title: "Matches & Chat 💬",
-//                message: "See your new matches, active conversations and saved groups here.",
-//                targetView: matchesButton
-//            ),
-//
-//            // 5. Profile
-//            TutorialStep(
-//                title: "Your Profile 👤",
-//                message: "Update your profile, travel styles, about information and preferences.",
-//                targetView: profileButton
-//            )
-//        ]
-        
-        let steps: [TutorialStep] = [
-
-            TutorialStep(
-                title: "Create Your Trip ✈️",
-                message: "Create and manage your trips here.",
-                targetView: tripsButton
-            ),
-
-            TutorialStep(
-                title: "Discover Travelers 🔎",
-                message: "Find travelers who match your travel style.",
-                targetView: discoverButton
-            ),
-
-            TutorialStep(
-                title: "Matches & Chat 💬",
-                message: "See your new matches, conversations and saved groups here.",
-                targetView: matchesButton
-            ),
-
-            TutorialStep(
-                title: "Your Profile 👤",
-                message: "Update your profile and travel preferences here.",
-                targetView: profileButton
-            )
-        ]
-
-        TutorialManager.shared.start(
-            from: self,
-            steps: steps,
-            userId: User.curentUser?.id ?? ""
-        )
-    }
+    
     
 }
 

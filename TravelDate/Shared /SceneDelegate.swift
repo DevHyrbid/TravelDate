@@ -21,6 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
+            print(User.currentUserExists)
             if User.currentUserExists {
                 let vc = TripsTabBarController()
                 let nav = UINavigationController(rootViewController: vc)

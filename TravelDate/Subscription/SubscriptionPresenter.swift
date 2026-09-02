@@ -402,6 +402,7 @@ final class SubscriptionPresenter {
         isSubscribed: Bool
     ) {
 
+        
         print("📡 SYNC BACKEND")
         print("Plan:", plan)
         print("Subscribed:", isSubscribed)

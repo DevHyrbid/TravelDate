@@ -1,5 +1,9 @@
 import UIKit
 import SwiftUI
+import GoogleSignIn
+import AuthenticationServices
+var tuple: (title: String, lat: Double, lng: Double)?
+
 
 extension Font {
     static func appFont(_ name: String, size: CGFloat) -> Font {
@@ -13,138 +17,6 @@ extension Color {
 }
 
 
-class CustomTextField: UIView {
-
-     let textField = UITextField()
-    private let iconView = UIImageView()
-    private let eyeButton = UIButton()
-
-    var text: String? {
-        return textField.text
-    }
-
-    init(placeholder: String, icon: String, isSecure: Bool = false) {
-        super.init(frame: .zero)
-
-        backgroundColor = UIColor.white.withAlphaComponent(0.06)
-        layer.cornerRadius = 25
-        layer.borderWidth = 1
-        layer.borderColor = UIColor.clear.cgColor   // 👈 default no border
-
-        let config = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
-        iconView.image = UIImage(systemName: icon, withConfiguration: config)
-        iconView.tintColor = .lightGray
-        iconView.contentMode = .scaleAspectFit
-
-        textField.attributedPlaceholder = NSAttributedString(
-            string: placeholder,
-            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.6)]
-        )
-        textField.textColor = .white
-        textField.setFont(.regular, size: 12)
-        textField.isSecureTextEntry = isSecure
-
-        addSubview(iconView)
-        addSubview(textField)
-
-        // 👇 Track text changes
-        textField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
-
-        if isSecure {
-            let eyeConfig = UIImage.SymbolConfiguration(pointSize: 18)
-            eyeButton.setImage(UIImage(systemName: "eye", withConfiguration: eyeConfig), for: .normal)
-            eyeButton.tintColor = .lightGray
-            eyeButton.addTarget(self, action: #selector(togglePassword), for: .touchUpInside)
-            addSubview(eyeButton)
-        }
-
-        layoutUI(isSecure: isSecure)
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    // MARK: - Border change logic
-    @objc private func textDidChange() {
-        if let text = textField.text, !text.isEmpty {
-            layer.borderColor = UIColor.orange.cgColor
-        } else {
-            layer.borderColor = UIColor.clear.cgColor
-        }
-    }
-
-    private func layoutUI(isSecure: Bool) {
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        eyeButton.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
-            iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 18),
-            iconView.heightAnchor.constraint(equalToConstant: 18),
-
-            textField.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
-            textField.centerYAnchor.constraint(equalTo: centerYAnchor),
-            textField.trailingAnchor.constraint(equalTo: isSecure ? eyeButton.leadingAnchor : trailingAnchor, constant: -14),
-        ])
-
-        if isSecure {
-            NSLayoutConstraint.activate([
-                eyeButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
-                eyeButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-                eyeButton.widthAnchor.constraint(equalToConstant: 22),
-                eyeButton.heightAnchor.constraint(equalToConstant: 22)
-            ])
-        }
-    }
-
-    @objc private func togglePassword() {
-        textField.isSecureTextEntry.toggle()
-        let iconName = textField.isSecureTextEntry ? "eye" : "eye.slash"
-        eyeButton.setImage(UIImage(systemName: iconName), for: .normal)
-    }
-}
-class CustomButton: UIButton {
-
-    init(title: String, filled: Bool, hasIcon: Bool = false) {
-        super.init(frame: .zero)
-
-        setTitle(title, for: .normal)
-        layer.cornerRadius = 27
-
-        if filled {
-            backgroundColor = UIColor.themeOrange
-        } else {
-            layer.borderWidth = 1
-            layer.borderColor = UIColor.white.cgColor
-        }
-
-        if hasIcon {
-            setImage(UIImage(systemName: "g.circle.fill"), for: .normal)
-            tintColor = .white
-            imageEdgeInsets = UIEdgeInsets(top: 0, left: -8, bottom: 0, right: 0)
-        }
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-}
-
-
-
-var tuple: (title: String, lat: Double, lng: Double)?
-
-//
-//  LoginVc.swift
-//  TravelDate
-//
-//  Created by Dev CodingZone on 02/04/26.
-//  Fixed: scroll + keyboard avoidance, confirm password field + validation
-//
-
-
-import UIKit
-import GoogleSignIn
-import AuthenticationServices
 
 class SignUpViewController: BaseClassVc {
 
@@ -232,8 +104,48 @@ class SignUpViewController: BaseClassVc {
         return label
     }()
 
+
+    
+    private let termsCheckBox: UIButton = {
+        let button = UIButton(type: .custom)
+
+        button.layer.cornerRadius = 5
+        button.layer.borderWidth = 1.5
+        button.layer.borderColor = UIColor.white.withAlphaComponent(0.45).cgColor
+        button.backgroundColor = .clear
+
+        button.setTitle("✓", for: .selected)
+        button.setTitleColor(.white, for: .selected)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+
+        button.isSelected = false
+
+        return button
+    }()
+    
+    private let termsLabel: UILabel = {
+        let label = UILabel()
+        
+        let fullText = "I agree to the Terms of Use and EULA"
+        let attributed = NSMutableAttributedString(string: fullText)
+        
+        attributed.addAttribute(
+            .foregroundColor,
+            value: UIColor.appOrange,
+            range: NSRange(location: 0, length: fullText.count)
+        )
+        
+        label.attributedText = attributed
+        label.setFont(.regular, size: 13)
+        label.numberOfLines = 0
+        label.isUserInteractionEnabled = true
+        label.textAlignment = .left
+        
+        return label
+    }()
     var locationView: LocationSearchView!
 
+    
     // Track bottom-most active field for keyboard scroll math
     private weak var activeTextField: UITextField?
 
@@ -252,8 +164,16 @@ class SignUpViewController: BaseClassVc {
         setupKeyboardHandling()
         setupDismissKeyboardOnTap()
         registerActiveFieldTracking()
+        termsCheckBox.addTarget(
+            self,
+            action: #selector(handleTermsCheckbox),
+            for: .touchUpInside
+        )
     }
 
+    @objc private func handleTermsCheckbox() {
+        termsCheckBox.isSelected.toggle()
+    }
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
@@ -357,6 +277,9 @@ class SignUpViewController: BaseClassVc {
         if password.count < 6 { return "Password must be at least 6 characters" }
         if confirmPassword.isEmpty { return "Please confirm your password" }
         if password != confirmPassword { return "Passwords do not match" }
+        if !termsCheckBox.isSelected {
+            return "Please accept the Terms of Use and EULA"
+        }
         return nil
     }
 
@@ -488,6 +411,8 @@ class SignUpViewController: BaseClassVc {
             passwordTitle, passwordField,
             confirmPasswordTitle, confirmPasswordField,
             errorLabel,
+            termsCheckBox,
+            termsLabel,
             loginButton, googleButton, appleButton,
             signupLabel
         ].forEach {
@@ -497,10 +422,25 @@ class SignUpViewController: BaseClassVc {
 
         titleBox.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        let termsTap = UITapGestureRecognizer(
+            target: self,
+            action: #selector(handleTermsTap)
+        )
 
+        termsLabel.addGestureRecognizer(termsTap)
         layout()
     }
 
+    @objc private func handleTermsTap() {
+        let legalVC = LegalViewController()
+        
+        let nav = UINavigationController(
+            rootViewController: legalVC
+        )
+        
+        present(nav, animated: true)
+    }
+    
     private func layout() {
         NSLayoutConstraint.activate([
 
@@ -559,11 +499,20 @@ class SignUpViewController: BaseClassVc {
             errorLabel.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             errorLabel.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
 
-            loginButton.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 14),
+            termsCheckBox.topAnchor.constraint(equalTo: errorLabel.bottomAnchor, constant: 14),
+            termsCheckBox.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
+            termsCheckBox.widthAnchor.constraint(equalToConstant: 20),
+            termsCheckBox.heightAnchor.constraint(equalToConstant: 20),
+
+            termsLabel.centerYAnchor.constraint(equalTo: termsCheckBox.centerYAnchor),
+            termsLabel.leadingAnchor.constraint(equalTo: termsCheckBox.trailingAnchor, constant: 8),
+            termsLabel.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
+
+            loginButton.topAnchor.constraint(equalTo: termsLabel.bottomAnchor, constant: 20),
             loginButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             loginButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
             loginButton.heightAnchor.constraint(equalToConstant: 50),
-
+            
             googleButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 14),
             googleButton.leadingAnchor.constraint(equalTo: emailField.leadingAnchor),
             googleButton.trailingAnchor.constraint(equalTo: emailField.trailingAnchor),
@@ -579,6 +528,8 @@ class SignUpViewController: BaseClassVc {
             signupLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
         ])
     }
+    
+    
 }
 
 extension SignUpViewController: ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {

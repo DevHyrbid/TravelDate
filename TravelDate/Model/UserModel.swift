@@ -609,7 +609,7 @@ class User : Mappable {
     }
     
     func getProfile(callBack:((_ loginUser:User?,_ errMsg:String,_ errCode:Int)->Void)!) {
-        
+        /*
         
         NetworkManger.sendRequestAF(urlPath: APiConstant.profile, type: .get, parms: [:]) { responseObject, suces in
             print(responseObject)
@@ -627,7 +627,7 @@ class User : Mappable {
         } faliure: { errMsg, errCode in
             callBack(nil,errMsg, errCode)
         }
-        
+        */
     }
     
     func directChat(callBack:((_ model:ChatRoomModel?,_ errMsg:String,_ errCode:Int)->Void)!) {

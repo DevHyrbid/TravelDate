@@ -19,9 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        subscriptionPresenter = SubscriptionPresenter(view: nil)
-
-         subscriptionPresenter?.load()
+        
+        if User.currentUserExists {
+            subscriptionPresenter = SubscriptionPresenter(view: nil)
+            
+            subscriptionPresenter?.load()
+        }
         IQKeyboardManager.shared.isEnabled = true
             
               // Show toolbar above keyboard

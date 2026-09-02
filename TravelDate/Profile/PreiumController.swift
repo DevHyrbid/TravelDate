@@ -12,6 +12,7 @@ enum SubscriptionType {
 import UIKit
 class PreiumController: BaseClassVc,SubscriptionView {
     
+    // MARK: - IBoutlet
     @IBOutlet weak var lblWeek:UILabel!
     @IBOutlet weak var lblMonth:UILabel!
     @IBOutlet weak var lblYear:UILabel!
@@ -20,6 +21,7 @@ class PreiumController: BaseClassVc,SubscriptionView {
     @IBOutlet weak var vwYear:UIView!
     @IBOutlet weak var btnContinue:UIButton!
     
+    // MARK: - Properties
     var selectedPlan: SubscriptionType = .weekly
     lazy var presenter = SubscriptionPresenter(view: self)
     
@@ -163,19 +165,6 @@ extension PreiumController {
     
     @IBAction func btnContinue(_ sender: UIButton) {
             presenter.purchaseSelectedPlan()
-        
-//        switch selectedPlan {
-//
-//        case .weekly:
-//            print("Subscribe Weekly")
-//
-//        case .monthly:
-//            print("Subscribe Monthly")
-//
-//        case .yearly:
-//            print("Subscribe Yearly")
-//        }
-        
     }
 }
 
@@ -282,3 +271,15 @@ extension PreiumController {
     
 }
 
+
+extension PreiumController {
+    @IBAction func btnLegalTapped(_ sender:UIButton) {
+        let legalVC = LegalViewController()
+
+        let nav = UINavigationController(
+            rootViewController: legalVC
+        )
+
+        present(nav, animated: true)
+    }
+}

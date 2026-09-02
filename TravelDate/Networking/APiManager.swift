@@ -51,7 +51,7 @@ class NetworkManger {
             guard let httpResponse = response as? HTTPURLResponse else {
                     return
                 }
-
+            print(httpResponse,url,"hehreFROM")
                 if httpResponse.statusCode == 401 {
                     SessionManager.shared.handleSessionExpired()
                     return 
