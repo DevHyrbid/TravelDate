@@ -326,6 +326,8 @@ class SignUpViewController: BaseClassVc {
                 )
 
                 UserDefaults.standard.set(self.locationField.text, forKey: "user_loc")
+                AppData.shared.justAuthenticated = true
+
                 self.pushVC(TripsTabBarController.self, from: .Home)
             } else {
                 // self.showAlert(errMsg)
@@ -358,6 +360,8 @@ class SignUpViewController: BaseClassVc {
             self.request.socialLogin { loginUser, errMsg, errCode in
                 if errCode == 200 {
                     DispatchQueue.main.async {
+                        AppData.shared.justAuthenticated = true
+
                         self.pushVC(TripsTabBarController.self, from: .Home)
                     }
                 } else {
@@ -572,6 +576,8 @@ extension SignUpViewController: ASAuthorizationControllerDelegate, ASAuthorizati
             self.request.socialLogin { loginUser, errMsg, errCode in
                 if errCode == 200 {
                     DispatchQueue.main.async {
+                        AppData.shared.justAuthenticated = true
+
                         self.pushVC(TripsTabBarController.self, from: .Home)
                     }
                 } else {

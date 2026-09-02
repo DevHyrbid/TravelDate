@@ -153,6 +153,8 @@ class LoginViewController: BaseClassVc {
             self.request.socialLogin { loginUser, errMsg, errCode in
                 if errCode == 200 {
                     DispatchQueue.main.async {
+                        AppData.shared.justAuthenticated = true
+
                         self.pushVC(TripsTabBarController.self, from: .Home)
                         
                     }
@@ -208,6 +210,8 @@ class LoginViewController: BaseClassVc {
             
             if errCode == 200 {
                 DispatchQueue.main.async {
+                    AppData.shared.justAuthenticated = true
+
                     self.pushVC(TripsTabBarController.self, from: .Home)
                     
                 }
@@ -375,6 +379,8 @@ extension LoginViewController: ASAuthorizationControllerDelegate, ASAuthorizatio
             self.request.socialLogin { loginUser, errMsg, errCode in
                 if errCode == 200 {
                     DispatchQueue.main.async {
+                        AppData.shared.justAuthenticated = true
+
                         self.pushVC(TripsTabBarController.self, from: .Home)
                         
                     }

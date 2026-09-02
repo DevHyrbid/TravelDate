@@ -41,9 +41,9 @@ final class OnboardingCoachMarkManager: NSObject {
             return
         }
 
-//        if !force && OnboardingSeenStore.hasSeen(flowID) {
-//            return
-//        }
+        if !force && OnboardingSeenStore.hasSeen(flowID) {
+            return
+        }
 
         self.flowID = flowID
         self.steps = steps

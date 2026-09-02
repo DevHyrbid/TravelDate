@@ -54,6 +54,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     // MARK: - Properties
     var timer: Timer?
+    private var hasTriggeredOnboarding = false
     var targetDate: Date?
     var data: GroupsData? = nil
     var dataArray: [Group]? = nil
@@ -204,27 +205,19 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if dataArray?.count == 1 {
-            showAll(true)
-        } else {
-            showAll(false)
-        }
-        
     }
-    
-    func showAll(_ bo:Bool) {
+
+    func showAll(hasGroups: Bool) {
         guard let tabBar = tripsTabBarController else {
             return
         }
-        
-        
-        // Force tab bar visible + stop auto-hide while onboarding runs
+
         tabBar.showTabBar()
         tabBarHideTimer?.invalidate()
-        
-        let steps: [OnboardingStep] = [
-            
-            // 1. Create Your Trip
+
+        var steps: [OnboardingStep] = [
+
+            // 1. Create Your Group
             OnboardingStep(
                 style: .spotlight(target: { [weak self] in
                     self?.btnCreateGroup
@@ -232,21 +225,31 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 illustration: UIImage(named: "onboard_create_trip"),
                 title: "Create or join your group",
                 description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
-                tooltipPosition: .above,    scrollView: self.scrollVw
-            ),
-            OnboardingStep(
-                style: .spotlight(target: { [weak self] in
-                    self?.btnList
-                }),
-                illustration: UIImage(named: "imgGroup"),
-                title: "See all your groups",
-                description: "Tap here to view and switch between all your groups.",
                 tooltipPosition: .above,
-                tabIndex: 1
-            ),
-            
-            
-            // 2. New Matches & Saved Groups
+                scrollView: self.scrollVw
+            )
+        ]
+
+        // Sirf tab dikhao jab kam se kam ek group ho — warna btnList
+        // hidden hi hota hai (getGroups() mein), spotlight galat jagah dikhega
+        if hasGroups {
+            steps.append(
+                OnboardingStep(
+                    style: .spotlight(target: { [weak self] in
+                        self?.btnList
+                    }),
+                    illustration: UIImage(named: "imgGroup"),
+                    title: "See all your groups",
+                    description: "Tap here to view and switch between all your groups.",
+                    tooltipPosition: .above,
+                    tabIndex: 1
+                )
+            )
+        }
+
+        steps.append(contentsOf: [
+
+            // New Matches & Saved Groups
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.groupsTabButton
@@ -257,12 +260,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 tooltipPosition: .above,
                 tabIndex: 1
             ),
-            
-            // 3. Match With People
+
+            // Match With People
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.discoverTabButton
-                    
                 }),
                 illustration: UIImage(named: "imgMatch"),
                 title: "Match with people who travel like you",
@@ -271,12 +273,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 tabIndex: 2
             ),
 
-            
-            // 4. Chat
+            // Chat
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.chatTabButton
-                    
                 }),
                 illustration: UIImage(named: "imgChat2"),
                 title: "Chat with people & groups",
@@ -284,8 +284,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 tooltipPosition: .above,
                 tabIndex: 3
             ),
-            
-            // 5. Profile
+
+            // Profile
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.profileTabButton
@@ -297,11 +297,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 action: .done,
                 tabIndex: 4
             )
-        ]
-        
-        
+        ])
+
+        let flowID = hasGroups ? "home_v2_with_group" : "home_v2_no_group"
+
         OnboardingCoachMarkManager.shared.start(
-            flowID: "home_v2",
+            flowID: flowID,
             steps: steps,
             in: self.view.window ?? self.view
         )
@@ -493,6 +494,16 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         self.height.constant = 100
                     }
                     
+                    self.view.layoutIfNeeded()
+                    
+                    if !hasTriggeredOnboarding && AppData.shared.justAuthenticated {
+                        hasTriggeredOnboarding = true
+                        AppData.shared.justAuthenticated = false
+                        OnboardingCoachMarkManager.shared.reset(flowID: "home_v2_no_group")
+                        OnboardingCoachMarkManager.shared.reset(flowID: "home_v2_with_group")
+                        
+                        showAll(hasGroups: !(self.dataArray?.isEmpty ?? true))
+                    }
                 }
             } else {
                 self.btnEdit.isHidden = true
@@ -740,4 +751,5 @@ final class AppData {
 
     var latitude: Double?
     var longitude: Double?
+    var justAuthenticated = false
 }
