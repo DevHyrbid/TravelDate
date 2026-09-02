@@ -131,7 +131,7 @@ class SignUpViewController: BaseClassVc {
         
         attributed.addAttribute(
             .foregroundColor,
-            value: UIColor.appOrange,
+            value: UIColor.white,
             range: NSRange(location: 0, length: fullText.count)
         )
         
