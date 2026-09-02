@@ -1,4 +1,3 @@
-
 //
 //  OnboardingCardOverlayView.swift
 //  TravelDate Onboarding Coach Marks
@@ -27,6 +26,9 @@ final class OnboardingCardOverlayView: UIView {
 
     private let dimView = UIView()
     private let cardView = UIView()
+    private let glassView = UIVisualEffectView(
+        effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
+    )
 
     private let illustrationView = UIImageView()
     private let titleLabel = UILabel()
@@ -53,19 +55,14 @@ final class OnboardingCardOverlayView: UIView {
         // MARK: Dim
 
         dimView.backgroundColor = UIColor.black
-            .withAlphaComponent(0.55)
+            .withAlphaComponent(0.65)
 
         dimView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(dimView)
 
-        // MARK: Card
+        // MARK: Card (glass)
 
-        cardView.backgroundColor = UIColor(
-            red: 0.08,
-            green: 0.09,
-            blue: 0.22,
-            alpha: 1.0
-        )
+        cardView.backgroundColor = .clear
 
         cardView.layer.cornerRadius = 20
 
@@ -80,6 +77,34 @@ final class OnboardingCardOverlayView: UIView {
 
         cardView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(cardView)
+
+        // Frosted blur base
+        glassView.layer.cornerRadius = 20
+        glassView.clipsToBounds = true
+        glassView.translatesAutoresizingMaskIntoConstraints = false
+        cardView.addSubview(glassView)
+
+        // Solid #151718 base fill on the blur — clean dark glass,
+        // matching the native-style dialog reference.
+        glassView.contentView.backgroundColor =
+            UIColor(
+                red: CGFloat(0x15) / 255.0,
+                green: CGFloat(0x17) / 255.0,
+                blue: CGFloat(0x18) / 255.0,
+                alpha: 0.92
+            )
+
+        cardView.layer.borderWidth = 1
+        cardView.layer.borderColor =
+            UIColor.white.withAlphaComponent(0.12).cgColor
+        cardView.clipsToBounds = false
+
+        NSLayoutConstraint.activate([
+            glassView.topAnchor.constraint(equalTo: cardView.topAnchor),
+            glassView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+            glassView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+            glassView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor)
+        ])
 
         // MARK: Illustration
 
@@ -170,7 +195,7 @@ final class OnboardingCardOverlayView: UIView {
         // MARK: Next
 
         nextButton.setTitleColor(
-            .black,
+            .white,
             for: .normal
         )
 
@@ -180,8 +205,19 @@ final class OnboardingCardOverlayView: UIView {
                 weight: .semibold
             )
 
-        nextButton.backgroundColor = .white
         nextButton.layer.cornerRadius = 18
+        nextButton.clipsToBounds = true
+
+        let nextGradient = CAGradientLayer()
+        nextGradient.colors = [
+            UIColor(red: 1.0, green: 0.42, blue: 0.0, alpha: 1.0).cgColor,
+            UIColor(red: 1.0, green: 0.19, blue: 0.31, alpha: 1.0).cgColor
+        ]
+        nextGradient.startPoint = CGPoint(x: 0, y: 0)
+        nextGradient.endPoint = CGPoint(x: 1, y: 1)
+        nextGradient.cornerRadius = 18
+        nextGradient.name = "nextGradient"
+        nextButton.layer.insertSublayer(nextGradient, at: 0)
 
         nextButton.contentEdgeInsets =
             UIEdgeInsets(
@@ -327,6 +363,16 @@ final class OnboardingCardOverlayView: UIView {
         ])
     }
 
+    // MARK: Layout
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        if let nextGradient = nextButton.layer.sublayers?.first(where: { $0.name == "nextGradient" }) {
+            nextGradient.frame = nextButton.bounds
+        }
+    }
+
     // MARK: Configure
 
     func configure(
@@ -375,5 +421,3 @@ final class OnboardingCardOverlayView: UIView {
         delegate?.onboardingCardDidTapSkip(self)
     }
 }
-
-

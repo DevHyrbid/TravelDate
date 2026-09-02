@@ -12,7 +12,13 @@ final class OnboardingSpotlightOverlayView: UIView {
     private let dimLayer = CAShapeLayer()
 
     private let bubbleView = UIView()
+    private let bubbleGlass = UIVisualEffectView(
+        effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
+    )
     private let arrowView = UIView()
+    private let arrowGlass = UIVisualEffectView(
+        effect: UIBlurEffect(style: .systemUltraThinMaterialDark)
+    )
 
     private let illustrationView = UIImageView()
     private let titleLabel = UILabel()
@@ -73,7 +79,7 @@ final class OnboardingSpotlightOverlayView: UIView {
 
         dimLayer.fillRule = .evenOdd
         dimLayer.fillColor = UIColor.black
-            .withAlphaComponent(0.62)
+            .withAlphaComponent(0.65)
             .cgColor
 
         layer.addSublayer(dimLayer)
@@ -82,34 +88,57 @@ final class OnboardingSpotlightOverlayView: UIView {
         // BUBBLE
         // =========================================================
 
-        bubbleView.backgroundColor = UIColor(
-            red: 0.85,
-            green: 0.93,
-            blue: 1.0,
-            alpha: 1.0
-        )
+        bubbleView.backgroundColor = .clear
 
         bubbleView.layer.cornerRadius = bubbleCornerRadius
 
         bubbleView.layer.shadowColor =
             UIColor.black.cgColor
 
-        bubbleView.layer.shadowOpacity = 0.18
-        bubbleView.layer.shadowRadius = 12
+        bubbleView.layer.shadowOpacity = 0.32
+        bubbleView.layer.shadowRadius = 16
 
         bubbleView.layer.shadowOffset =
-            CGSize(width: 0, height: 5)
+            CGSize(width: 0, height: 6)
+
+        bubbleView.layer.borderWidth = 1
+        bubbleView.layer.borderColor =
+            UIColor.white.withAlphaComponent(0.12).cgColor
 
         bubbleView.clipsToBounds = false
 
         addSubview(bubbleView)
 
+        // Frosted glass fill, clipped to the rounded bubble
+        bubbleGlass.layer.cornerRadius = bubbleCornerRadius
+        bubbleGlass.clipsToBounds = true
+        bubbleGlass.translatesAutoresizingMaskIntoConstraints = false
+        bubbleView.insertSubview(bubbleGlass, at: 0)
+
+        NSLayoutConstraint.activate([
+            bubbleGlass.topAnchor.constraint(equalTo: bubbleView.topAnchor),
+            bubbleGlass.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor),
+            bubbleGlass.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor),
+            bubbleGlass.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor)
+        ])
+
+        // Solid #151718 base fill on the blur — clean dark glass,
+        // matching the native-style dialog reference (no brand
+        // color tint here, just a frosted dark card).
+        bubbleGlass.contentView.backgroundColor =
+            UIColor(
+                red: CGFloat(0x15) / 255.0,
+                green: CGFloat(0x17) / 255.0,
+                blue: CGFloat(0x18) / 255.0,
+                alpha: 0.92
+            )
+
         // =========================================================
-        // ARROW
+        // ARROW (matches bubble's glass + tint)
         // =========================================================
 
-        arrowView.backgroundColor =
-            bubbleView.backgroundColor
+        arrowView.backgroundColor = .clear
+        arrowView.clipsToBounds = true
 
         arrowView.layer.shadowColor =
             UIColor.black.cgColor
@@ -119,6 +148,23 @@ final class OnboardingSpotlightOverlayView: UIView {
 
         arrowView.layer.shadowOffset =
             CGSize(width: 0, height: 2)
+
+        arrowGlass.translatesAutoresizingMaskIntoConstraints = false
+        arrowGlass.contentView.backgroundColor =
+            UIColor(
+                red: CGFloat(0x15) / 255.0,
+                green: CGFloat(0x17) / 255.0,
+                blue: CGFloat(0x18) / 255.0,
+                alpha: 0.92
+            )
+        arrowView.addSubview(arrowGlass)
+
+        NSLayoutConstraint.activate([
+            arrowGlass.topAnchor.constraint(equalTo: arrowView.topAnchor),
+            arrowGlass.leadingAnchor.constraint(equalTo: arrowView.leadingAnchor),
+            arrowGlass.trailingAnchor.constraint(equalTo: arrowView.trailingAnchor),
+            arrowGlass.bottomAnchor.constraint(equalTo: arrowView.bottomAnchor)
+        ])
 
         addSubview(arrowView)
 
@@ -141,7 +187,7 @@ final class OnboardingSpotlightOverlayView: UIView {
             weight: .bold
         )
 
-        titleLabel.textColor = .label
+        titleLabel.textColor = .white
 
         titleLabel.numberOfLines = 0
 
@@ -156,7 +202,8 @@ final class OnboardingSpotlightOverlayView: UIView {
             weight: .regular
         )
 
-        descriptionLabel.textColor = .darkGray
+        descriptionLabel.textColor =
+            UIColor.white.withAlphaComponent(0.72)
 
         descriptionLabel.numberOfLines = 0
 
@@ -171,10 +218,8 @@ final class OnboardingSpotlightOverlayView: UIView {
             weight: .medium
         )
 
-        pageLabel.textColor = UIColor(
-            white: 0,
-            alpha: 0.55
-        )
+        pageLabel.textColor =
+            UIColor.white.withAlphaComponent(0.55)
 
         pageLabel.textAlignment = .center
 
@@ -188,7 +233,7 @@ final class OnboardingSpotlightOverlayView: UIView {
         )
 
         skipButton.setTitleColor(
-            UIColor.black.withAlphaComponent(0.55),
+            UIColor.white.withAlphaComponent(0.65),
             for: .normal
         )
 
@@ -214,7 +259,7 @@ final class OnboardingSpotlightOverlayView: UIView {
         )
 
         nextButton.setTitleColor(
-            .black,
+            .white,
             for: .normal
         )
 
@@ -224,9 +269,19 @@ final class OnboardingSpotlightOverlayView: UIView {
                 weight: .semibold
             )
 
-        nextButton.backgroundColor = .white
-
         nextButton.layer.cornerRadius = 18
+        nextButton.clipsToBounds = true
+
+        let nextGradient = CAGradientLayer()
+        nextGradient.colors = [
+            UIColor(red: 1.0, green: 0.42, blue: 0.0, alpha: 1.0).cgColor,
+            UIColor(red: 1.0, green: 0.19, blue: 0.31, alpha: 1.0).cgColor
+        ]
+        nextGradient.startPoint = CGPoint(x: 0, y: 0)
+        nextGradient.endPoint = CGPoint(x: 1, y: 1)
+        nextGradient.cornerRadius = 18
+        nextGradient.name = "nextGradient"
+        nextButton.layer.insertSublayer(nextGradient, at: 0)
 
         nextButton.contentEdgeInsets =
             UIEdgeInsets(
@@ -430,6 +485,10 @@ final class OnboardingSpotlightOverlayView: UIView {
         layoutBubble()
 
         layoutArrow()
+
+        if let nextGradient = nextButton.layer.sublayers?.first(where: { $0.name == "nextGradient" }) {
+            nextGradient.frame = nextButton.bounds
+        }
     }
 
     // MARK: - Spotlight

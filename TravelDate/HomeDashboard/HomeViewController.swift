@@ -221,42 +221,67 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     self?.btnCreateGroup
                 }),
                 illustration: UIImage(named: "onboard_create_trip"),
-                title: "Create your trip",
-                description: "Start your trip in just one tap. Add your destination, dates, and travel preferences to get started.",
+                title: "Create or join your group",
+                description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
                 tooltipPosition: .above,    scrollView: self.scrollVw
             ),
+            OnboardingStep(
+                style: .spotlight(target: { [weak self] in
+                    self?.btnList
+                }),
+                illustration: UIImage(named: "imgGroup"),
+                title: "See all your groups",
+                description: "Tap here to view and switch between all your groups.",
+                tooltipPosition: .above,
+                tabIndex: 1
+            ),
             
-            // 2. Match With People
+            
+            // 2. New Matches & Saved Groups
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
-                    //                            tabBar?.discoverTabButton
-                    self.btnList
+                    tabBar?.groupsTabButton
                 }),
-                illustration: UIImage(named: "onboard_match_people"),
+                illustration: UIImage(named: "imgGroup"),
+                title: "New matches & saved groups",
+                description: "See your new matches and saved groups here.",
+                tooltipPosition: .above,
+                tabIndex: 1
+            ),
+            
+            // 3. Match With People
+            OnboardingStep(
+                style: .spotlight(target: { [weak tabBar] in
+                    tabBar?.discoverTabButton
+                    
+                }),
+                illustration: UIImage(named: "imgMatch"),
                 title: "Match with people who travel like you",
                 description: "Discover travelers and groups that match your travel style and interests.",
                 tooltipPosition: .above,
                 tabIndex: 2
             ),
+
             
-            // 3. New Matches & Saved Groups
+            // 4. Chat
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.chatTabButton
+                    
                 }),
-                illustration: UIImage(named: "onboard_matches"),
-                title: "New matches & saved groups",
-                description: "See your new matches, conversations and saved groups here.",
+                illustration: UIImage(named: "imgChat2"),
+                title: "Chat with people & groups",
+                description: "Message your matches  or chat into a group chat with fellow travelers.",
                 tooltipPosition: .above,
                 tabIndex: 3
             ),
             
-            // 4. Profile
+            // 5. Profile
             OnboardingStep(
                 style: .spotlight(target: { [weak tabBar] in
                     tabBar?.profileTabButton
                 }),
-                illustration: UIImage(named: "onboard_profile"),
+                illustration: UIImage(named: "imgprofile"),
                 title: "Update your profile",
                 description: "Update your profile, travel style, interests and preferences here.",
                 tooltipPosition: .above,
@@ -477,11 +502,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
-        resetTabBarTimer()
+//        resetTabBarTimer()
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        showTabBarTemporarily()
+//        showTabBarTemporarily()
     }
 
 //    func scrollViewDidScroll(_ scrollView: UIScrollView) {
