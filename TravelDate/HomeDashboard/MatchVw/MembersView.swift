@@ -243,8 +243,11 @@ final class MembersProgressView: UIView {
         let ratio = totalCount > 0 ? CGFloat(completedCount) / CGFloat(totalCount) : 0
         print(completedCount,totalCount,"dddddddddddddd")
         let remaining = totalCount - completedCount
-        leftLabel.text = "\(members.count) travelers"
-
+        if members.count == 1 {
+            leftLabel.text = "\(members.count) traveler"
+        } else {
+            leftLabel.text = "\(members.count) travelers"
+        }
         // Remove old fill width constraint
         progressFillWidthConstraint?.isActive = false
 

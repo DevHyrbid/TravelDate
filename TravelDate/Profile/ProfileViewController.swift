@@ -58,7 +58,18 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewViewWillAppear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        setupViewData()
+        
+        getUser { success in
+            if success {
+                print("User fetched successfully")
+                
+                DispatchQueue.main.async {
+                    self.setupViewData()
+                }
+            } else {
+                print("Failed to get user")
+            }
+        }
     }
     
     func setupViewData() {

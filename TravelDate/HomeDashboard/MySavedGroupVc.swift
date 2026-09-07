@@ -64,7 +64,12 @@ class MySavedGroupVc: BaseClassVc {
         )
         lblTitle.text = data?.title ?? ""
         loadImage(imgGroup, url: URL(string: data?.coverImage ?? "")!)
-        lblCount.text = "\(data?.members?.count ?? 0) Travelers"
+        if data?.members?.count == 1 {
+            lblCount.text = "\(data?.members?.count ?? 0) Traveler"
+        } else {
+            lblCount.text = "\(data?.members?.count ?? 0) Travelers"
+        }
+        
         lblName.text = data?.title ?? ""
         
         tblVwHeight.constant = CGFloat((data?.members?.count ?? 0) * 400)

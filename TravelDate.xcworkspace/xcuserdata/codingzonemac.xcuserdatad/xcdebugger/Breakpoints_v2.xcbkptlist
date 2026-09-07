@@ -14,8 +14,8 @@
             filePath = "TravelDate/HomeDashboard/CreateGroupViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "904"
-            endingLineNumber = "904"
+            startingLineNumber = "905"
+            endingLineNumber = "905"
             landmarkName = "decrease()"
             landmarkType = "7">
          </BreakpointContent>
@@ -50,36 +50,6 @@
             endingLineNumber = "637"
             landmarkName = "openDirectChat(at:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "56B27888-7194-456C-89AE-5514CC8563B4 - 50a564829679b768"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "TravelDate.ChatVc.openDirectChat(at: Foundation.IndexPath) -&gt; ()"
-                  moduleName = "TravelDate.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/codingzonemac/Documents/TravelDate/TravelDate/HomeDashboard/ChatVc.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "640"
-                  endingLineNumber = "640">
-               </Location>
-               <Location
-                  uuid = "56B27888-7194-456C-89AE-5514CC8563B4 - 50a564829679b087"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "TravelDate.ChatVc.openDirectChat(at: Foundation.IndexPath) -&gt; ()"
-                  moduleName = "TravelDate.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/codingzonemac/Documents/TravelDate/TravelDate/HomeDashboard/ChatVc.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "637"
-                  endingLineNumber = "637">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

@@ -73,8 +73,12 @@ class MyGroupViewController: BaseClassVc {
                 start: res.startDate ?? "",
                 end: res.endDate ?? ""
             )
-            
-            lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
+            if res.members?.count == 1 {
+                lblGroupCount.text = "\(res.members?.count ?? 0) Traveler"
+            } else {
+                lblGroupCount.text = "\(res.members?.count ?? 0) Travelers"
+            }
+           
             self.lblLocation.text = res.destination ?? ""
             self.lblTitle.text = res.title ?? ""
             if let url = URL(string: res.coverImage ?? "") {

@@ -67,6 +67,20 @@ class BaseClassVc: UIViewController {
         dismiss(animated: true)
     }
     
+    func getUser(completion: @escaping (Bool) -> Void) {
+        request.getProfile { loginUser, errMsg, errCode in
+            
+            print(loginUser, "here")
+            
+            if let loginUser = loginUser {
+                // Save/update user if required
+                completion(true)
+            } else {
+                completion(false)
+            }
+        }
+    }
+    
     func applyGlassEffect(to view: UIView) {
 
         let blur = UIVisualEffectView(

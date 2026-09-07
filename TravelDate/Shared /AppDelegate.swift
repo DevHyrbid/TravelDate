@@ -22,10 +22,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         if User.currentUserExists {
             
-            
-            subscriptionPresenter = SubscriptionPresenter(view: nil)
-            
-            subscriptionPresenter?.load()
+            if User.curentUser!.isSubscriptionByAdmin != 1 {
+                subscriptionPresenter = SubscriptionPresenter(view: nil)
+                
+                subscriptionPresenter?.load()
+            }
         }
         IQKeyboardManager.shared.isEnabled = true
             

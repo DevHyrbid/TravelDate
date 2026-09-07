@@ -41,10 +41,11 @@ class CreateGroupViewController: BaseClassVc {
         setupScrollView()
         buildFormCard()
         setupLocationView()
-        
-        print(User.curentUser?.selfie
-            ,User.curentUser?.back
-        ,User.curentUser?.front,"dlknbdsnm,.")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tripsTabBarController?.hideTabBar()
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

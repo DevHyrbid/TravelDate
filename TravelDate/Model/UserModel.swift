@@ -24,6 +24,7 @@ class User : Mappable {
     var deviceToken : String?
     var dob : String?
     var isSubscribed : Int?
+    var isSubscriptionByAdmin : Int?
     var subscriptionPlanName : String?
     var userId : String?
     var _id : String?
@@ -190,6 +191,7 @@ class User : Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        isSubscriptionByAdmin <- map["isSubscriptionByAdmin"]
         reported_user <- map["reported_user"]
         phone_verify <- map["phone_verify"]
         countryIso <- map["countryIso"]
@@ -609,7 +611,7 @@ class User : Mappable {
     }
     
     func getProfile(callBack:((_ loginUser:User?,_ errMsg:String,_ errCode:Int)->Void)!) {
-        /*
+        
         
         NetworkManger.sendRequestAF(urlPath: APiConstant.profile, type: .get, parms: [:]) { responseObject, suces in
             print(responseObject)
@@ -627,7 +629,7 @@ class User : Mappable {
         } faliure: { errMsg, errCode in
             callBack(nil,errMsg, errCode)
         }
-        */
+        
     }
     
     func directChat(callBack:((_ model:ChatRoomModel?,_ errMsg:String,_ errCode:Int)->Void)!) {

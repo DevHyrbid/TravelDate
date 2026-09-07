@@ -99,6 +99,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         getGroups()
         getPastGroups()
         getDashboard()
+        getUser { success in
+            if success {
+                print("User fetched successfully")
+            }
+        }
     }
     
     private func showTabBarTemporarily() {
@@ -173,9 +178,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         }
     }
     
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        getUser { suc in
+            print(suc)
+        }
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
             getDashboard()
             return
@@ -201,9 +209,19 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         navigationItem.leftBarButtonItem = nil
         
         
-        setupUi()
         
-       
+        if User.curentUser?.isBlockByAdmin == true {
+            self.showAlertAction("You have been blocked via admin Please contact with support") {
+                
+                self.request.logout { errMsg, errCode in
+                    DispatchQueue.main.async {
+                        User.resetCurrentUser()
+                        self.pushVC(LoginViewController.self, from: .Main)
+                    }
+                }
+            }
+        }
+        setupUi()
     }
     
 
@@ -580,8 +598,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     func getDashboard() {
         
         getPastGroups()
-        request.getProfile { loginUser, errMsg, errCode in
-        }
+       
         
         request.getDashBoardAPi { model, errMsg, errCode in
             
@@ -688,6 +705,10 @@ extension HomeViewController {
     
     @IBAction func btnCreateGroup(_ sender:UIButton) {
         
+        if User.curentUser!.isSubscriptionByAdmin == 1 {
+            self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
+            return
+        }
         if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
             showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
                 self.upgradeButtonTapped()
