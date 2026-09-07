@@ -193,6 +193,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
+        } else {
+            imgProfile.image = AvatarHelper.image(for: User.curentUser?.name ?? "")
         }
         navigationController?.setNavigationBarHidden(true, animated: false)
         navigationItem.hidesBackButton = true
@@ -240,7 +242,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         return self?.btnCreateGroup
                     }),
                     illustration: UIImage(named: "onboard_create_trip"),
-                    title: "Create or join your group",
+                    title: "Create or join your trips",
                     description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
                     tooltipPosition: .above,
                     scrollView: self?.scrollVw
@@ -256,8 +258,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                             self?.btnList
                         }),
                         illustration: UIImage(named: "imgGroup"),
-                        title: "See all your groups",
-                        description: "Tap here to view and switch between all your groups.",
+                        title: "See all your trips",
+                        description: "Tap here to view and switch between all your trips.",
                         tooltipPosition: .above,
                         tabIndex: 1
                     )
@@ -273,7 +275,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     }),
                     illustration: UIImage(named: "imgGroup"),
                     title: "New matches & saved groups",
-                    description: "See your new matches and saved groups here.",
+                    description: "See your new trips and saved trips here.",
                     tooltipPosition: .above,
                     tabIndex: 1
                 ),

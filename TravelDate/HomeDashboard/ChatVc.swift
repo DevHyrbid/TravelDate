@@ -484,10 +484,14 @@ private extension ChatVc {
             cell.lblTitle.text = model.name
 //            cell.lblDesc.text = model.lastMessage?.content ?? "" 
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
-            loadAvatarImage(
-                into: cell.imgVw,
-                urlString: model.image
-            )
+            if model.image == "" {
+                cell.imgVw.image = AvatarHelper.image(for: User.curentUser?.name ?? "")
+            } else {
+                loadAvatarImage(
+                    into: cell.imgVw,
+                    urlString: model.image
+                )
+            }
         }
     }
 

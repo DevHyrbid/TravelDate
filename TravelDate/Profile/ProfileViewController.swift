@@ -78,7 +78,7 @@ class ProfileViewController: BaseClassVc {
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
         } else {
-            imgProfile.image = UIImage(named: "User")
+            imgProfile.image = AvatarHelper.image(for: User.curentUser?.name ?? "")
         }
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         

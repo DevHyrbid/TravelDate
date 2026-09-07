@@ -1371,3 +1371,79 @@ class CustomButton: UIButton {
 
     required init?(coder: NSCoder) { fatalError() }
 }
+
+import UIKit
+
+enum AvatarHelper {
+
+    private static let colors: [UIColor] = [
+        UIColor(red: 0.35, green: 0.55, blue: 0.90, alpha: 1),
+        UIColor(red: 0.45, green: 0.35, blue: 0.80, alpha: 1),
+        UIColor(red: 0.15, green: 0.65, blue: 0.55, alpha: 1),
+        UIColor(red: 0.95, green: 0.45, blue: 0.35, alpha: 1),
+        UIColor(red: 0.85, green: 0.55, blue: 0.20, alpha: 1),
+        UIColor(red: 0.75, green: 0.35, blue: 0.55, alpha: 1),
+        UIColor(red: 0.25, green: 0.60, blue: 0.75, alpha: 1),
+        UIColor(red: 0.40, green: 0.70, blue: 0.30, alpha: 1)
+    ]
+
+    static func image(
+        for name: String?,
+        size: CGSize = CGSize(width: 100, height: 100)
+    ) -> UIImage {
+
+        let cleanName = name?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let initial = cleanName.isEmpty
+            ? "?"
+            : String(cleanName.prefix(1)).uppercased()
+
+        let color: UIColor
+
+        if cleanName.isEmpty {
+            color = .systemGray
+        } else {
+            let hash = cleanName.lowercased()
+                .unicodeScalars
+                .reduce(0) {
+                    ($0 &* 31) &+ Int($1.value)
+                }
+
+            color = colors[abs(hash) % colors.count]
+        }
+
+        let renderer = UIGraphicsImageRenderer(size: size)
+
+        return renderer.image { context in
+
+            // Background
+            color.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+
+            // Initial
+            let fontSize = min(size.width, size.height) * 0.42
+
+            let font = UIFont.systemFont(
+                ofSize: fontSize,
+                weight: .semibold
+            )
+
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: font,
+                .foregroundColor: UIColor.white
+            ]
+
+            let textSize = initial.size(withAttributes: attributes)
+
+            let rect = CGRect(
+                x: (size.width - textSize.width) / 2,
+                y: (size.height - textSize.height) / 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+
+            initial.draw(in: rect, withAttributes: attributes)
+        }
+    }
+}

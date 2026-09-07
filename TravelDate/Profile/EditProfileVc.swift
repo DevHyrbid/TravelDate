@@ -54,6 +54,8 @@ class EditProfileVc: BaseClassVc {
         
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
             loadImage(imgProfile, url: url)
+        } else {
+            imgProfile.image = AvatarHelper.image(for: User.curentUser?.name ?? "")
         }
         
         if User.curentUser?.phone_verify == true {
@@ -333,21 +335,33 @@ extension EditProfileVc {
         imagePicker.showImagePicker(allowCamera: true) { [weak self] img in
             
             guard let self = self else { return }
-
+            
             print(img)
-
+            
             self.imgProfile.image = img
             self.imgProfile.contentMode = .scaleAspectFill
-
+            
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }
-
+            
             self.uploadImg(true,data) { [weak self] imageName in
                 
                 guard let self = self else { return }
-
+                
                 print(imageName, "UPLOAD SUCCESS")
                 
                 request.profile_image = imageName
+                request.editProfileAPi { msg, errCode in
+                    
+                    DispatchQueue.main.async {
+                        if errCode == 200 {
+                            self.showAlert("Image Updated Successfully")
+                            
+                        } else {
+                            self.showAlert(msg)
+                        }
+                    }
+                    print(errCode,msg,"ProfileErros")
+                }
             }
         }
     }

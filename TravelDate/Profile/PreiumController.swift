@@ -147,10 +147,10 @@ class PreiumController: BaseClassVc,SubscriptionView {
                 lblWeek.text = plan.priceText.replacing("US", with: "")
 
             case .monthly:
-                lblMonth.text = plan.priceText
+                lblMonth.text = plan.priceText.replacing("US", with: "")
 
             case .yearly:
-                lblYear.text = plan.priceText
+                lblYear.text = plan.priceText.replacing("US", with: "")
             }
         }
     }
@@ -185,13 +185,13 @@ extension PreiumController {
             switch plan.tier {
 
             case .weekly:
-                lblWeek.text = plan.priceText
+                lblWeek.text = plan.priceText.replacing("US", with: "")
 
             case .monthly:
-                lblMonth.text = plan.priceText
+                lblMonth.text = plan.priceText.replacing("US", with: "")
 
             case .yearly:
-                lblYear.text = plan.priceText
+                lblYear.text = plan.priceText.replacing("US", with: "")
             }
         }
 

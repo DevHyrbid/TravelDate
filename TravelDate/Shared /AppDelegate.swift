@@ -21,6 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         
         if User.currentUserExists {
+            
+            
             subscriptionPresenter = SubscriptionPresenter(view: nil)
             
             subscriptionPresenter?.load()
