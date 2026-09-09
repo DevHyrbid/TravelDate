@@ -45,6 +45,13 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        registerNib()
+        
+        txtAbout.setFont(.medium, size: 14.0)
+        lblName.setFont(.bold, size: 20.0)
+        lblUserName.setFont(.regular, size: 14.0)
+        lblPlanName.setFont(.bold, size: 16.0)
+        lblSubscribe.setFont(.regular, size: 13.0)
         lblProfileTitle.setFont(.medium, size: 18.0)
         collectionVw.register(TravelStyleCell.self,
                                       forCellWithReuseIdentifier: TravelStyleCell.identifier)
@@ -74,11 +81,6 @@ class ProfileViewController: BaseClassVc {
     
     func setupViewData() {
         
-        txtAbout.setFont(.medium, size: 14.0)
-        lblName.setFont(.bold, size: 20.0)
-        lblUserName.setFont(.regular, size: 14.0)
-        lblPlanName.setFont(.bold, size: 16.0)
-        lblSubscribe.setFont(.regular, size: 13.0)
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
         if User.curentUser?.userName != "" {
@@ -97,7 +99,7 @@ class ProfileViewController: BaseClassVc {
         imgProfile.clipsToBounds = true
         
         tripsTabBarController?.showTabBar()
-        registerNib()
+        
         updateProfileCompletion()
         DispatchQueue.main.async {
             if self.hasPaidSubscription {
@@ -109,23 +111,25 @@ class ProfileViewController: BaseClassVc {
                 self.imgPermium.isHidden = true
                 self.imgPermiumHeight.constant = 0
             }
-            
+            print(User.curentUser?.plan,"jjjjjjeherr")
             
             if let plan = User.curentUser?.plan {
                 switch plan {
                 case SubscriptionTier.weekly.rawValue:
                     self.lblPlanName.text = "Weekly Plan"
-
+                    
                 case SubscriptionTier.monthly.rawValue:
                     self.lblPlanName.text = "Monthly Plan"
-
+                    
                 case SubscriptionTier.yearly.rawValue:
                     self.lblPlanName.text = "Yearly Plan"
-
+                    
                 default:
-                    self.lblPlanName.text = "Free Plan"
+                    self.lblPlanName.text = "Free"
                 }
             }
+                
+            
 
             if let startDateString = User.curentUser?.planStartDate {
                 let formatter = ISO8601DateFormatter()

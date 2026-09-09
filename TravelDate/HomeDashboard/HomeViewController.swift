@@ -164,8 +164,30 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         if let url = URL(string: res.coverImage ?? "") {
             self.loadImage(self.imgTrips, url: url)
         }
+        let members = res.members ?? []
+        let totalCount = res.members?.count ?? 0
+        let completedCount = members.count
+
+        print("========== MEMBERS PROGRESS ==========")
+        print("Members Count     : \(members.count)")
+        print("Total Count       : \(totalCount)")
+        print("Completed Count   : \(completedCount)")
         
-        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
+        if totalCount > 0 {
+            let progress = (Double(completedCount) / Double(totalCount)) * 100
+            print("Progress          : \(progress)%")
+        } else {
+            print("Progress          : 0% (Total count is 0)")
+        }
+
+        print("======================================")
+
+        membersView.configure(
+            members: members,
+            totalCount: totalCount,
+            completedCount: completedCount
+        )
+//        membersView.configure(members: res.members ?? [], totalCount: (res.maxGroupSize ?? 0), completedCount: res.members?.count ?? 0)
         print((res.members?.count ?? 0),"hjkljkl")
         membersView.onAvatarStackTapped = {
             print("Avatar stack tapped — show members list")

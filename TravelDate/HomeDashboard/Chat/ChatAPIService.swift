@@ -32,7 +32,7 @@ final class ChatAPIService {
                     type: ChatRoomType,
                     completion: @escaping Completion<String>) {
         
-        let body: [String: Any] = [
+        let _: [String: Any] = [
             "participants": participants,
             "type": type.rawValue
         ]

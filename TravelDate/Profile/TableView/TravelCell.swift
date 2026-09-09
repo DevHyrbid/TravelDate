@@ -188,8 +188,9 @@ final class TravelCell: UITableViewCell {
         subtitleLabel.text = month
         ImageLoader.setImageKing(iconImageView, urlString: APiConstant.base + "\(icon ?? "")")
         print(APiConstant.base + "\(icon ?? "")","ddddd")
+        
         iconImageView.clipsToBounds   = true
-        iconImageView.contentMode = .scaleToFill
+        iconImageView.contentMode = .scaleAspectFit
         statusLabel.text = status.capitalized
     }
 }

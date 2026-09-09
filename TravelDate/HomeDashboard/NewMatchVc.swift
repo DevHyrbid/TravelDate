@@ -361,7 +361,7 @@ extension NewMatchVc {
             
         } else if sender == btnSave {
             print("SAVE")
-            lblNewMatch.text = "Saved Groups"
+            lblNewMatch.text = "Saved Trips"
             
             selectTab(.saved)
             

@@ -430,7 +430,7 @@ class CreateGroupViewController: BaseClassVc {
         let box  = fieldBox()
 
         destinationTF.attributedPlaceholder = NSAttributedString(
-            string: "Where are you going?",
+            string: "Enter your travel city",
             attributes: [.foregroundColor: UIColor.appPlaceholder])
         destinationTF.textColor = .white
         destinationTF.setFont(.regular, size: 14)

@@ -63,12 +63,47 @@ class SwipeViewController: BaseClassVc {
             showOverlay()
             return
         }
+        
 
         if groups.isEmpty {
             overlayType = .noGroups
             showOverlay()
+           /* let title = "No trips yet"
+            let subtitle = "We’ll keep looking. Check back tomorrow to see who’s heading there on your dates."
+
+            let attributedText = NSMutableAttributedString()
+
+            attributedText.append(
+                NSAttributedString(
+                    string: title + "\n\n",
+                    attributes: [
+                        .font: UIFont.systemFont(ofSize: 22, weight: .semibold),
+                        .foregroundColor: UIColor.white
+                    ]
+                )
+            )
+
+            attributedText.append(
+                NSAttributedString(
+                    string: subtitle,
+                    attributes: [
+                        .font: UIFont.systemFont(ofSize: 15, weight: .regular),
+                        .foregroundColor: UIColor.white
+                    ]
+                )
+            )
+
+            self.lblNoData.attributedText = attributedText
+            self.lblNoData.textAlignment = .center
+            
+            self.likeButton.isHidden = true
+            self.skipButton.isHidden = true
+//            showOverlay()
+            */
             return
         }
+        
+        
 
         overlayType = nil
         hideOverlay()
@@ -117,7 +152,7 @@ class SwipeViewController: BaseClassVc {
 
         let actionButton = UIButton(type: .system)
         actionButton.setTitle(type.buttonTitle, for: .normal)
-        actionButton.backgroundColor = UIColor.systemPink
+        actionButton.backgroundColor = UIColor.themeOrange
         actionButton.setTitleColor(.white, for: .normal)
         actionButton.layer.cornerRadius = 12
         actionButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
@@ -644,7 +679,7 @@ enum OverlayType {
         switch self {
         case .missingLocation:    return "Location Required"
         case .missingTravelStyles: return "Travel Styles Required"
-        case .noGroups:           return "No Groups Available"
+        case .noGroups:           return "No trips yet"
         }
     }
 
@@ -652,7 +687,7 @@ enum OverlayType {
         switch self {
         case .missingLocation:    return "Add your location to start discovering travel groups."
         case .missingTravelStyles: return "Select your travel styles to find matching groups."
-        case .noGroups:           return "No travel groups available right now."
+        case .noGroups:           return "We’ll keep looking. Check back tomorrow to see who’s heading there on your dates."
         }
     }
 

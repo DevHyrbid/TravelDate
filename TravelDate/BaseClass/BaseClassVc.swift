@@ -38,14 +38,9 @@ class BaseClassVc: UIViewController {
         return formatter
     }()
     
-//    var hasPaidSubscription: Bool {
-//        guard User.curentUser?.plan != "" || User.curentUser?.plan != nil || User.curentUser?.plan == "free" else {
-//            return false
-//        }
-//        return true
-//    }
+
     var hasPaidSubscription: Bool {
-        print(User.curentUser?.plan,"CHECK PLAN")
+        
         guard let plan = User.curentUser?.plan else {
             return false
         }
@@ -70,9 +65,9 @@ class BaseClassVc: UIViewController {
     func getUser(completion: @escaping (Bool) -> Void) {
         request.getProfile { loginUser, errMsg, errCode in
             
-            print(loginUser, "here")
             
-            if let loginUser = loginUser {
+            
+            if loginUser != nil {
                 // Save/update user if required
                 completion(true)
             } else {
@@ -171,7 +166,7 @@ class BaseClassVc: UIViewController {
                 ]
             )
             
-            print("loaded,",urlStr)
+            
         }
     }
     

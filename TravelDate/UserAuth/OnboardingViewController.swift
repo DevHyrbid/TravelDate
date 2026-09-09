@@ -311,7 +311,7 @@ extension OnboardingViewController: UICollectionViewDelegate,
     }
 
     func collectionView(_ cv: UICollectionView,
-                        layout layout: UICollectionViewLayout,
+                        layout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize { cv.frame.size }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {

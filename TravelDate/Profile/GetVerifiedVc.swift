@@ -80,7 +80,7 @@ class GetVerifiedVc: BaseClassVc {
     private lazy var govIDCard: UIView       = makeCard()
     private lazy var govIDUploadArea: UIView = UIView()
     private lazy var govIDUploadIcon: UIImageView  = makeUploadIcon("photo.badge.plus")
-    private lazy var govIDUploadLabel: UILabel     = makeUploadLabel("Upload JPG, PNG file")
+    private lazy var govIDUploadLabel: UILabel     = makeUploadLabel("Upload your goverment id")
     private lazy var frontPreviewImage: UIImageView = makePreview()
     private lazy var backPreviewImage: UIImageView  = makePreview()
     private lazy var govIDPreviewStack: UIStackView = {
@@ -647,8 +647,8 @@ class GetVerifiedVc: BaseClassVc {
         let title = hasExisting ? "Replace Government ID" : "Upload Government ID"
         let sheet = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
 
-        sheet.addAction(UIAlertAction(title: "Take Photo",    style: .default) { _ in self.pickGovID(camera: false) })
-        sheet.addAction(UIAlertAction(title: "Choose Photo",  style: .default) { _ in self.pickGovID(camera: false) })
+        sheet.addAction(UIAlertAction(title: "Take Photo",    style: .default) { _ in self.pickGovID(camera: true) })
+//        sheet.addAction(UIAlertAction(title: "Choose Photo",  style: .default) { _ in self.pickGovID(camera: false) })
         sheet.addAction(UIAlertAction(title: "Cancel",        style: .cancel))
 
         sheet.popoverPresentationController?.sourceView = govIDUploadArea
@@ -656,7 +656,7 @@ class GetVerifiedVc: BaseClassVc {
     }
 
     private func pickGovID(camera: Bool) {
-        imagePicker.showImagePicker(allowCamera: camera,allowonlyCamera:false) { [weak self] img in
+        imagePicker.showImagePicker(allowCamera: true,allowonlyCamera:camera) { [weak self] img in
             guard let self else { return }
             self.frontImage = img
             guard let data = img.jpegData(compressionQuality: 0.7) else { return }

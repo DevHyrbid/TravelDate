@@ -138,7 +138,9 @@ final class SubscriptionPresenter {
             view?.showLoading()
 
             await loadProducts()
-            await refreshSubscriptionStatus()
+            if User.curentUser?.isSubscriptionByAdmin != 1 {
+                await refreshSubscriptionStatus()
+            }
 
             view?.reloadPlans()
             notifyCTA()
@@ -353,20 +355,25 @@ final class SubscriptionPresenter {
 
         // MARK: No Active Subscription
 
-        activeTier = nil
+        
 
-        print("🔴 NO ACTIVE SUBSCRIPTION")
+        print(User.curentUser?.isSubscriptionByAdmin,"CheckADmin")
+        if  User.curentUser?.isSubscriptionByAdmin !=  1 {
+            activeTier = nil
+            print("🔴 NO ACTIVE SUBSCRIPTION")
+            syncBackend(
+                plan: "free",
+                startDate: nil,
+                endDate: nil,
+                isSubscribed: false
+            )
+            view?.subscriptionStatusChanged(isSubscribed: false)
+            print("🔴 REFRESH SUBSCRIPTION END - FREE")
+        }
 
-        syncBackend(
-            plan: "free",
-            startDate: nil,
-            endDate: nil,
-            isSubscribed: false
-        )
+        
 
-        view?.subscriptionStatusChanged(isSubscribed: false)
-
-        print("🔴 REFRESH SUBSCRIPTION END - FREE")
+        
     }
 
     // MARK: - Transaction Updates
@@ -439,7 +446,7 @@ final class SubscriptionPresenter {
         request.planEndDate = endDate.map {
             isoFormatter.string(from: $0)
         }
-
+        print("logHereToupdate",plan)
         request.editProfileAPi { [weak self] response, status in
 
             guard let self else {

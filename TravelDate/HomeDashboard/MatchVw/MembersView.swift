@@ -65,7 +65,7 @@ final class MembersProgressView: UIView {
     }
     
     func configureSaved(members: [UserMembers], totalCount: Int, completedCount: Int) {
-        print(members,members.first?.profile_image,"ssss")
+        
 //        self.members = members as! [MemberGroup]
         self.totalCount = max(totalCount, 1)
         self.completedCount = min(completedCount, totalCount)
@@ -80,8 +80,8 @@ final class MembersProgressView: UIView {
         backgroundColor = UIColor(red: 0.11, green: 0.11, blue: 0.13, alpha: 1)
         layer.cornerRadius = 16
         layer.masksToBounds = true
-        self.layer.borderWidth = 1
-        self.layer.borderColor = UIColor.red as! CGColor
+        self.layer.borderWidth = 0
+        self.layer.borderColor = UIColor.red.cgColor
         setupAvatarSection()
         setupProgressSection()
         setupTapGestures()
@@ -189,8 +189,6 @@ final class MembersProgressView: UIView {
         
         for (i, member) in visible.enumerated() {
             let iv = makeAvatarImageView(image: nil, index: i) // ✅ nil pass karo
-            print(member.userMembers?.profile_image,"NO URL HERE WHAR THE ")
-            
             
             
             let imagePath = member.profile_image?.isEmpty == false
@@ -242,7 +240,7 @@ final class MembersProgressView: UIView {
     private func refreshProgress() {
         let ratio = totalCount > 0 ? CGFloat(completedCount) / CGFloat(totalCount) : 0
         print(completedCount,totalCount,"dddddddddddddd")
-        let remaining = totalCount - completedCount
+        _ = totalCount - completedCount
         if members.count == 1 {
             leftLabel.text = "\(members.count) traveler"
         } else {

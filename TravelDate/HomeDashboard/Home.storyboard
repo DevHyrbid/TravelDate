@@ -1815,8 +1815,8 @@
                                             <constraint firstItem="CD9-dR-0N5" firstAttribute="leading" secondItem="Wej-20-2wD" secondAttribute="leading" constant="20" id="n4E-IR-ABq"/>
                                         </constraints>
                                     </view>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Data Found" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S0I-q3-Ext">
-                                        <rect key="frame" x="10" y="413" width="373" height="26.333333333333314"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Data Found" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S0I-q3-Ext">
+                                        <rect key="frame" x="20" y="413" width="353" height="26.333333333333314"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="22"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -1835,7 +1835,7 @@
                                     <constraint firstItem="avT-oz-QK1" firstAttribute="leading" secondItem="2Dr-ts-aic" secondAttribute="leading" id="WaY-WI-wc1"/>
                                     <constraint firstItem="S0I-q3-Ext" firstAttribute="centerX" secondItem="dLV-fw-fKA" secondAttribute="centerX" id="XFe-pf-jqI"/>
                                     <constraint firstItem="8PH-wY-uK2" firstAttribute="top" secondItem="2Dr-ts-aic" secondAttribute="top" id="YTN-bt-vhn"/>
-                                    <constraint firstItem="S0I-q3-Ext" firstAttribute="leading" secondItem="dLV-fw-fKA" secondAttribute="leading" constant="10" id="YUN-qQ-aIa"/>
+                                    <constraint firstItem="S0I-q3-Ext" firstAttribute="leading" secondItem="dLV-fw-fKA" secondAttribute="leading" constant="20" id="YUN-qQ-aIa"/>
                                     <constraint firstItem="2Dr-ts-aic" firstAttribute="leading" secondItem="8PH-wY-uK2" secondAttribute="trailing" constant="10" id="hbu-wQ-1eC"/>
                                     <constraint firstItem="Wej-20-2wD" firstAttribute="leading" secondItem="dLV-fw-fKA" secondAttribute="leading" id="kCw-Jl-POI"/>
                                     <constraint firstItem="Wej-20-2wD" firstAttribute="top" secondItem="tgF-1K-Asq" secondAttribute="bottom" constant="20" id="ncf-Br-ccs"/>
