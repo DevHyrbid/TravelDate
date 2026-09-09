@@ -64,6 +64,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         configureUI()
         registerNibs()
         fetchAllData()        // ← API called ONCE here
@@ -74,7 +75,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
                object: nil
            )
         txtSearch.attributedPlaceholder = NSAttributedString(
-            string: "Search by group name",
+            string: "Search by trip name",
             attributes: [
                 .foregroundColor: UIColor.white.withAlphaComponent(0.6)
             ]
