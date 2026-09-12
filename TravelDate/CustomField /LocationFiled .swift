@@ -1,41 +1,40 @@
 //
-//  LocationFiled .swift
+//  LocationFiled.swift
 //  TravelDate
 //
-//  Created by Dev CodingZone on 27/04/26.
-//  Fixed: results filtered to cities only (no POIs / businesses / street addresses)
+//  City / area location search using MapKit
 //
 
 import UIKit
 import MapKit
 
-// MARK: - Reusable Location Search View
-class LocationSearchView: UIView {
+final class LocationSearchView: UIView {
+
+    // MARK: - Views
 
     private let tableView: UITableView = {
-        let tv = UITableView()
-        tv.isHidden = true
-        tv.layer.cornerRadius = 10
-        tv.clipsToBounds = true
-        return tv
+        let tableView = UITableView(frame: .zero, style: .plain)
+        tableView.isHidden = true
+        tableView.layer.cornerRadius = 10
+        tableView.clipsToBounds = true
+        tableView.rowHeight = 72
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        return tableView
     }()
 
     // MARK: - MapKit
+
     private let completer = MKLocalSearchCompleter()
     private var results: [MKLocalSearchCompletion] = []
 
-    // Words that indicate a street-level address rather than a city, filtered out below
-    private let streetKeywords = [
-        "street", "st.", " st ", "avenue", "ave.", " ave ", "road", " rd ", "rd.",
-        "boulevard", "blvd", "drive", " dr ", "dr.", "lane", " ln ", "way",
-        "court", " ct ", "circle", "highway", " hwy", "place", " pl ",
-        "suite", "floor", "apt", "unit"
-    ]
-
     // MARK: - Callback
+
     var onLocationSelected: ((String, CLLocationCoordinate2D) -> Void)?
 
+    weak var attachedTextField: UITextField?
+
     // MARK: - Init
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -46,7 +45,7 @@ class LocationSearchView: UIView {
         setup()
     }
 
-    weak var attachedTextField: UITextField?
+    // MARK: - Setup
 
     private func setup() {
         addSubview(tableView)
@@ -57,129 +56,349 @@ class LocationSearchView: UIView {
             tableView.topAnchor.constraint(equalTo: topAnchor),
             tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            tableView.heightAnchor.constraint(equalToConstant: 200)
+            tableView.heightAnchor.constraint(equalToConstant: 220)
         ])
 
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+
+        tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: "LocationCell"
+        )
 
         completer.delegate = self
 
-        // MARK: - Cities-only filtering
-        // Excludes businesses, airports, landmarks, and other points of interest
+        // Do not show businesses / restaurants / landmarks.
         completer.pointOfInterestFilter = .excludingAll
-        // Restricts to address-level results (no free-text query suggestions)
-        completer.resultTypes = .address
+
+        // Address results give us city, area and administrative information.
+        completer.resultTypes = [.address]
     }
+
+    // MARK: - Attach
 
     func attach(to textField: UITextField) {
-        self.attachedTextField = textField
+        attachedTextField = textField
 
-        textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
-        textField.addTarget(self, action: #selector(beginEditing), for: .editingDidBegin)
+        textField.addTarget(
+            self,
+            action: #selector(textChanged),
+            for: .editingChanged
+        )
+
+        textField.addTarget(
+            self,
+            action: #selector(beginEditing),
+            for: .editingDidBegin
+        )
     }
 
+    // MARK: - Text Changed
+
     @objc private func textChanged() {
-        completer.queryFragment = attachedTextField?.text ?? ""
+        let query = attachedTextField?.text?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        guard !query.isEmpty else {
+            clearResults()
+            return
+        }
+
+        completer.queryFragment = query
     }
 
     @objc private func beginEditing() {
-        self.isHidden = false
-        self.superview?.bringSubviewToFront(self)
+        isHidden = false
+        superview?.bringSubviewToFront(self)
+
+        let query = attachedTextField?.text?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        if !query.isEmpty {
+            completer.queryFragment = query
+        }
     }
 
-    // Heuristic filter: keeps city/region-level completions, drops street addresses
-    private func isCityLevelResult(_ completion: MKLocalSearchCompletion) -> Bool {
-        let title = completion.title.lowercased()
+    // MARK: - Clear
 
-        // Street addresses almost always start with a house/building number
-        if let firstChar = title.first, firstChar.isNumber {
+    func hideResults() {
+        tableView.isHidden = true
+    }
+
+    private func clearResults() {
+        results.removeAll()
+        tableView.reloadData()
+        tableView.isHidden = true
+    }
+
+    // MARK: - Result Filtering
+
+    private func isValidResult(
+        _ completion: MKLocalSearchCompletion
+    ) -> Bool {
+
+        let title = completion.title
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !title.isEmpty else {
             return false
         }
 
-        // Drop anything containing a street-type keyword
+        let lowercasedTitle = title.lowercased()
+
+        // Street addresses usually start with a house number.
+        if title.first?.isNumber == true {
+            return false
+        }
+
+        // Avoid obvious street-level results.
+        let streetKeywords = [
+            "street",
+            "st.",
+            " avenue",
+            " ave.",
+            " avenue",
+            " road",
+            " rd.",
+            " boulevard",
+            " blvd",
+            " drive",
+            " dr.",
+            " lane",
+            " ln.",
+            " court",
+            " ct.",
+            " highway",
+            " hwy",
+            " place",
+            " pl.",
+            " suite",
+            " floor",
+            " apartment",
+            " apt.",
+            " unit"
+        ]
+
         for keyword in streetKeywords {
-            if title.contains(keyword) {
+            if lowercasedTitle.contains(keyword) {
                 return false
             }
         }
 
         return true
     }
-}
 
-// MARK: - TableView
-extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
+    // MARK: - Display Name
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return results.count
+    /// Creates a short, user-friendly destination name.
+    ///
+    /// Examples:
+    /// Chandigarh -> Chandigarh
+    /// Manali -> Manali
+    /// Bandra -> Bandra
+    /// Sector 17 -> Sector 17, Chandigarh
+    private func displayName(
+        completion: MKLocalSearchCompletion,
+        placemark: MKPlacemark
+    ) -> String {
+
+        let title = completion.title
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let locality = placemark.locality?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let subLocality = placemark.subLocality?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // If MapKit found an actual area + city, this is the best format.
+        if let subLocality = subLocality,
+           !subLocality.isEmpty,
+           let locality = locality,
+           !locality.isEmpty,
+           subLocality.caseInsensitiveCompare(locality) != .orderedSame {
+
+            // If the completion itself is already the city,
+            // don't add the area unnecessarily.
+            if title.caseInsensitiveCompare(locality) == .orderedSame {
+                return locality
+            }
+
+            return "\(subLocality), \(locality)"
+        }
+
+        // Usually the cleanest value for a travel destination.
+        if !title.isEmpty {
+            return title
+        }
+
+        if let locality = locality, !locality.isEmpty {
+            return locality
+        }
+
+        if let name = placemark.name,
+           !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return name.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        return completion.subtitle
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = results[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = item.title
-        cell.detailTextLabel?.text = item.subtitle
-        return cell
-    }
+    // MARK: - Search Selection
 
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let completion = results[indexPath.row]
+    private func selectLocation(
+        _ completion: MKLocalSearchCompletion
+    ) {
 
         let request = MKLocalSearch.Request(completion: completion)
         let search = MKLocalSearch(request: request)
 
         search.start { [weak self] response, error in
-            guard let item = response?.mapItems.first else { return }
+            guard let self = self else { return }
 
-            let placemark = item.placemark
+            guard error == nil,
+                  let mapItem = response?.mapItems.first else {
+                return
+            }
 
-            // Reject the pick if it isn't actually a locality (extra safety net
-            // beyond the completer-level filtering above)
-            guard placemark.locality != nil || placemark.administrativeArea != nil else { return }
+            let placemark = mapItem.placemark
+
+            // Require a usable city / area / region.
+            guard placemark.locality != nil ||
+                  placemark.subLocality != nil ||
+                  placemark.administrativeArea != nil else {
+                return
+            }
 
             let coordinate = placemark.coordinate
 
-            let address = [
-                placemark.locality ?? placemark.name,
-                placemark.administrativeArea,
-                placemark.country
-            ].compactMap { $0 }.joined(separator: ", ")
+            guard CLLocationCoordinate2DIsValid(coordinate) else {
+                return
+            }
+
+            let name = self.displayName(
+                completion: completion,
+                placemark: placemark
+            )
 
             DispatchQueue.main.async {
-                self?.attachedTextField?.text = address
-                self?.tableView.isHidden = true
-                self?.onLocationSelected?(address, coordinate)
+                self.attachedTextField?.text = name
+                self.tableView.isHidden = true
+                self.results.removeAll()
+                self.completer.queryFragment = ""
+
+                self.onLocationSelected?(name, coordinate)
             }
         }
     }
 }
 
-// MARK: - Completer
+// MARK: - UITableViewDelegate / UITableViewDataSource
+
+extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
+
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        return results.count
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+
+        let completion = results[indexPath.row]
+
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "LocationCell",
+            for: indexPath
+        )
+
+        var configuration = cell.defaultContentConfiguration()
+
+        configuration.text = completion.title
+
+        if !completion.subtitle.isEmpty {
+            configuration.secondaryText = completion.subtitle
+        }
+
+        cell.contentConfiguration = configuration
+
+        return cell
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
+        tableView.deselectRow(at: indexPath, animated: true)
+
+        guard results.indices.contains(indexPath.row) else {
+            return
+        }
+
+        let completion = results[indexPath.row]
+
+        selectLocation(completion)
+    }
+}
+
+// MARK: - MKLocalSearchCompleterDelegate
+
 extension LocationSearchView: MKLocalSearchCompleterDelegate {
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        results = completer.results.filter { isCityLevelResult($0) }
-        tableView.reloadData()
-        tableView.isHidden = results.isEmpty
+
+    func completerDidUpdateResults(
+        _ completer: MKLocalSearchCompleter
+    ) {
+
+        var uniqueResults: [MKLocalSearchCompletion] = []
+        var seen = Set<String>()
+
+        for result in completer.results {
+
+            guard isValidResult(result) else {
+                continue
+            }
+
+            let key = (
+                result.title + "|" + result.subtitle
+            ).lowercased()
+
+            guard !seen.contains(key) else {
+                continue
+            }
+
+            seen.insert(key)
+            uniqueResults.append(result)
+
+            // Keep the dropdown compact.
+            if uniqueResults.count == 8 {
+                break
+            }
+        }
+
+        results = uniqueResults
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            self.tableView.reloadData()
+            self.tableView.isHidden = self.results.isEmpty
+        }
     }
 
-    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-        results = []
-        tableView.reloadData()
-        tableView.isHidden = true
+    func completer(
+        _ completer: MKLocalSearchCompleter,
+        didFailWithError error: Error
+    ) {
+        print("Location search error:", error.localizedDescription)
+
+        DispatchQueue.main.async { [weak self] in
+            self?.clearResults()
+        }
     }
 }
 
-// MARK: - Usage in ViewController
-/*
-let locationView = LocationSearchView()
-
-locationView.onLocationSelected = { address, coordinate in
-    print("Selected:", address)
-    print("Lat:", coordinate.latitude, "Lng:", coordinate.longitude)
-}
-
-view.addSubview(locationView)
-locationView.frame = CGRect(x: 20, y: 100, width: view.frame.width - 40, height: 250)
-*/
