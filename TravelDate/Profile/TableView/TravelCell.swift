@@ -24,15 +24,23 @@ final class TravelCell: UITableViewCell {
 
     private let iconBackgroundView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(red: 30/255, green: 34/255, blue: 36/255, alpha: 1) // measured icon bg
-        view.layer.cornerRadius = 26 // 52/2 — perfect circle
+        view.backgroundColor = UIColor(
+            red: 30/255,
+            green: 34/255,
+            blue: 36/255,
+            alpha: 1
+        )
+        view.layer.cornerRadius = 26
+        view.clipsToBounds = true
         return view
     }()
 
     private let iconImageView: UIImageView = {
         let image = UIImageView()
-        image.contentMode = .scaleAspectFit
-        image.tintColor = .white
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
+        image.layer.cornerRadius = 26
+        image.backgroundColor = .clear
         return image
     }()
 
@@ -168,29 +176,37 @@ final class TravelCell: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        iconImageView.layer.cornerRadius = iconImageView.bounds.width / 2
+
+        iconBackgroundView.layer.cornerRadius =
+            iconBackgroundView.bounds.height / 2
+
         if statusLabel.text == "Upcoming" {
             statusContainer.backgroundColor = UIColor(hex: "1E2224")
         } else {
             statusContainer.backgroundColor = UIColor(hex: "219900")
         }
-        
     }
     
     // MARK: - Configure
-
-    func configure(title: String,
-                   month: String,
-                   icon: String?,
-                   status: String) {
-
+    func configure(
+        title: String,
+        month: String,
+        icon: String?,
+        status: String
+    ) {
         titleLabel.text = title
         subtitleLabel.text = month
-        ImageLoader.setImageKing(iconImageView, urlString: APiConstant.base + "\(icon ?? "")")
-        print(APiConstant.base + "\(icon ?? "")","ddddd")
-        
-        iconImageView.clipsToBounds   = true
-        iconImageView.contentMode = .scaleAspectFit
         statusLabel.text = status.capitalized
+
+        let imageURL = APiConstant.base + "\(icon ?? "")"
+
+        print(imageURL, "TRAVEL IMAGE URL")
+
+        ImageLoader.setImageKing(
+            iconImageView,
+            urlString: imageURL,
+            cornerRadius: 26,
+            contentMode: .scaleAspectFill
+        )
     }
 }

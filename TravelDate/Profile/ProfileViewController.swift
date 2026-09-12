@@ -115,13 +115,13 @@ class ProfileViewController: BaseClassVc {
             
             if let plan = User.curentUser?.plan {
                 switch plan {
-                case SubscriptionTier.weekly.rawValue:
+                case  "weekly",SubscriptionTier.weekly.rawValue:
                     self.lblPlanName.text = "Weekly Plan"
                     
-                case SubscriptionTier.monthly.rawValue:
+                case  "monthly",SubscriptionTier.monthly.rawValue:
                     self.lblPlanName.text = "Monthly Plan"
                     
-                case SubscriptionTier.yearly.rawValue:
+                case  "yearly",SubscriptionTier.yearly.rawValue:
                     self.lblPlanName.text = "Yearly Plan"
                     
                 default:
@@ -140,13 +140,13 @@ class ProfileViewController: BaseClassVc {
                     var components = DateComponents()
 
                     switch User.curentUser?.plan {
-                    case SubscriptionTier.weekly.rawValue:
+                    case "weekly",SubscriptionTier.weekly.rawValue:
                         components.day = 7
 
-                    case SubscriptionTier.monthly.rawValue:
+                    case "monthly",SubscriptionTier.monthly.rawValue:
                         components.month = 1
 
-                    case SubscriptionTier.yearly.rawValue:
+                    case "yearly",SubscriptionTier.yearly.rawValue:
                         components.year = 1
 
                     default:

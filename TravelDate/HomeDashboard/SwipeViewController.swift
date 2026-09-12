@@ -152,7 +152,7 @@ class SwipeViewController: BaseClassVc {
 
         let actionButton = UIButton(type: .system)
         actionButton.setTitle(type.buttonTitle, for: .normal)
-        actionButton.backgroundColor = UIColor.themeOrange
+        actionButton.backgroundColor = UIColor.systemPink
         actionButton.setTitleColor(.white, for: .normal)
         actionButton.layer.cornerRadius = 12
         actionButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
