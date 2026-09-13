@@ -1,14 +1,21 @@
 //
-//  LocationFiled.swift
-//  TravelDate
+//  LocationSearchView.swift
 //
-//  City / area location search using MapKit
+//  City-only location search using MapKit
 //
 
 import UIKit
 import MapKit
 
 final class LocationSearchView: UIView {
+
+    // MARK: - Models
+
+    private struct CityResult {
+        let city: String
+        let country: String
+        let coordinate: CLLocationCoordinate2D
+    }
 
     // MARK: - Views
 
@@ -18,14 +25,22 @@ final class LocationSearchView: UIView {
         tableView.layer.cornerRadius = 10
         tableView.clipsToBounds = true
         tableView.rowHeight = 72
-        tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorInset = UIEdgeInsets(
+            top: 0,
+            left: 16,
+            bottom: 0,
+            right: 16
+        )
         return tableView
     }()
 
-    // MARK: - MapKit
+    // MARK: - Search
 
-    private let completer = MKLocalSearchCompleter()
-    private var results: [MKLocalSearchCompletion] = []
+    private var results: [CityResult] = []
+
+    private var searchWorkItem: DispatchWorkItem?
+    private var activeSearch: MKLocalSearch?
+    private var searchGeneration = 0
 
     // MARK: - Callback
 
@@ -43,6 +58,11 @@ final class LocationSearchView: UIView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setup()
+    }
+
+    deinit {
+        searchWorkItem?.cancel()
+        activeSearch?.cancel()
     }
 
     // MARK: - Setup
@@ -66,14 +86,6 @@ final class LocationSearchView: UIView {
             UITableViewCell.self,
             forCellReuseIdentifier: "LocationCell"
         )
-
-        completer.delegate = self
-
-        // Do not show businesses / restaurants / landmarks.
-        completer.pointOfInterestFilter = .excludingAll
-
-        // Address results give us city, area and administrative information.
-        completer.resultTypes = [.address]
     }
 
     // MARK: - Attach
@@ -100,12 +112,34 @@ final class LocationSearchView: UIView {
         let query = attachedTextField?.text?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
-        guard !query.isEmpty else {
-            clearResults()
+        searchWorkItem?.cancel()
+        activeSearch?.cancel()
+
+        results.removeAll()
+        tableView.reloadData()
+        tableView.isHidden = true
+
+        searchGeneration += 1
+        let generation = searchGeneration
+
+        guard query.count >= 2 else {
             return
         }
 
-        completer.queryFragment = query
+        // Debounce typing so we don't fire a MapKit search for every keystroke.
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.searchCities(
+                query: query,
+                generation: generation
+            )
+        }
+
+        searchWorkItem = workItem
+
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.45,
+            execute: workItem
+        )
     }
 
     @objc private func beginEditing() {
@@ -115,182 +149,187 @@ final class LocationSearchView: UIView {
         let query = attachedTextField?.text?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
-        if !query.isEmpty {
-            completer.queryFragment = query
+        if query.count >= 2 {
+            searchCities(
+                query: query,
+                generation: searchGeneration
+            )
         }
+    }
+
+    // MARK: - City Search
+
+    private func searchCities(
+        query: String,
+        generation: Int
+    ) {
+        guard generation == searchGeneration else {
+            return
+        }
+
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = query
+
+        // Worldwide search.
+        // We intentionally do NOT set a region.
+        request.addressFilter = MKAddressFilter(
+            including: .locality
+        )
+
+        // Do not return businesses / restaurants / landmarks.
+        request.pointOfInterestFilter = .excludingAll
+
+        // Address/locality results only.
+        request.resultTypes = [.address]
+
+        let search = MKLocalSearch(request: request)
+        activeSearch = search
+
+        search.start { [weak self] response, error in
+            guard let self = self else {
+                return
+            }
+
+            guard generation == self.searchGeneration else {
+                return
+            }
+
+            guard error == nil else {
+                DispatchQueue.main.async {
+                    guard generation == self.searchGeneration else {
+                        return
+                    }
+
+                    self.results.removeAll()
+                    self.tableView.reloadData()
+                    self.tableView.isHidden = true
+                }
+                return
+            }
+
+            let mapItems = response?.mapItems ?? []
+
+            var cityResults: [CityResult] = []
+            var seen = Set<String>()
+
+            for mapItem in mapItems {
+                let placemark = mapItem.placemark
+
+                guard let locality = placemark.locality?
+                    .trimmingCharacters(in: .whitespacesAndNewlines),
+                      !locality.isEmpty else {
+                    continue
+                }
+
+                let country = placemark.country?
+                    .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+                let key = "\(locality)|\(country)"
+                    .folding(
+                        options: [.diacriticInsensitive, .caseInsensitive],
+                        locale: .current
+                    )
+
+                guard !seen.contains(key) else {
+                    continue
+                }
+
+                guard CLLocationCoordinate2DIsValid(
+                    placemark.coordinate
+                ) else {
+                    continue
+                }
+
+                seen.insert(key)
+
+                cityResults.append(
+                    CityResult(
+                        city: locality,
+                        country: country,
+                        coordinate: placemark.coordinate
+                    )
+                )
+
+                if cityResults.count == 8 {
+                    break
+                }
+            }
+
+            // MapKit normally returns the most relevant locality first.
+            // Keep that relevance order, but prefer an exact city-name match
+            // when one is present.
+            let normalizedQuery = self.normalize(query)
+
+            let exactMatches = cityResults.filter {
+                self.normalize($0.city) == normalizedQuery
+            }
+
+            let otherMatches = cityResults.filter {
+                self.normalize($0.city) != normalizedQuery
+            }
+
+            let orderedResults = exactMatches + otherMatches
+
+            DispatchQueue.main.async {
+                guard generation == self.searchGeneration else {
+                    return
+                }
+
+                self.results = orderedResults
+                self.tableView.reloadData()
+                self.tableView.isHidden = orderedResults.isEmpty
+            }
+        }
+    }
+
+    // MARK: - Normalization
+
+    private func normalize(_ value: String) -> String {
+        value
+            .folding(
+                options: [
+                    .diacriticInsensitive,
+                    .caseInsensitive
+                ],
+                locale: .current
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Clear
 
     func hideResults() {
+        searchWorkItem?.cancel()
+        activeSearch?.cancel()
         tableView.isHidden = true
     }
 
     private func clearResults() {
+        searchWorkItem?.cancel()
+        activeSearch?.cancel()
+
         results.removeAll()
         tableView.reloadData()
         tableView.isHidden = true
     }
 
-    // MARK: - Result Filtering
+    // MARK: - Selection
 
-    private func isValidResult(
-        _ completion: MKLocalSearchCompletion
-    ) -> Bool {
+    private func selectLocation(_ result: CityResult) {
+        let name: String
 
-        let title = completion.title
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard !title.isEmpty else {
-            return false
+        if result.country.isEmpty {
+            name = result.city
+        } else {
+            name = "\(result.city), \(result.country)"
         }
 
-        let lowercasedTitle = title.lowercased()
+        attachedTextField?.text = name
 
-        // Street addresses usually start with a house number.
-        if title.first?.isNumber == true {
-            return false
-        }
+        tableView.isHidden = true
+        results.removeAll()
 
-        // Avoid obvious street-level results.
-        let streetKeywords = [
-            "street",
-            "st.",
-            " avenue",
-            " ave.",
-            " avenue",
-            " road",
-            " rd.",
-            " boulevard",
-            " blvd",
-            " drive",
-            " dr.",
-            " lane",
-            " ln.",
-            " court",
-            " ct.",
-            " highway",
-            " hwy",
-            " place",
-            " pl.",
-            " suite",
-            " floor",
-            " apartment",
-            " apt.",
-            " unit"
-        ]
-
-        for keyword in streetKeywords {
-            if lowercasedTitle.contains(keyword) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-    // MARK: - Display Name
-
-    /// Creates a short, user-friendly destination name.
-    ///
-    /// Examples:
-    /// Chandigarh -> Chandigarh
-    /// Manali -> Manali
-    /// Bandra -> Bandra
-    /// Sector 17 -> Sector 17, Chandigarh
-    private func displayName(
-        completion: MKLocalSearchCompletion,
-        placemark: MKPlacemark
-    ) -> String {
-
-        let title = completion.title
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let locality = placemark.locality?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        let subLocality = placemark.subLocality?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // If MapKit found an actual area + city, this is the best format.
-        if let subLocality = subLocality,
-           !subLocality.isEmpty,
-           let locality = locality,
-           !locality.isEmpty,
-           subLocality.caseInsensitiveCompare(locality) != .orderedSame {
-
-            // If the completion itself is already the city,
-            // don't add the area unnecessarily.
-            if title.caseInsensitiveCompare(locality) == .orderedSame {
-                return locality
-            }
-
-            return "\(subLocality), \(locality)"
-        }
-
-        // Usually the cleanest value for a travel destination.
-        if !title.isEmpty {
-            return title
-        }
-
-        if let locality = locality, !locality.isEmpty {
-            return locality
-        }
-
-        if let name = placemark.name,
-           !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return name.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        return completion.subtitle
-    }
-
-    // MARK: - Search Selection
-
-    private func selectLocation(
-        _ completion: MKLocalSearchCompletion
-    ) {
-
-        let request = MKLocalSearch.Request(completion: completion)
-        let search = MKLocalSearch(request: request)
-
-        search.start { [weak self] response, error in
-            guard let self = self else { return }
-
-            guard error == nil,
-                  let mapItem = response?.mapItems.first else {
-                return
-            }
-
-            let placemark = mapItem.placemark
-
-            // Require a usable city / area / region.
-            guard placemark.locality != nil ||
-                  placemark.subLocality != nil ||
-                  placemark.administrativeArea != nil else {
-                return
-            }
-
-            let coordinate = placemark.coordinate
-
-            guard CLLocationCoordinate2DIsValid(coordinate) else {
-                return
-            }
-
-            let name = self.displayName(
-                completion: completion,
-                placemark: placemark
-            )
-
-            DispatchQueue.main.async {
-                self.attachedTextField?.text = name
-                self.tableView.isHidden = true
-                self.results.removeAll()
-                self.completer.queryFragment = ""
-
-                self.onLocationSelected?(name, coordinate)
-            }
-        }
+        onLocationSelected?(name, result.coordinate)
     }
 }
 
@@ -310,7 +349,7 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
 
-        let completion = results[indexPath.row]
+        let result = results[indexPath.row]
 
         let cell = tableView.dequeueReusableCell(
             withIdentifier: "LocationCell",
@@ -319,10 +358,10 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
 
         var configuration = cell.defaultContentConfiguration()
 
-        configuration.text = completion.title
+        configuration.text = result.city
 
-        if !completion.subtitle.isEmpty {
-            configuration.secondaryText = completion.subtitle
+        if !result.country.isEmpty {
+            configuration.secondaryText = result.country
         }
 
         cell.contentConfiguration = configuration
@@ -340,65 +379,8 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
             return
         }
 
-        let completion = results[indexPath.row]
-
-        selectLocation(completion)
-    }
-}
-
-// MARK: - MKLocalSearchCompleterDelegate
-
-extension LocationSearchView: MKLocalSearchCompleterDelegate {
-
-    func completerDidUpdateResults(
-        _ completer: MKLocalSearchCompleter
-    ) {
-
-        var uniqueResults: [MKLocalSearchCompletion] = []
-        var seen = Set<String>()
-
-        for result in completer.results {
-
-            guard isValidResult(result) else {
-                continue
-            }
-
-            let key = (
-                result.title + "|" + result.subtitle
-            ).lowercased()
-
-            guard !seen.contains(key) else {
-                continue
-            }
-
-            seen.insert(key)
-            uniqueResults.append(result)
-
-            // Keep the dropdown compact.
-            if uniqueResults.count == 8 {
-                break
-            }
-        }
-
-        results = uniqueResults
-
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-
-            self.tableView.reloadData()
-            self.tableView.isHidden = self.results.isEmpty
-        }
-    }
-
-    func completer(
-        _ completer: MKLocalSearchCompleter,
-        didFailWithError error: Error
-    ) {
-        print("Location search error:", error.localizedDescription)
-
-        DispatchQueue.main.async { [weak self] in
-            self?.clearResults()
-        }
+        let result = results[indexPath.row]
+        selectLocation(result)
     }
 }
 

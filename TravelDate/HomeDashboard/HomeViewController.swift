@@ -282,8 +282,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                         return self?.btnCreateGroup
                     }),
                     illustration: UIImage(named: "onboard_create_trip"),
-                    title: "Create or join your trips",
-                    description: "Start your group in just one tap. Add your destination, dates, and travel preferences to get started.",
+                    title: "Create or join a trip",
+                    description: "Create a trip in just few steps...",
                     tooltipPosition: .above,
                     scrollView: self?.scrollVw
                 )

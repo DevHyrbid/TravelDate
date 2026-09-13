@@ -14,7 +14,7 @@ final class ChatMessageCell: UITableViewCell {
 
     // MARK: - Colors
 
-    private let outgoingColor = UIColor.themeOrange
+    private let outgoingColor = UIColor.appBorder
 
     private let incomingColor = UIColor(
         white: 1.0,
