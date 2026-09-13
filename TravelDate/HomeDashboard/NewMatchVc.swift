@@ -102,6 +102,7 @@ class NewMatchVc: BaseClassVc {
                     } else {
                         self.lblNoData.isHidden = true
                     }
+                    self.lblNoData.text = "You have no new trips yet"
                 }
             }
         }
@@ -118,6 +119,7 @@ class NewMatchVc: BaseClassVc {
             
         case 2:
             reqType = 4
+            self.lblNoData.text = "You have no trips saved yet"
             
         default:
             break
@@ -134,11 +136,12 @@ class NewMatchVc: BaseClassVc {
                 self.dataGroup = groups
                 print("Saved Groups:", groups.count)
                 if self.dataGroup?.count == 1 {
-                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved group"
+                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved trip"
                 } else {
-                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved groups "
+                    self.lblMatchCount.text = "you have \(self.dataGroup?.count ?? 0) saved trips "
                 }
                 self.lblNoData.isHidden = !groups.isEmpty
+                
                 self.tblVw.reloadData()
             }
         }

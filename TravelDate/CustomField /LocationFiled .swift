@@ -1,7 +1,8 @@
+
 //
 //  LocationSearchView.swift
 //
-//  City-only location search using MapKit
+//  Trip-based city/country location search using MapKit
 //
 
 import UIKit
@@ -17,20 +18,38 @@ final class LocationSearchView: UIView {
         let coordinate: CLLocationCoordinate2D
     }
 
+    private enum QueryType {
+        case city
+        case country
+        case cityAndCountry
+    }
+
+    private struct ParsedQuery {
+        let type: QueryType
+        let city: String
+        let country: String
+    }
+
     // MARK: - Views
 
     private let tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .plain)
+        let tableView = UITableView(
+            frame: .zero,
+            style: .plain
+        )
+
         tableView.isHidden = true
         tableView.layer.cornerRadius = 10
         tableView.clipsToBounds = true
-        tableView.rowHeight = 72
+        tableView.rowHeight = 64
+
         tableView.separatorInset = UIEdgeInsets(
             top: 0,
             left: 16,
             bottom: 0,
             right: 16
         )
+
         return tableView
     }()
 
@@ -39,12 +58,20 @@ final class LocationSearchView: UIView {
     private var results: [CityResult] = []
 
     private var searchWorkItem: DispatchWorkItem?
+
     private var activeSearch: MKLocalSearch?
+
     private var searchGeneration = 0
+
+    // MARK: - Query State
+
+    private var currentQueryType: QueryType = .city
 
     // MARK: - Callback
 
-    var onLocationSelected: ((String, CLLocationCoordinate2D) -> Void)?
+    var onLocationSelected: (
+        (String, CLLocationCoordinate2D) -> Void
+    )?
 
     weak var attachedTextField: UITextField?
 
@@ -68,15 +95,27 @@ final class LocationSearchView: UIView {
     // MARK: - Setup
 
     private func setup() {
+
         addSubview(tableView)
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            tableView.heightAnchor.constraint(equalToConstant: 220)
+            tableView.topAnchor.constraint(
+                equalTo: topAnchor
+            ),
+
+            tableView.leadingAnchor.constraint(
+                equalTo: leadingAnchor
+            ),
+
+            tableView.trailingAnchor.constraint(
+                equalTo: trailingAnchor
+            ),
+
+            tableView.heightAnchor.constraint(
+                equalToConstant: 256
+            )
         ])
 
         tableView.delegate = self
@@ -91,6 +130,7 @@ final class LocationSearchView: UIView {
     // MARK: - Attach
 
     func attach(to textField: UITextField) {
+
         attachedTextField = textField
 
         textField.addTarget(
@@ -109,27 +149,38 @@ final class LocationSearchView: UIView {
     // MARK: - Text Changed
 
     @objc private func textChanged() {
-        let query = attachedTextField?.text?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let query =
+            attachedTextField?.text?
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                ) ?? ""
 
         searchWorkItem?.cancel()
         activeSearch?.cancel()
 
         results.removeAll()
+
         tableView.reloadData()
         tableView.isHidden = true
 
         searchGeneration += 1
+
         let generation = searchGeneration
 
         guard query.count >= 2 else {
             return
         }
 
-        // Debounce typing so we don't fire a MapKit search for every keystroke.
+        let parsedQuery = parseQuery(query)
+
+        currentQueryType = parsedQuery.type
+
         let workItem = DispatchWorkItem { [weak self] in
-            self?.searchCities(
+
+            self?.searchLocations(
                 query: query,
+                parsedQuery: parsedQuery,
                 generation: generation
             )
         }
@@ -142,50 +193,135 @@ final class LocationSearchView: UIView {
         )
     }
 
+    // MARK: - Begin Editing
+
     @objc private func beginEditing() {
+
         isHidden = false
+
         superview?.bringSubviewToFront(self)
 
-        let query = attachedTextField?.text?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let query =
+            attachedTextField?.text?
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                ) ?? ""
 
-        if query.count >= 2 {
-            searchCities(
-                query: query,
-                generation: searchGeneration
-            )
+        guard query.count >= 2 else {
+            return
         }
+
+        let parsedQuery = parseQuery(query)
+
+        currentQueryType = parsedQuery.type
+
+        searchLocations(
+            query: query,
+            parsedQuery: parsedQuery,
+            generation: searchGeneration
+        )
     }
 
-    // MARK: - City Search
+    // MARK: - Parse Query
 
-    private func searchCities(
+    private func parseQuery(
+        _ query: String
+    ) -> ParsedQuery {
+
+        let parts = query
+            .split(
+                separator: ",",
+                omittingEmptySubsequences: true
+            )
+            .map {
+                $0.trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                )
+            }
+            .filter {
+                !$0.isEmpty
+            }
+
+        // ---------------------------------------------------------
+        // City + Country
+        //
+        // Example:
+        // Montreal, Canada
+        // ---------------------------------------------------------
+
+        if parts.count >= 2 {
+
+            return ParsedQuery(
+                type: .cityAndCountry,
+                city: normalize(parts[0]),
+                country: normalize(parts[1])
+            )
+        }
+
+        let value = normalize(
+            parts.first ?? ""
+        )
+
+        // A single word initially behaves as a city search.
+        //
+        // MapKit's returned placemarks are then used to determine
+        // whether the search term is actually a country.
+        //
+        // This prevents unrelated locality results such as Dural
+        // appearing for Montreal.
+        return ParsedQuery(
+            type: .city,
+            city: value,
+            country: ""
+        )
+    }
+
+    // MARK: - Search Locations
+
+    private func searchLocations(
         query: String,
+        parsedQuery: ParsedQuery,
         generation: Int
     ) {
+
         guard generation == searchGeneration else {
             return
         }
 
         let request = MKLocalSearch.Request()
+
         request.naturalLanguageQuery = query
 
-        // Worldwide search.
-        // We intentionally do NOT set a region.
+        // ---------------------------------------------------------
+        // WORLDWIDE SEARCH
+        // ---------------------------------------------------------
+        //
+        // Do NOT assign a region.
+        //
+        // This keeps this picker worldwide instead of prioritizing
+        // the user's current location.
+        //
+        // ---------------------------------------------------------
+
+        // Locality only.
         request.addressFilter = MKAddressFilter(
             including: .locality
         )
 
-        // Do not return businesses / restaurants / landmarks.
+        // No restaurants, airports, landmarks, stores, etc.
         request.pointOfInterestFilter = .excludingAll
 
         // Address/locality results only.
         request.resultTypes = [.address]
 
-        let search = MKLocalSearch(request: request)
+        let search = MKLocalSearch(
+            request: request
+        )
+
         activeSearch = search
 
         search.start { [weak self] response, error in
+
             guard let self = self else {
                 return
             }
@@ -195,42 +331,60 @@ final class LocationSearchView: UIView {
             }
 
             guard error == nil else {
+
                 DispatchQueue.main.async {
-                    guard generation == self.searchGeneration else {
+
+                    guard generation ==
+                            self.searchGeneration
+                    else {
                         return
                     }
 
                     self.results.removeAll()
+
                     self.tableView.reloadData()
+
                     self.tableView.isHidden = true
                 }
+
                 return
             }
 
-            let mapItems = response?.mapItems ?? []
+            let mapItems =
+                response?.mapItems ?? []
 
-            var cityResults: [CityResult] = []
+            // -----------------------------------------------------
+            // FIRST PASS
+            //
+            // Extract valid city + country pairs.
+            // -----------------------------------------------------
+
+            var candidates: [CityResult] = []
+
             var seen = Set<String>()
 
             for mapItem in mapItems {
-                let placemark = mapItem.placemark
 
-                guard let locality = placemark.locality?
-                    .trimmingCharacters(in: .whitespacesAndNewlines),
-                      !locality.isEmpty else {
+                let placemark =
+                    mapItem.placemark
+
+                guard let city =
+                        placemark.locality?
+                            .trimmingCharacters(
+                                in: .whitespacesAndNewlines
+                            ),
+                      !city.isEmpty
+                else {
                     continue
                 }
 
-                let country = placemark.country?
-                    .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-                let key = "\(locality)|\(country)"
-                    .folding(
-                        options: [.diacriticInsensitive, .caseInsensitive],
-                        locale: .current
-                    )
-
-                guard !seen.contains(key) else {
+                guard let country =
+                        placemark.country?
+                            .trimmingCharacters(
+                                in: .whitespacesAndNewlines
+                            ),
+                      !country.isEmpty
+                else {
                     continue
                 }
 
@@ -240,52 +394,281 @@ final class LocationSearchView: UIView {
                     continue
                 }
 
+                let normalizedCity =
+                    self.normalize(city)
+
+                let normalizedCountry =
+                    self.normalize(country)
+
+                let key =
+                    "\(normalizedCity)|\(normalizedCountry)"
+
+                guard !seen.contains(key) else {
+                    continue
+                }
+
                 seen.insert(key)
 
-                cityResults.append(
+                candidates.append(
                     CityResult(
-                        city: locality,
+                        city: city,
                         country: country,
                         coordinate: placemark.coordinate
                     )
                 )
+            }
 
-                if cityResults.count == 8 {
-                    break
+            // -----------------------------------------------------
+            // DETERMINE WHETHER A SINGLE-WORD QUERY IS A COUNTRY
+            // -----------------------------------------------------
+            //
+            // Example:
+            //
+            // Canada
+            //
+            // MapKit may return Canadian cities with:
+            //
+            // country = Canada
+            //
+            // In that case we switch to country mode.
+            // -----------------------------------------------------
+
+            let finalType: QueryType
+
+            if parsedQuery.type == .city {
+
+                let countryMatches =
+                    candidates.filter {
+
+                        self.normalize(
+                            $0.country
+                        ) == parsedQuery.city
+                    }
+
+                if !countryMatches.isEmpty {
+
+                    finalType = .country
+
+                } else {
+
+                    finalType = .city
                 }
+
+            } else {
+
+                finalType = parsedQuery.type
             }
 
-            // MapKit normally returns the most relevant locality first.
-            // Keep that relevance order, but prefer an exact city-name match
-            // when one is present.
-            let normalizedQuery = self.normalize(query)
+            self.currentQueryType = finalType
 
-            let exactMatches = cityResults.filter {
-                self.normalize($0.city) == normalizedQuery
+            // -----------------------------------------------------
+            // FINAL FILTER
+            // -----------------------------------------------------
+
+            let filteredResults: [CityResult]
+
+            switch finalType {
+
+            // -----------------------------------------------------
+            // CITY SEARCH
+            //
+            // Montreal
+            //
+            // ONLY Montreal.
+            // Dural is rejected.
+            // -----------------------------------------------------
+
+            case .city:
+
+                filteredResults =
+                    candidates.filter {
+
+                        self.cityMatches(
+                            city: $0.city,
+                            query: parsedQuery.city
+                        )
+                    }
+
+            // -----------------------------------------------------
+            // COUNTRY SEARCH
+            //
+            // Canada
+            //
+            // Return cities whose country is Canada.
+            // -----------------------------------------------------
+
+            case .country:
+
+                let countryName =
+                    parsedQuery.type == .city
+                    ? parsedQuery.city
+                    : parsedQuery.country
+
+                filteredResults =
+                    candidates.filter {
+
+                        self.countryMatches(
+                            country: $0.country,
+                            query: countryName
+                        )
+                    }
+
+            // -----------------------------------------------------
+            // CITY + COUNTRY
+            //
+            // Montreal, Canada
+            //
+            // BOTH must match.
+            // -----------------------------------------------------
+
+            case .cityAndCountry:
+
+                filteredResults =
+                    candidates.filter {
+
+                        self.normalize(
+                            $0.city
+                        ) == parsedQuery.city
+                        &&
+                        self.normalize(
+                            $0.country
+                        ) == parsedQuery.country
+                    }
             }
 
-            let otherMatches = cityResults.filter {
-                self.normalize($0.city) != normalizedQuery
-            }
+            // -----------------------------------------------------
+            // SORT
+            // -----------------------------------------------------
 
-            let orderedResults = exactMatches + otherMatches
+            let sortedResults =
+                self.sortResults(
+                    filteredResults,
+                    type: finalType,
+                    query: parsedQuery
+                )
+
+            // Maximum 8 rows.
+            let limitedResults =
+                Array(
+                    sortedResults.prefix(8)
+                )
 
             DispatchQueue.main.async {
-                guard generation == self.searchGeneration else {
+
+                guard generation ==
+                        self.searchGeneration
+                else {
                     return
                 }
 
-                self.results = orderedResults
+                self.results = limitedResults
+
                 self.tableView.reloadData()
-                self.tableView.isHidden = orderedResults.isEmpty
+
+                self.tableView.isHidden =
+                    limitedResults.isEmpty
             }
+        }
+    }
+
+    // MARK: - City Matching
+
+    private func cityMatches(
+        city: String,
+        query: String
+    ) -> Bool {
+
+        let normalizedCity =
+            normalize(city)
+
+        let normalizedQuery =
+            normalize(query)
+
+        // Exact match is preferred.
+        if normalizedCity == normalizedQuery {
+            return true
+        }
+
+        // Allow normal prefix typing:
+        //
+        // Mon
+        // Montreal
+        //
+        // But do NOT allow arbitrary fuzzy matches that can produce
+        // unrelated cities.
+        return normalizedCity.hasPrefix(
+            normalizedQuery
+        )
+    }
+
+    // MARK: - Country Matching
+
+    private func countryMatches(
+        country: String,
+        query: String
+    ) -> Bool {
+
+        let normalizedCountry =
+            normalize(country)
+
+        let normalizedQuery =
+            normalize(query)
+
+        return normalizedCountry ==
+            normalizedQuery
+    }
+
+    // MARK: - Sorting
+
+    private func sortResults(
+        _ results: [CityResult],
+        type: QueryType,
+        query: ParsedQuery
+    ) -> [CityResult] {
+
+        switch type {
+
+        case .city:
+
+            return results.sorted {
+
+                let firstExact =
+                    normalize($0.city) ==
+                    query.city
+
+                let secondExact =
+                    normalize($1.city) ==
+                    query.city
+
+                if firstExact != secondExact {
+                    return firstExact
+                }
+
+                return normalize($0.city) <
+                    normalize($1.city)
+            }
+
+        case .country:
+
+            return results.sorted {
+
+                normalize($0.city) <
+                    normalize($1.city)
+            }
+
+        case .cityAndCountry:
+
+            return results
         }
     }
 
     // MARK: - Normalization
 
-    private func normalize(_ value: String) -> String {
-        value
+    private func normalize(
+        _ value: String
+    ) -> String {
+
+        return value
             .folding(
                 options: [
                     .diacriticInsensitive,
@@ -293,54 +676,85 @@ final class LocationSearchView: UIView {
                 ],
                 locale: .current
             )
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
+    }
+
+    // MARK: - Hide Results
+
+    func hideResults() {
+
+        searchWorkItem?.cancel()
+
+        activeSearch?.cancel()
+
+        tableView.isHidden = true
     }
 
     // MARK: - Clear
 
-    func hideResults() {
-        searchWorkItem?.cancel()
-        activeSearch?.cancel()
-        tableView.isHidden = true
-    }
-
     private func clearResults() {
+
         searchWorkItem?.cancel()
+
         activeSearch?.cancel()
 
         results.removeAll()
+
         tableView.reloadData()
+
         tableView.isHidden = true
     }
 
     // MARK: - Selection
 
-    private func selectLocation(_ result: CityResult) {
-        let name: String
+    private func selectLocation(
+        _ result: CityResult
+    ) {
 
-        if result.country.isEmpty {
-            name = result.city
-        } else {
-            name = "\(result.city), \(result.country)"
-        }
+        // ---------------------------------------------------------
+        // IMPORTANT
+        //
+        // UI displays only the city.
+        //
+        // Internally we still return:
+        //
+        // Montreal, Canada
+        //
+        // to the trip controller.
+        // ---------------------------------------------------------
 
-        attachedTextField?.text = name
+        let fullLocation =
+            "\(result.city), \(result.country)"
+
+        // What the user sees in the text field.
+        attachedTextField?.text =
+            result.city
 
         tableView.isHidden = true
+
         results.removeAll()
 
-        onLocationSelected?(name, result.coordinate)
+        // What the trip logic receives.
+        onLocationSelected?(
+            fullLocation,
+            result.coordinate
+        )
     }
 }
 
 // MARK: - UITableViewDelegate / UITableViewDataSource
 
-extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
+extension LocationSearchView:
+    UITableViewDelegate,
+    UITableViewDataSource {
 
     func tableView(
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
+
         return results.count
     }
 
@@ -349,22 +763,57 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
 
-        let result = results[indexPath.row]
+        let result =
+            results[indexPath.row]
 
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: "LocationCell",
-            for: indexPath
-        )
+        let cell =
+            tableView.dequeueReusableCell(
+                withIdentifier: "LocationCell",
+                for: indexPath
+            )
 
-        var configuration = cell.defaultContentConfiguration()
+        var configuration =
+            cell.defaultContentConfiguration()
 
-        configuration.text = result.city
+        // ---------------------------------------------------------
+        // CITY SEARCH
+        //
+        // Show ONLY city.
+        //
+        // Montreal
+        //
+        // ---------------------------------------------------------
 
-        if !result.country.isEmpty {
-            configuration.secondaryText = result.country
+        if currentQueryType == .city {
+
+            configuration.text =
+                result.city
+
+            configuration.secondaryText =
+                nil
         }
 
-        cell.contentConfiguration = configuration
+        // ---------------------------------------------------------
+        // COUNTRY SEARCH
+        //
+        // Show city + country.
+        //
+        // Montreal
+        // Canada
+        //
+        // ---------------------------------------------------------
+
+        else {
+
+            configuration.text =
+                result.city
+
+            configuration.secondaryText =
+                result.country
+        }
+
+        cell.contentConfiguration =
+            configuration
 
         return cell
     }
@@ -373,14 +822,22 @@ extension LocationSearchView: UITableViewDelegate, UITableViewDataSource {
         _ tableView: UITableView,
         didSelectRowAt indexPath: IndexPath
     ) {
-        tableView.deselectRow(at: indexPath, animated: true)
 
-        guard results.indices.contains(indexPath.row) else {
+        tableView.deselectRow(
+            at: indexPath,
+            animated: true
+        )
+
+        guard results.indices.contains(
+            indexPath.row
+        ) else {
             return
         }
 
-        let result = results[indexPath.row]
-        selectLocation(result)
+        selectLocation(
+            results[indexPath.row]
+        )
     }
 }
+
 

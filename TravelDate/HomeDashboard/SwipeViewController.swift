@@ -688,7 +688,7 @@ enum OverlayType {
         switch self {
         case .missingLocation:    return "Add your location to start discovering travel groups."
         case .missingTravelStyles: return "Select your travel styles to find matching groups."
-        case .noGroups:           return "We’ll keep looking. Check back tomorrow to see who’s heading there on your dates."
+        case .noGroups:           return "Check back tomorrow to see who’s heading there on your dates."
         }
     }
 

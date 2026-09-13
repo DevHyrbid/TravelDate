@@ -15,7 +15,7 @@
 		23208269C85D8876427E8CAC /* Pods_TravelDate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TravelDate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6CA67003EEEF38E797A1DF08 /* Pods-TravelDate.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelDate.debug.xcconfig"; path = "Target Support Files/Pods-TravelDate/Pods-TravelDate.debug.xcconfig"; sourceTree = "<group>"; };
 		9A1367559CF9B8B73BE074F0 /* Pods-TravelDate.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelDate.release.xcconfig"; path = "Target Support Files/Pods-TravelDate/Pods-TravelDate.release.xcconfig"; sourceTree = "<group>"; };
-		BC0DC08C2F7BCF4600C96E41 /* TravelDate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TravelDate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC0DC08C2F7BCF4600C96E41 /* Trips.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Trips.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC7E157A2FE533750058974A /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -85,7 +85,7 @@
 		BC0DC08D2F7BCF4600C96E41 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BC0DC08C2F7BCF4600C96E41 /* TravelDate.app */,
+				BC0DC08C2F7BCF4600C96E41 /* Trips.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -112,7 +112,7 @@
 			);
 			name = TravelDate;
 			productName = TravelDate;
-			productReference = BC0DC08C2F7BCF4600C96E41 /* TravelDate.app */;
+			productReference = BC0DC08C2F7BCF4600C96E41 /* Trips.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -246,7 +246,7 @@
 				);
 				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ios.Trips;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Trips;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -288,7 +288,7 @@
 				);
 				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ios.Trips;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Trips;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
