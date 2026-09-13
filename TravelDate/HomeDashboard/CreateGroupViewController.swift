@@ -162,7 +162,7 @@ class CreateGroupViewController: BaseClassVc {
         backBtn.addTarget(self, action: #selector(handleBack), for: .touchUpInside)
 
         let titleLbl = UILabel()
-        titleLbl.text      = "Create a Group"
+        titleLbl.text      = "Create a Trip"
         titleLbl.textColor = .white
         titleLbl.setFont(.medium, size: 18.0)
 
@@ -405,8 +405,8 @@ class CreateGroupViewController: BaseClassVc {
 
         // Group Title
         stack.addArrangedSubview(
-            labeledField(title: "Group Title",
-                         placeholder: "Enter your group name",
+            labeledField(title: "Trip Title",
+                         placeholder: "Enter your trip name",
                          textField: groupNameField))
 
         // Destination

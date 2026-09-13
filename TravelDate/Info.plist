@@ -74,5 +74,9 @@
 	</dict>
 	<key>CFBundleIdentifier</key>
 	<string></string>
+	<key>CFBundleDisplayName</key>
+	<string>Trips</string>
+	<key>CFBundleName</key>
+	<string>Trips</string>
 </dict>
 </plist>

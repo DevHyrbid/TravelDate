@@ -22,6 +22,7 @@ class SwipeViewController: BaseClassVc {
     private var panOriginCenter: CGPoint = .zero
     private var blurView: UIVisualEffectView?
     var groupsCount = 0
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()

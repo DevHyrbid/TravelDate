@@ -31,6 +31,26 @@ final class ChatMessageCell: UITableViewCell {
         alpha: 0.52
     )
 
+    // MARK: - Sizing
+
+    /// Text bubbles are allowed to stretch fairly wide (WhatsApp-style wrapping).
+    private let bubbleMaxWidthRatio: CGFloat = 0.72
+
+    /// Image/video attachments are capped narrower than the text bubble max —
+    /// full-width photos look oversized compared to WhatsApp's thumbnails.
+    private let attachmentMaxWidthRatio: CGFloat = 0.58
+
+    private let attachmentMaxHeight: CGFloat = 220
+
+    /// Height reserved while an attachment is still loading, before its real
+    /// aspect ratio is known.
+    private let attachmentPlaceholderHeight: CGFloat = 160
+
+    /// If a loader never calls back (success or failure) within this window,
+    /// the reserved attachment space collapses instead of sitting there
+    /// blank forever.
+    private let attachmentLoadTimeout: TimeInterval = 6
+
     // MARK: - Main UI
 
     private let avatarView = UIImageView()
@@ -76,6 +96,8 @@ final class ChatMessageCell: UITableViewCell {
     private var bubbleTrailingConstraint: NSLayoutConstraint!
 
     private var bubbleTopConstraint: NSLayoutConstraint!
+
+    private var bubbleMaxWidthConstraint: NSLayoutConstraint!
 
     private var attachmentWidthConstraint: NSLayoutConstraint!
 
@@ -191,7 +213,7 @@ final class ChatMessageCell: UITableViewCell {
 
         // MARK: Bubble
 
-        bubbleView.layer.cornerRadius = 18
+        bubbleView.layer.cornerCurve = .continuous
         bubbleView.clipsToBounds = true
 
         // MARK: Message
@@ -219,7 +241,7 @@ final class ChatMessageCell: UITableViewCell {
 
         attachmentView.contentMode = .scaleAspectFill
         attachmentView.clipsToBounds = true
-        attachmentView.layer.cornerRadius = 15
+        attachmentView.layer.cornerRadius = 12
 
         attachmentView.backgroundColor = UIColor(
             white: 1,
@@ -331,7 +353,7 @@ final class ChatMessageCell: UITableViewCell {
         playContainerView.backgroundColor =
             UIColor.black.withAlphaComponent(0.45)
 
-        playContainerView.layer.cornerRadius = 27
+        playContainerView.layer.cornerRadius = 22
         playContainerView.isHidden = true
 
         attachmentView.addSubview(playContainerView)
@@ -378,12 +400,20 @@ final class ChatMessageCell: UITableViewCell {
 
     private func setupConstraints() {
 
-        let maxBubbleWidth =
-            UIScreen.main.bounds.width * 0.72
+        let screenWidth = UIScreen.main.bounds.width
+
+        let maxBubbleWidth = screenWidth * bubbleMaxWidthRatio
+
+        let maxAttachmentWidth = screenWidth * attachmentMaxWidthRatio
+
+        bubbleMaxWidthConstraint =
+            bubbleView.widthAnchor.constraint(
+                lessThanOrEqualToConstant: maxBubbleWidth
+            )
 
         attachmentWidthConstraint =
             attachmentView.widthAnchor.constraint(
-                equalToConstant: maxBubbleWidth
+                equalToConstant: maxAttachmentWidth
             )
 
         attachmentHeightConstraint =
@@ -431,9 +461,7 @@ final class ChatMessageCell: UITableViewCell {
 
             // Bubble
 
-            bubbleView.widthAnchor.constraint(
-                lessThanOrEqualToConstant: maxBubbleWidth
-            ),
+            bubbleMaxWidthConstraint,
 
             bubbleView.bottomAnchor.constraint(
                 equalTo: contentView.bottomAnchor,
@@ -518,11 +546,11 @@ final class ChatMessageCell: UITableViewCell {
             ),
 
             playContainerView.widthAnchor.constraint(
-                equalToConstant: 54
+                equalToConstant: 44
             ),
 
             playContainerView.heightAnchor.constraint(
-                equalToConstant: 54
+                equalToConstant: 44
             ),
 
             playIconView.centerXAnchor.constraint(
@@ -534,11 +562,11 @@ final class ChatMessageCell: UITableViewCell {
             ),
 
             playIconView.widthAnchor.constraint(
-                equalToConstant: 20
+                equalToConstant: 18
             ),
 
             playIconView.heightAnchor.constraint(
-                equalToConstant: 20
+                equalToConstant: 18
             ),
 
             // Duration
@@ -586,16 +614,6 @@ final class ChatMessageCell: UITableViewCell {
     // MARK: - Configure
 
     func configure(with item: ChatItem) {
-        print("========== CHAT ITEM ==========")
-           print("content:", item.content as Any)
-           print("messageType:", item.messageType)
-           print("imageURL:", item.imageURL as Any)
-           print("videoURL:", item.videoURL as Any)
-           print("senderName:", item.senderName as Any)
-           print("senderImage:", item.senderImage as Any)
-           print("createdAt:", item.createdAt)
-           print("isMine:", item.isMine)
-           print("===============================")
 
         loadToken += 1
 
@@ -604,6 +622,7 @@ final class ChatMessageCell: UITableViewCell {
         currentMessageType = item.messageType
 
         currentVideoRemoteURL = item.videoURL
+
         currentVideoLocalURL = item.localVideoURL
 
         timeLabel.text =
@@ -649,6 +668,8 @@ final class ChatMessageCell: UITableViewCell {
 
         bubbleView.layer.borderWidth = 0
 
+        applyBubbleShape(isMine: true)
+
         timeLabel.textColor =
             UIColor.white.withAlphaComponent(0.62)
 
@@ -680,12 +701,15 @@ final class ChatMessageCell: UITableViewCell {
         bubbleView.layer.borderColor =
             incomingBorderColor.cgColor
 
+        applyBubbleShape(isMine: false)
+
         statusLabel.isHidden = true
 
         sendingIndicator.stopAnimating()
 
         if
             let image = item.senderImage,
+            !image.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             let url = URL(string: image)
         {
             ChatImageLoader.load(
@@ -700,6 +724,17 @@ final class ChatMessageCell: UITableViewCell {
         nameLabel.text = item.senderName
     }
 
+    /// WhatsApp-style bubble: mostly rounded, with the corner nearest the
+    /// message's own edge squared off slightly to read as a tail.
+    private func applyBubbleShape(isMine: Bool) {
+
+        bubbleView.layer.cornerRadius = 16
+
+        bubbleView.layer.maskedCorners = isMine
+            ? [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner]
+            : [.layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+    }
+
     // MARK: - Content
 
     private func configureContent(
@@ -707,12 +742,21 @@ final class ChatMessageCell: UITableViewCell {
         token: Int
     ) {
 
+        // Guard against empty AND common placeholder-ish strings, not just
+        // nil — some APIs (and locally-echoed pending messages) send ""
+        // or sentinel values instead of null for an absent attachment
+        // URL, which previously slipped past a `!= nil` check and
+        // reserved attachment space for a text-only message.
+        let trimmedImageURL = Self.normalizedURLString(item.imageURL)
+
+        let trimmedVideoURL = Self.normalizedURLString(item.videoURL)
+
         let hasImage =
-            item.imageURL != nil ||
+            trimmedImageURL != nil ||
             item.localImage != nil
 
         let hasVideo =
-            item.videoURL != nil ||
+            trimmedVideoURL != nil ||
             item.localVideoURL != nil
 
         let hasText =
@@ -727,11 +771,7 @@ final class ChatMessageCell: UITableViewCell {
         messageLabel.text =
             hasText ? item.content : nil
 
-        
-
         attachmentView.image = nil
-
-        
 
         attachmentView.isHidden = true
         attachmentWidthConstraint.isActive = false
@@ -759,6 +799,30 @@ final class ChatMessageCell: UITableViewCell {
         }
     }
 
+    /// Returns a trimmed URL string, or nil if the value is missing, blank,
+    /// or one of the common placeholder strings some backends/local models
+    /// send instead of a real null.
+    private static func normalizedURLString(_ raw: String?) -> String? {
+
+        guard let raw else {
+            return nil
+        }
+
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmed.isEmpty else {
+            return nil
+        }
+
+        let placeholders: Set<String> = ["null", "nil", "undefined", "n/a", "none"]
+
+        if placeholders.contains(trimmed.lowercased()) {
+            return nil
+        }
+
+        return trimmed
+    }
+
     // MARK: - Image
 
     private func configureImage(
@@ -781,15 +845,20 @@ final class ChatMessageCell: UITableViewCell {
         }
 
         guard
-            let path = item.imageURL,
+            let path = Self.normalizedURLString(item.imageURL),
             let url = URL(
                 string: "\(APiConstant.base)\(path)"
             )
         else {
+            // No valid image after all — undo the reservation instead of
+            // leaving a blank block.
+            collapseAttachmentIfEmpty()
             return
         }
 
-        attachmentHeightConstraint.constant = 220
+        attachmentHeightConstraint.constant = attachmentPlaceholderHeight
+
+        scheduleAttachmentTimeout(token: token)
 
         attachmentView.kf.setImage(
             with: url
@@ -803,7 +872,9 @@ final class ChatMessageCell: UITableViewCell {
                 return
             }
 
-            if case .success(let value) = result {
+            switch result {
+
+            case .success(let value):
 
                 self.attachmentView.image =
                     value.image
@@ -812,6 +883,12 @@ final class ChatMessageCell: UITableViewCell {
                     value.image.size,
                     notify: true
                 )
+
+            case .failure:
+
+                // Load failed — collapse the reserved space instead of
+                // leaving a permanent blank block.
+                self.collapseAttachmentIfEmpty()
             }
         }
     }
@@ -827,7 +904,7 @@ final class ChatMessageCell: UITableViewCell {
 
         playContainerView.isHidden = false
 
-        attachmentHeightConstraint.constant = 220
+        attachmentHeightConstraint.constant = attachmentPlaceholderHeight
 
         if let duration = item.videoDuration {
 
@@ -849,6 +926,8 @@ final class ChatMessageCell: UITableViewCell {
             return
         }
 
+        scheduleAttachmentTimeout(token: token)
+
         if let localURL = item.localVideoURL {
 
             ChatVideoThumbnailLoader.loadLocal(
@@ -864,6 +943,7 @@ final class ChatMessageCell: UITableViewCell {
                 }
 
                 guard let thumbnail else {
+                    self.collapseAttachmentIfEmpty()
                     return
                 }
 
@@ -879,7 +959,7 @@ final class ChatMessageCell: UITableViewCell {
             return
         }
 
-        if let remoteURL = item.videoURL {
+        if let remoteURL = Self.normalizedURLString(item.videoURL) {
 
             ChatVideoThumbnailLoader.loadRemote(
                 remoteURL
@@ -894,6 +974,7 @@ final class ChatMessageCell: UITableViewCell {
                 }
 
                 guard let thumbnail else {
+                    self.collapseAttachmentIfEmpty()
                     return
                 }
 
@@ -905,6 +986,12 @@ final class ChatMessageCell: UITableViewCell {
                     notify: true
                 )
             }
+
+        } else {
+
+            // No local or remote video source after all — undo the
+            // reservation instead of leaving a blank block.
+            collapseAttachmentIfEmpty()
         }
     }
 
@@ -923,9 +1010,9 @@ final class ChatMessageCell: UITableViewCell {
         }
 
         let maxWidth =
-            UIScreen.main.bounds.width * 0.72
+            UIScreen.main.bounds.width * attachmentMaxWidthRatio
 
-        let maxHeight: CGFloat = 300
+        let maxHeight = attachmentMaxHeight
 
         let aspect =
             originalSize.width /
@@ -949,6 +1036,43 @@ final class ChatMessageCell: UITableViewCell {
             DispatchQueue.main.async { [weak self] in
                 self?.onAttachmentSizeResolved?()
             }
+        }
+    }
+
+    /// After starting an async attachment load, collapse the reserved slot
+    /// if neither success nor failure has arrived within the timeout — a
+    /// safety net for loaders that can silently never call back.
+    private func scheduleAttachmentTimeout(token: Int) {
+
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + attachmentLoadTimeout
+        ) { [weak self] in
+
+            guard let self, self.loadToken == token else {
+                return
+            }
+
+            guard self.attachmentView.image == nil else {
+                return
+            }
+
+            self.collapseAttachmentIfEmpty()
+        }
+    }
+
+    /// Collapses a reserved attachment slot back to zero when a load
+    /// ultimately fails, is invalid, or never resolves — so the bubble
+    /// doesn't keep a permanent blank gap.
+    private func collapseAttachmentIfEmpty() {
+
+        attachmentView.isHidden = true
+        playContainerView.isHidden = true
+        durationLabel.isHidden = true
+        attachmentWidthConstraint.isActive = false
+        attachmentHeightConstraint.constant = 0
+
+        DispatchQueue.main.async { [weak self] in
+            self?.onAttachmentSizeResolved?()
         }
     }
 
@@ -1060,7 +1184,9 @@ final class ChatMessageCell: UITableViewCell {
         attachmentHeightConstraint.constant = 0
 
         attachmentWidthConstraint.constant =
-            UIScreen.main.bounds.width * 0.72
+            UIScreen.main.bounds.width * attachmentMaxWidthRatio
+
+        attachmentWidthConstraint.isActive = false
 
         avatarView.isHidden = false
         nameLabel.isHidden = false

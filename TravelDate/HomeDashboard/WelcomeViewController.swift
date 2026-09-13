@@ -66,9 +66,9 @@ class WelcomeViewController: BaseClassVc {
 
     // MARK: - Create Group row
     private let createBarView  = WelcomeViewController.accentBar()
-    private let createTitleLbl = WelcomeViewController.sectionTitle("Create Group")
+    private let createTitleLbl = WelcomeViewController.sectionTitle("Create Trip")
     private let createDescLbl  = WelcomeViewController.sectionDesc(
-        "Create group from scratch and invite friends to join later !")
+        "Create trip from scratch and invite friends to join later !")
 
     private let createButton: UIButton = {
         let b = UIButton(type: .system)
@@ -84,9 +84,9 @@ class WelcomeViewController: BaseClassVc {
 
     // MARK: - Join Group row
     private let joinBarView  = WelcomeViewController.accentBar()
-    private let joinTitleLbl = WelcomeViewController.sectionTitle("Join Group")
+    private let joinTitleLbl = WelcomeViewController.sectionTitle("Join Trip")
     private let joinDescLbl  = WelcomeViewController.sectionDesc(
-        "Paste the link & join your friends existing travel group !")
+        "Paste the link & join your friends existing travel trip !")
 
   
    
@@ -103,7 +103,7 @@ class WelcomeViewController: BaseClassVc {
 
     private let groupLinkLabel: UILabel = {
         let l = UILabel()
-        l.text      = "Group Link"
+        l.text      = "Trip Link"
         l.textColor = .white
         l.setFont(.semiBold, size: 14)
         return l
@@ -152,7 +152,7 @@ class WelcomeViewController: BaseClassVc {
     // MARK: - Bottom CTA
     private let joinButton: UIButton = {
         let b = UIButton(type: .system)
-        b.setTitle("Join Existing Group", for: .normal)
+        b.setTitle("Join Existing Trip", for: .normal)
         b.backgroundColor    = UIColor(white: 0.267, alpha: 1) // #444444
         b.setTitleColor(.white, for: .normal)
         b.layer.cornerRadius = 14
@@ -373,7 +373,7 @@ class WelcomeViewController: BaseClassVc {
         request.joinGroupAPi { errMsg, errCode in
             DispatchQueue.main.async {
                 if errCode == 200 {
-                    self.showAlertAction("Group Joined Successfully") { self.backTapped() }
+                    self.showAlertAction("Trip Joined Successfully") { self.backTapped() }
                     
                     NotificationCenter.default.post(
                         name: .valueUpdated,

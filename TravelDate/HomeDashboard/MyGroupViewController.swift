@@ -31,6 +31,7 @@ class MyGroupViewController: BaseClassVc {
     var res : Group? = nil
     var timer: Timer?
     var targetDate: Date?
+    var chatData: [ChatData] = []
     
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
@@ -270,37 +271,47 @@ extension MyGroupViewController {
     
     @IBAction func btnGroup(_ sender:UIButton) {
 //     openGroupChat()
-        self.tripsTabBarController?.switchTo(index: 3)
+//        self.tripsTabBarController?.switchTo(index: 3)
+        print(self.res?._id)
+        fetchChats { [weak self] in
+            guard let self else { return }
+            let item = chatData.first {
+                print("Comparing '\($0.groupDetails?.id ?? "nil")' == '\(self.res?._id)'")
+                return $0.groupDetails?.id == self.res!._id
+            }
+
+            print(item == nil ? "NOT FOUND" : "FOUND")
+
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: item?.members ?? [],
+                roomId: item?.chatId,
+                roomTitle: item? .name ?? "",
+                type: .group
+            )
+            vc.roomImageURL = ""
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
     
-//    func openGroupChat() {
-//
-//        let group = res
-//
-//        let currentUserId = User.curentUser?.id ?? ""
-//
-//        // Get all member ids
-//        let participantIds = group?.members?.compactMap { $0.id } ?? []
-//
-//       
-//
-//        let viewModel = ChatViewModel(
-//            currentUserId: currentUserId
-//        )
-//        
-//
-//        // Open existing room directly if available
-//        let vc = ChatMessageVc(
-//            viewModel: viewModel,
-//            participants: group?.members ?? [],
-//            roomId: group.chatId,
-//            roomTitle: group.name ?? "",
-//            type: .group
-//        )
-//        print(group, "jerercheck")
-//        vc.roomImageURL =  group.imageArr?[0] ?? ""
-//        vc.memberCount = participantIds.count
-//
-//        navigationController?.pushViewController(vc, animated: true)
-//    }
+
+    
+    
+    
+    private func fetchChats(completion: (() -> Void)? = nil) {
+        request.getChatsInbox(0) { [weak self] model, msg, code in
+            guard let self else { return }
+
+            DispatchQueue.main.async {
+                if code == 200 {
+                    self.chatData = model?.data ?? []
+                    completion?()
+                }
+            }
+        }
+    }
 }
