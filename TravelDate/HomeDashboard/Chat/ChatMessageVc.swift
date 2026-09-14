@@ -123,6 +123,32 @@ final class ChatMessageVc: BaseClassVc {
     }
     
     
+    private func isNearBottom(threshold: CGFloat = 80) -> Bool {
+        let inset = tableView.adjustedContentInset
+        let visibleBottom = tableView.contentOffset.y + tableView.bounds.height - inset.bottom
+        return tableView.contentSize.height - visibleBottom <= threshold
+    }
+
+    private func updateTableAfterAttachmentResolves(for cell: ChatMessageCell) {
+        let wasNearBottom = isNearBottom()
+        let oldOffset = tableView.contentOffset
+
+        UIView.performWithoutAnimation {
+            tableView.beginUpdates()
+            tableView.endUpdates()
+            tableView.layoutIfNeeded()
+        }
+
+        if wasNearBottom {
+            scrollToBottom(animated: false)
+        } else {
+            // Keep the user's current reading position. The row is remeasured
+            // without reloading/recreating the cell, so there is no reloadRows
+            // jump and no stale index-path problem.
+            tableView.setContentOffset(oldOffset, animated: false)
+        }
+    }
+
     private func scrollToBottom(animated: Bool) {
         guard !viewModel.sections.isEmpty else { return }
 
@@ -354,9 +380,12 @@ final class ChatMessageVc: BaseClassVc {
         }
         viewModel.onAppend = { [weak self] in
             guard let self else { return }
+            let shouldScroll = self.isNearBottom()
             self.tableView.reloadData()
             self.tableView.layoutIfNeeded()
-            self.scrollToBottom(animated: true)
+            if shouldScroll {
+                self.scrollToBottom(animated: true)
+            }
         }
         viewModel.onError = { [weak self] message in
             self?.showAlert(message)
@@ -509,9 +538,9 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         let item = viewModel.sections[indexPath.section].items[indexPath.row]
        
         cell.onImageTapped = { [weak self] image in
-            let preview = ImagePreviewVC(image: image!)
-            self?.present(preview, animated: true)
-            
+            guard let self, let image else { return }
+            let preview = ImagePreviewVC(image: image)
+            self.present(preview, animated: true)
         }
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)
@@ -545,28 +574,9 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             self.present(alert, animated: true)
         }
-        cell.onAttachmentSizeResolved = { [weak tableView, weak cell] in
-            guard let tableView, let cell else { return }
-
-            DispatchQueue.main.async {
-                // Re-derive the row's CURRENT index path (not the one
-                // captured above) — the cell may have scrolled/been
-                // reused by the time this async callback fires, and
-                // acting on a stale index path would resize the wrong row.
-                guard let currentIndexPath = tableView.indexPath(for: cell) else { return }
-
-                // reloadRows forces a clean, isolated re-measurement of
-                // just this one row. beginUpdates/endUpdates was racing
-                // with UITableView's own internal self-sizing pass for
-                // OTHER rows still being processed in the same initial
-                // reloadData() batch (visible in the console as
-                // 'UIView-Encapsulated-Layout-Height' conflicts against
-                // the image's real 240pt height) — reloadRows sidesteps
-                // that shared batch-update machinery entirely.
-                UIView.performWithoutAnimation {
-                    tableView.reloadRows(at: [currentIndexPath], with: .none)
-                }
-            }
+        cell.onAttachmentSizeResolved = { [weak self, weak cell] in
+            guard let self, let cell else { return }
+            self.updateTableAfterAttachmentResolves(for: cell)
         }
         cell.configure(with: item, availableWidth: tableView.bounds.width)
         return cell

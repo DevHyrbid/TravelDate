@@ -30,8 +30,8 @@
             filePath = "TravelDate/HomeDashboard/ChatVc.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "648"
-            endingLineNumber = "648"
+            startingLineNumber = "674"
+            endingLineNumber = "674"
             landmarkName = "openDirectChat(at:)"
             landmarkType = "7">
          </BreakpointContent>

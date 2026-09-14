@@ -25,8 +25,8 @@ final class ChatMessageCell: UITableViewCell {
     private let secondaryColor = UIColor(white: 1.0, alpha: 0.52)
 
     private let bubbleMaxWidthRatio: CGFloat = 0.72
-    private let attachmentMaxWidthRatio: CGFloat = 0.68
-    private let attachmentMaxHeight: CGFloat = 300
+    private let attachmentMaxWidthRatio: CGFloat = 0.62
+    private let attachmentMaxHeight: CGFloat = 240
     private let attachmentMinWidth: CGFloat = 180
     private let attachmentMinHeight: CGFloat = 140
 
@@ -180,8 +180,8 @@ private extension ChatMessageCell {
             ?? .systemFont(ofSize: 15, weight: .regular)
         messageLabel.textColor = .white
         messageLabel.numberOfLines = 0
-        messageLabel.lineBreakMode = .byWordWrapping
-        messageLabel.setContentHuggingPriority(.required, for: .horizontal)
+        messageLabel.lineBreakMode = .byCharWrapping
+        messageLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         messageLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
 
@@ -283,34 +283,70 @@ private extension ChatMessageCell {
 private extension ChatMessageCell {
 
     func setupConstraints() {
-        bubbleWidthConstraint = bubbleView.widthAnchor.constraint(equalToConstant: 40)
-        attachmentWidthConstraint = attachmentView.widthAnchor.constraint(equalToConstant: 1)
+        // Initial values only — layoutSubviews() keeps these authoritative
+        // afterwards using contentView.bounds.width (see the comment there
+        // for why UIScreen.main.bounds.width isn't trustworthy here).
+        let screenWidth = UIScreen.main.bounds.width
+        let maxBubbleWidth = screenWidth * bubbleMaxWidthRatio
+        let maxAttachmentWidth = screenWidth * attachmentMaxWidthRatio
+
+        bubbleWidthConstraint = bubbleView.widthAnchor.constraint(
+            equalToConstant: 80
+        )
+
+        // Set eagerly, not lazily on first layout: with
+        // preferredMaxLayoutWidth == 0 and numberOfLines == 0, a UILabel's
+        // very first intrinsic-size pass assumes one unwrapped line, which
+        // conflicts with messageLabel's required hugging/compression
+        // against the bubble's <= width constraint — producing a
+        // too-small first frame that briefly renders before a follow-up
+        // pass corrects it. Knowing the width up front avoids that pass.
+        messageLabel.preferredMaxLayoutWidth = maxBubbleWidth - Self.messageLabelHorizontalInsets
+
+        attachmentWidthConstraint = attachmentView.widthAnchor.constraint(
+            equalToConstant: maxAttachmentWidth
+        )
         attachmentHeightConstraint = attachmentView.heightAnchor.constraint(equalToConstant: 0)
-        bubbleWidthConstraint.isActive = true
 
         NSLayoutConstraint.activate([
+            // Avatar
             avatarView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             avatarView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             avatarView.widthAnchor.constraint(equalToConstant: 32),
             avatarView.heightAnchor.constraint(equalToConstant: 32),
+
+            // Name
             nameLabel.leadingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 8),
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 7),
             nameLabel.heightAnchor.constraint(equalToConstant: 18),
+
+            // Bubble
+            bubbleWidthConstraint,
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6),
+
+            // Bubble stack
             bubbleStack.topAnchor.constraint(equalTo: bubbleView.topAnchor),
             bubbleStack.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor),
             bubbleStack.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor),
             bubbleStack.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor),
+
+            // Message
             messageLabel.topAnchor.constraint(equalTo: messageContainer.topAnchor, constant: 8),
             messageLabel.leadingAnchor.constraint(equalTo: messageContainer.leadingAnchor, constant: 14),
             messageLabel.trailingAnchor.constraint(equalTo: messageContainer.trailingAnchor, constant: -14),
             messageLabel.bottomAnchor.constraint(equalTo: messageContainer.bottomAnchor, constant: -2),
+
+            // Meta
             metaStack.leadingAnchor.constraint(equalTo: metaContainer.leadingAnchor, constant: 14),
             metaStack.trailingAnchor.constraint(equalTo: metaContainer.trailingAnchor, constant: -12),
             metaStack.topAnchor.constraint(equalTo: metaContainer.topAnchor, constant: 2),
             metaStack.bottomAnchor.constraint(equalTo: metaContainer.bottomAnchor, constant: -6),
+
+            // Attachment
             attachmentWidthConstraint,
             attachmentHeightConstraint,
+
+            // Video overlay
             playContainerView.centerXAnchor.constraint(equalTo: attachmentView.centerXAnchor),
             playContainerView.centerYAnchor.constraint(equalTo: attachmentView.centerYAnchor),
             playContainerView.widthAnchor.constraint(equalToConstant: 44),
@@ -319,45 +355,214 @@ private extension ChatMessageCell {
             playIconView.centerYAnchor.constraint(equalTo: playContainerView.centerYAnchor),
             playIconView.widthAnchor.constraint(equalToConstant: 18),
             playIconView.heightAnchor.constraint(equalToConstant: 18),
+
+            // Duration badge
             durationLabel.trailingAnchor.constraint(equalTo: attachmentView.trailingAnchor, constant: -8),
             durationLabel.bottomAnchor.constraint(equalTo: attachmentView.bottomAnchor, constant: -8),
             durationLabel.heightAnchor.constraint(equalToConstant: 18),
-            durationLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 34)
+            durationLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 34),
         ])
 
-        bubbleLeadingConstraint = bubbleView.leadingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 8)
-        bubbleTrailingConstraint = bubbleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
-        bubbleTopConstraint = bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8)
+        // Direction-dependent (outgoing vs incoming) — toggled per configure.
+        bubbleLeadingConstraint = bubbleView.leadingAnchor.constraint(
+            equalTo: avatarView.trailingAnchor, constant: 8
+        )
+        bubbleTrailingConstraint = bubbleView.trailingAnchor.constraint(
+            equalTo: contentView.trailingAnchor, constant: -16
+        )
+        bubbleTopConstraint = bubbleView.topAnchor.constraint(
+            equalTo: contentView.topAnchor, constant: 8
+        )
         bubbleTopConstraint.isActive = true
+    }
+    
+    private func updateBubbleWidth() {
+        let width = availableContentWidth > 0
+            ? availableContentWidth
+            : contentView.bounds.width
+
+        guard width > 0 else { return }
+
+        let maxBubbleWidth = width * bubbleMaxWidthRatio
+        let horizontalPadding = Self.messageLabelHorizontalInsets
+
+        var requiredWidth: CGFloat = 60
+
+        // MARK: Text width
+
+        if let text = messageLabel.text,
+           !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+           !messageContainer.isHidden {
+
+            let maxTextWidth = max(
+                1,
+                maxBubbleWidth - horizontalPadding
+            )
+
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: messageLabel.font as Any
+            ]
+
+            let boundingRect = (text as NSString).boundingRect(
+                with: CGSize(
+                    width: maxTextWidth,
+                    height: CGFloat.greatestFiniteMagnitude
+                ),
+                options: [
+                    .usesLineFragmentOrigin,
+                    .usesFontLeading
+                ],
+                attributes: attributes,
+                context: nil
+            )
+
+            let textWidth = min(
+                maxTextWidth,
+                ceil(boundingRect.width)
+            )
+
+            requiredWidth = max(
+                requiredWidth,
+                textWidth + horizontalPadding
+            )
+        }
+
+        // MARK: Attachment width
+
+        if attachmentWidthConstraint.isActive,
+           !attachmentView.isHidden {
+
+            requiredWidth = max(
+                requiredWidth,
+                attachmentWidthConstraint.constant
+            )
+        }
+
+        // MARK: Meta width
+
+        var metaWidth: CGFloat = 0
+
+        if let time = timeLabel.text,
+           !time.isEmpty {
+
+            metaWidth += timeLabel.intrinsicContentSize.width
+        }
+
+        if !statusLabel.isHidden {
+            metaWidth += 5
+            metaWidth += statusLabel.intrinsicContentSize.width
+        }
+
+        if !sendingIndicator.isHidden {
+            metaWidth += 5
+            metaWidth += 20
+        }
+
+        if !failedLabel.isHidden {
+            metaWidth += 5
+            metaWidth += failedLabel.intrinsicContentSize.width
+        }
+
+        if metaWidth > 0 {
+            requiredWidth = max(
+                requiredWidth,
+                metaWidth + 26
+            )
+        }
+
+        // Never exceed the allowed bubble width.
+        requiredWidth = min(
+            maxBubbleWidth,
+            requiredWidth
+        )
+
+        // Never become ridiculously narrow.
+        requiredWidth = max(
+            60,
+            requiredWidth
+        )
+
+        bubbleWidthConstraint.constant = requiredWidth
+
+        // The text gets the actual space inside the calculated bubble.
+        messageLabel.preferredMaxLayoutWidth = max(
+            1,
+            requiredWidth - horizontalPadding
+        )
     }
 }
 
 // MARK: - Layout
 
 extension ChatMessageCell {
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        guard availableContentWidth > 1 else { return }
-        let maxBubbleWidth = availableContentWidth * bubbleMaxWidthRatio
-        messageLabel.preferredMaxLayoutWidth = max(1, maxBubbleWidth - Self.messageLabelHorizontalInsets)
+
+        // The table view is the source of truth. This avoids using
+        // UIScreen.main.bounds during an early self-sizing pass.
+        let width = contentView.bounds.width
+        guard width > 0 else { return }
+
+        if abs(availableContentWidth - width) > 0.5 {
+            availableContentWidth = width
+            updateWidthDependentConstraints()
+        }
+    }
+
+    private func updateWidthDependentConstraints() {
+        let width = availableContentWidth > 0
+            ? availableContentWidth
+            : contentView.bounds.width
+
+        guard width > 0 else { return }
+
+        let maxBubbleWidth = width * bubbleMaxWidthRatio
+
+        let maxTextWidth = max(
+            1,
+            maxBubbleWidth - Self.messageLabelHorizontalInsets
+        )
+
+        messageLabel.preferredMaxLayoutWidth = maxTextWidth
+
+        if !attachmentWidthConstraint.isActive {
+            attachmentWidthConstraint.constant =
+                width * attachmentMaxWidthRatio
+        }
     }
 }
 
 // MARK: - Configure
 
 extension ChatMessageCell {
+
     func configure(with item: ChatItem, availableWidth: CGFloat) {
         loadToken += 1
         let token = loadToken
+
         availableContentWidth = max(0, availableWidth)
+        if availableContentWidth > 0 {
+            updateWidthDependentConstraints()
+        }
+
         currentMessageType = item.messageType
         currentVideoRemoteURL = item.videoURL
         currentVideoLocalURL = item.localVideoURL
+
         timeLabel.text = ChatDate.bubbleTime(item.createdAt)
+
         configureDirection(item)
         configureContent(item, token: token)
         configureStatus(item)
-        applyDeterministicBubbleWidth()
+        updateBubbleWidth()
+        // Do NOT call setNeedsLayout()/layoutIfNeeded() here. It collides
+        // with UITableView's own internal self-sizing measurement pass
+        // (which temporarily pins contentView's height while it measures
+        // via systemLayoutSizeFitting) and causes Auto Layout to break
+        // constraints to recover. Row height is computed by ChatMessageVc
+        // instead, so this cell never needs to force its own layout
+        // mid-configure.
     }
 }
 
@@ -436,6 +641,13 @@ private extension ChatMessageCell {
         attachmentWidthConstraint.isActive = false
         attachmentHeightConstraint.constant = 0
         playContainerView.isHidden = true
+
+        // IMPORTANT: media must reserve its width before the async thumbnail
+        // arrives. Otherwise the bubble can be measured at ~40pt first, then
+        // UIKit tries to squeeze a 225/285pt UIImageView into it.
+        if hasImage || hasVideo {
+            reserveAttachmentPlaceholder()
+        }
         durationLabel.isHidden = true
         durationLabel.text = nil
 
@@ -446,6 +658,36 @@ private extension ChatMessageCell {
         }
     }
 
+    func reserveAttachmentPlaceholder() {
+        let width = availableContentWidth > 0 ? availableContentWidth : contentView.bounds.width
+        guard width > 0 else { return }
+
+        let maxWidth = width * attachmentMaxWidthRatio
+        let placeholderHeight = min(attachmentMaxHeight, maxWidth * 9.0 / 16.0)
+
+        attachmentView.isHidden = false
+        attachmentWidthConstraint.isActive = true
+        attachmentWidthConstraint.constant = maxWidth
+        attachmentHeightConstraint.constant = max(attachmentMinHeight, placeholderHeight)
+
+        if currentMessageType == 3 {
+            playContainerView.isHidden = false
+        }
+    }
+
+    func resolvedMediaURL(_ rawValue: String) -> URL? {
+        let raw = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return nil }
+
+        if let absolute = URL(string: raw), absolute.scheme != nil {
+            return absolute
+        }
+
+        let base = APiConstant.base.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let path = raw.hasPrefix("/") ? raw : "/" + raw
+        return URL(string: base + path)
+    }
+
     func configureImage(_ item: ChatItem, token: Int) {
         if let image = item.localImage {
             attachmentView.image = image
@@ -453,9 +695,8 @@ private extension ChatMessageCell {
             return
         }
 
-        guard let path = item.imageURL?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !path.isEmpty,
-              let url = URL(string: "\(APiConstant.base)\(path)")
+        guard let path = item.imageURL,
+              let url = resolvedMediaURL(path)
         else { return }
 
         attachmentView.kf.setImage(with: url) { [weak self] result in
@@ -488,9 +729,9 @@ private extension ChatMessageCell {
             return
         }
 
-        if let remoteURL = item.videoURL?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !remoteURL.isEmpty {
-            ChatVideoThumbnailLoader.loadRemote(remoteURL) { [weak self] thumbnail in
+        if let remoteURL = item.videoURL,
+           let resolvedURL = resolvedMediaURL(remoteURL) {
+            ChatVideoThumbnailLoader.loadRemote(resolvedURL.absoluteString) { [weak self] thumbnail in
                 guard let self, self.loadToken == token, let thumbnail else { return }
                 self.attachmentView.image = thumbnail
                 self.applyAttachmentSize(thumbnail.size, notify: true)
@@ -504,36 +745,71 @@ private extension ChatMessageCell {
 private extension ChatMessageCell {
 
     func applyAttachmentSize(_ originalSize: CGSize, notify: Bool) {
-        guard originalSize.width > 0, originalSize.height > 0, availableContentWidth > 1 else { return }
+        guard originalSize.width > 0, originalSize.height > 0 else { return }
 
-        let maxWidth = availableContentWidth * attachmentMaxWidthRatio
+        // Prefer the cell's own resolved width over UIScreen.main.bounds.width
+        // (see layoutSubviews for why) — fall back to UIScreen only for the
+        // rare case this runs before any layout has happened at all.
+        let screenWidth = availableContentWidth > 0
+            ? availableContentWidth
+            : (contentView.bounds.width > 0 ? contentView.bounds.width : UIScreen.main.bounds.width)
+
+        let maxWidth = screenWidth * attachmentMaxWidthRatio
         let maxHeight = attachmentMaxHeight
         let aspectRatio = originalSize.width / originalSize.height
 
-        var width = min(originalSize.width, maxWidth)
-        var height = width / aspectRatio
+        var width: CGFloat
+        var height: CGFloat
 
-        if height > maxHeight {
-            height = maxHeight
-            width = height * aspectRatio
-        }
-
-        if width < attachmentMinWidth {
-            width = min(attachmentMinWidth, maxWidth)
+        if aspectRatio > 1.25 {
+            // Landscape
+            width = maxWidth
             height = width / aspectRatio
             if height > maxHeight {
                 height = maxHeight
                 width = height * aspectRatio
             }
+
+        } else if aspectRatio < 0.80 {
+            // Portrait — never let a tall screenshot/photo shrink to
+            // nothing; give it a comfortable minimum visual size.
+            height = maxHeight
+            width = height * aspectRatio
+
+            if width < attachmentMinWidth {
+                width = attachmentMinWidth
+                height = width / aspectRatio
+            }
+            if height > maxHeight {
+                height = maxHeight
+                width = height * aspectRatio
+            }
+            if width > maxWidth {
+                width = maxWidth
+                height = width / aspectRatio
+            }
+
+        } else {
+            // Square / near-square
+            width = min(maxWidth, maxHeight)
+            height = width
+        }
+
+        // Final safety clamp.
+        width = max(attachmentMinWidth, min(width, maxWidth))
+        height = min(height, maxHeight)
+        if width >= maxWidth {
+            height = min(height, width / aspectRatio)
         }
 
         attachmentView.isHidden = false
-        playContainerView.isHidden = currentMessageType != 3
-        attachmentWidthConstraint.isActive = true
-        attachmentWidthConstraint.constant = max(1, width)
-        attachmentHeightConstraint.constant = max(1, height)
+        if currentMessageType == 3 {
+            playContainerView.isHidden = false
+        }
 
-        applyDeterministicBubbleWidth()
+        attachmentWidthConstraint.isActive = true
+        attachmentWidthConstraint.constant = width
+        attachmentHeightConstraint.constant = height
 
         if notify {
             DispatchQueue.main.async { [weak self] in
@@ -541,42 +817,6 @@ private extension ChatMessageCell {
             }
         }
     }
-
-    func applyDeterministicBubbleWidth() {
-        guard availableContentWidth > 1 else { return }
-
-        let maxBubbleWidth = availableContentWidth * bubbleMaxWidthRatio
-        let horizontalPadding = Self.messageLabelHorizontalInsets
-        let maxTextWidth = max(1, maxBubbleWidth - horizontalPadding)
-        messageLabel.preferredMaxLayoutWidth = maxTextWidth
-
-        var requiredWidth: CGFloat = 40
-        let text = messageLabel.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-        if !text.isEmpty {
-            let rect = (text as NSString).boundingRect(
-                with: CGSize(width: maxTextWidth, height: .greatestFiniteMagnitude),
-                options: [.usesLineFragmentOrigin, .usesFontLeading],
-                attributes: [.font: messageLabel.font as Any],
-                context: nil
-            )
-            requiredWidth = ceil(rect.width) + horizontalPadding
-        }
-
-        let metaWidth = metaStack.systemLayoutSizeFitting(
-            CGSize(width: CGFloat.greatestFiniteMagnitude, height: 30),
-            withHorizontalFittingPriority: .fittingSizeLevel,
-            verticalFittingPriority: .required
-        ).width + 26
-        requiredWidth = max(requiredWidth, ceil(metaWidth))
-
-        if attachmentWidthConstraint.isActive {
-            requiredWidth = max(requiredWidth, attachmentWidthConstraint.constant)
-        }
-
-        bubbleWidthConstraint.constant = min(requiredWidth, maxBubbleWidth)
-    }
-
 }
 
 // MARK: - Status (sending / sent / failed)
@@ -636,6 +876,7 @@ extension ChatMessageCell {
         super.prepareForReuse()
 
         loadToken += 1
+        availableContentWidth = 0
 
         avatarView.image = nil
         nameLabel.text = nil
@@ -646,10 +887,7 @@ extension ChatMessageCell {
 
         attachmentHeightConstraint.constant = 0
         attachmentWidthConstraint.isActive = false
-        attachmentWidthConstraint.constant = 1
-        availableContentWidth = 0
-        messageLabel.preferredMaxLayoutWidth = 0
-        bubbleWidthConstraint.constant = 40
+        attachmentWidthConstraint.constant = UIScreen.main.bounds.width * attachmentMaxWidthRatio
 
         avatarView.isHidden = false
         nameLabel.isHidden = false
@@ -677,5 +915,7 @@ extension ChatMessageCell {
         onVideoTapped = nil
         onImageLongPressed = nil
         onAttachmentSizeResolved = nil
+        bubbleWidthConstraint.constant = 60
+        messageLabel.preferredMaxLayoutWidth = 32
     }
 }

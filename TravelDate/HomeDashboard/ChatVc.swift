@@ -37,6 +37,20 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
     private var chatData:   [ChatData] = []
     private var filteredGroupsData: [ChatData] = []
     private var filteredChatData: [ChatData] = []
+    
+    private var totalUnreadCount: Int {
+        let groupUnread = groupsData.reduce(0) {
+            $0 + ($1.unreadCount ?? 0)
+        }
+
+        let chatUnread = chatData.reduce(0) {
+            $0 + ($1.unreadCount ?? 0)
+        }
+
+        return groupUnread + chatUnread
+    }
+    
+    
 
     // MARK: - State
     private var selectedSegment: ChatSegment = .groups {
@@ -55,6 +69,13 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
             return txtSearch.text?.isEmpty == false ? filteredChatData : chatData
         }
     }
+    
+    private func updateChatTabBadge() {
+        tripsTabBarController?.updateChatBadge(
+            count: totalUnreadCount
+        )
+    }
+    
 
     private var currentRowCount: Int {
         currentData.count
@@ -217,6 +238,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
                 if code == 200 {
                     
                     self.groupsData = (model?.data ?? []).filter { $0.isDeleted ?? 1 == 0 }
+                    self.updateChatTabBadge()
                     if self.selectedSegment == .groups {
                         self.refreshTableView()
                     }
@@ -233,6 +255,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
             DispatchQueue.main.async {
                 if code == 200 {
                     self.chatData = model?.data ?? []
+                    self.updateChatTabBadge()
                     if self.selectedSegment == .chats {
                         self.refreshTableView()
                     }
@@ -412,9 +435,12 @@ private extension ChatVc {
         let model = currentData[indexPath.row]
         
         cell.lblTitle.text = model.name ?? ""
-        if model.lastMessage?.content == "" {
-            cell.lblDesc.text = "No msg"
+        if model.lastMessage?.fileType == "video" {
+            cell.lblDesc.text = "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+        } else if model.lastMessage?.fileType == "image" {
+            cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
         } else {
+         
             cell.lblDesc.text  = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
         }
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
@@ -462,9 +488,9 @@ private extension ChatVc {
             
             cell.lblTitle.text = matchGroup.name ?? ""
             if matchGroup.lastMessage?.fileType == "video" {
-                cell.lblDesc.text = "Video"
+                "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else if matchGroup.lastMessage?.fileType == "image" {
-                cell.lblDesc.text = "Image"
+                cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else {
                 cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
             }
@@ -482,11 +508,11 @@ private extension ChatVc {
         } else {
             
             if model.lastMessage?.fileType == "video" {
-                cell.lblDesc.text = "Video"
+                cell.lblDesc.text = "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else if model.lastMessage?.fileType == "image" {
-                cell.lblDesc.text = "Image"
+                cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else {
-                cell.lblDesc.text = model.lastMessage?.content ?? ""
+                cell.lblDesc.text = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
             }
             cell.containerView.isHidden = true
 
