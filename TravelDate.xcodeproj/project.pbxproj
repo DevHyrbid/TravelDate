@@ -230,7 +230,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Trips;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera access to upload your profile photo and trips photos ";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Allow access to your contacts to find friends who are already on the app";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow photo access to upload your profile photo and trips photos ";
@@ -272,7 +271,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Trips;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera access to upload your profile photo and trips photos ";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Allow access to your contacts to find friends who are already on the app";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow photo access to upload your profile photo and trips photos ";

@@ -35,9 +35,10 @@ final class ChatMessageCell: UITableViewCell {
 
     private let bubbleMaxWidthRatio: CGFloat = 0.72
 
-    private let attachmentMaxWidthRatio: CGFloat = 0.58
-
-    private let attachmentMaxHeight: CGFloat = 220
+    private let attachmentMaxWidthRatio: CGFloat = 0.62
+    private let attachmentMaxHeight: CGFloat = 240
+    private let attachmentMinWidth: CGFloat = 180
+    private let attachmentMinHeight: CGFloat = 140
 
     // MARK: - Main UI
 
@@ -920,35 +921,109 @@ final class ChatMessageCell: UITableViewCell {
         _ originalSize: CGSize,
         notify: Bool
     ) {
-
-        guard
-            originalSize.width > 0,
-            originalSize.height > 0
-        else {
+        guard originalSize.width > 0,
+              originalSize.height > 0 else {
             return
         }
 
-        let maxWidth =
-            UIScreen.main.bounds.width * attachmentMaxWidthRatio
+        // Use the actual available screen width.
+        let screenWidth = UIScreen.main.bounds.width
 
+        let maxWidth = screenWidth * attachmentMaxWidthRatio
         let maxHeight = attachmentMaxHeight
 
-        let aspect =
-            originalSize.width /
-            originalSize.height
+        let aspectRatio =
+            originalSize.width / originalSize.height
 
-        var width = maxWidth
+        var width: CGFloat
+        var height: CGFloat
 
-        var height = width / aspect
+        // ---------------------------------------------------------
+        // LANDSCAPE
+        // ---------------------------------------------------------
 
-        if height > maxHeight {
+        if aspectRatio > 1.25 {
 
-            height = maxHeight
-            width = height * aspect
+            width = maxWidth
+            height = width / aspectRatio
+
+            if height > maxHeight {
+                height = maxHeight
+                width = height * aspectRatio
+            }
         }
 
-        // Only now — with a real, loaded image/video in hand — does the
-        // attachment slot actually take up space.
+        // ---------------------------------------------------------
+        // PORTRAIT
+        //
+        // Do NOT allow portrait screenshots/images to become tiny.
+        // Give them a comfortable minimum visual size.
+        // ---------------------------------------------------------
+
+        else if aspectRatio < 0.80 {
+
+            height = maxHeight
+            width = height * aspectRatio
+
+            // Prevent very narrow portrait attachments.
+            if width < attachmentMinWidth {
+
+                width = attachmentMinWidth
+                height = width / aspectRatio
+            }
+
+            // Respect maximum height.
+            if height > maxHeight {
+
+                height = maxHeight
+                width = height * aspectRatio
+            }
+
+            // Never exceed the bubble's available width.
+            if width > maxWidth {
+
+                width = maxWidth
+                height = width / aspectRatio
+            }
+        }
+
+        // ---------------------------------------------------------
+        // SQUARE / NEAR SQUARE
+        // ---------------------------------------------------------
+
+        else {
+
+            width = min(maxWidth, maxHeight)
+            height = width
+        }
+
+        // ---------------------------------------------------------
+        // Final safety limits
+        // ---------------------------------------------------------
+
+        width = max(
+            attachmentMinWidth,
+            min(width, maxWidth)
+        )
+
+        height = min(
+            height,
+            maxHeight
+        )
+
+        // Recalculate height if width was clamped.
+        if width >= maxWidth {
+
+            height = min(
+                height,
+                width / aspectRatio
+            )
+        }
+
+        // ---------------------------------------------------------
+        // Apply
+        // ---------------------------------------------------------
+
         attachmentView.isHidden = false
 
         if currentMessageType == 3 {
@@ -956,7 +1031,9 @@ final class ChatMessageCell: UITableViewCell {
         }
 
         attachmentWidthConstraint.isActive = true
+
         attachmentWidthConstraint.constant = width
+
         attachmentHeightConstraint.constant = height
 
         if notify {

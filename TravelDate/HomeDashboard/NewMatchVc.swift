@@ -102,7 +102,7 @@ class NewMatchVc: BaseClassVc {
                     } else {
                         self.lblNoData.isHidden = true
                     }
-                    self.lblNoData.text = "You have no new trips yet"
+                    self.lblNoData.text = "No New match"
                 }
             }
         }
@@ -224,6 +224,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.imgVw, url: url)
             }
+            cell.imgVw.contentMode = .scaleAspectFill
             
             
             
@@ -271,6 +272,7 @@ extension NewMatchVc : UITableViewDelegate, UITableViewDataSource{
             if let url = URL(string: model?.coverImage ?? "") {
                 loadImage(cell.heroImage, url: url)
             }
+            
 //            cell.badgeLabel.text = model.
             cell.setTimeText(formatDateRange(start: model?.startDate ?? "", end: model?.endDate ?? ""))
             cell.onViewGroup = { [weak self] in self?.pushVC(MySavedGroupVc.self, from: .Home) { vc in
