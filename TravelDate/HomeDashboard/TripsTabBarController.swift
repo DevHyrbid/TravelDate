@@ -27,6 +27,8 @@ class TripsTabBarController: UIViewController {
         TripsTabItem(icon: "imgChat2",   selectedIcon: "imgChat2",   tag: 3),
         TripsTabItem(icon: "imgprofile", selectedIcon: "imgprofile", tag: 4),
     ]
+    private var chatBadgeLabel: UILabel?
+    private var unreadChatCount: Int = 0
     
     var homeTabButton: UIButton? {
         guard tabButtons.indices.contains(0) else {
@@ -108,6 +110,85 @@ class TripsTabBarController: UIViewController {
         setupContainer()
         setupTabBar()
         switchTo(index: 0)
+    }
+    
+    private func setupChatBadge() {
+        guard let chatButton = chatTabButton else { return }
+
+        // Remove existing badge if any
+        chatButton.subviews
+            .filter { $0.tag == 1001 }
+            .forEach { $0.removeFromSuperview() }
+
+        let badge = UILabel()
+        badge.tag = 1001
+        badge.translatesAutoresizingMaskIntoConstraints = false
+
+        badge.backgroundColor = UIColor(hex: "FE294D")
+        badge.textColor = .white
+        badge.textAlignment = .center
+        badge.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+
+        badge.layer.cornerRadius = 10
+        badge.layer.masksToBounds = true
+
+        badge.isHidden = unreadChatCount <= 0
+
+        chatButton.addSubview(badge)
+
+        NSLayoutConstraint.activate([
+            badge.centerXAnchor.constraint(
+                equalTo: chatButton.centerXAnchor,
+                constant: 17
+            ),
+            badge.centerYAnchor.constraint(
+                equalTo: chatButton.centerYAnchor,
+                constant: -17
+            ),
+            badge.heightAnchor.constraint(equalToConstant: 20),
+            badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 20)
+        ])
+
+        chatBadgeLabel = badge
+
+//        updateChatBadge(count: 2)
+    }
+    
+    
+    func updateChatBadge(count: Int) {
+        unreadChatCount = max(0, count)
+
+        guard let badge = chatBadgeLabel else {
+            setupChatBadge()
+            return
+        }
+
+        badge.text = unreadChatCount > 99
+            ? "99+"
+            : "\(unreadChatCount)"
+
+        badge.isHidden = unreadChatCount <= 0
+
+        // Make wider for 2/3 digit counts
+        let width: CGFloat
+
+        switch unreadChatCount {
+        case 0...9:
+            width = 20
+        case 10...99:
+            width = 24
+        default:
+            width = 30
+        }
+
+        badge.constraints
+            .filter {
+                $0.firstAttribute == .width &&
+                $0.firstItem === badge
+            }
+            .forEach { $0.isActive = false }
+
+        badge.widthAnchor.constraint(equalToConstant: width).isActive = true
     }
 
     override func viewDidLayoutSubviews() {
@@ -284,6 +365,8 @@ class TripsTabBarController: UIViewController {
             stack.addArrangedSubview(btn)
             tabButtons.append(btn)
         }
+        
+        setupChatBadge()
     }
 
     private func makeTabButton(item: TripsTabItem) -> UIButton {

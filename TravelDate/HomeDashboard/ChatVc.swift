@@ -423,6 +423,7 @@ private extension ChatVc {
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleAspectFill
         cell.lblCount.text = "\(model.unreadCount ?? 0)"
+        tripsTabBarController?.updateChatBadge(count: model.unreadCount ?? 0)
         if model.unreadCount == 0 {
             cell.lblOnline.isHidden = true
             cell.lblCount.isHidden = true
