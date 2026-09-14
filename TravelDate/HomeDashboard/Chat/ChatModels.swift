@@ -4,6 +4,15 @@
 //
 //  Pure data models for the API-only chat module.
 //
+//  CHANGED: ChatMediaKind.isVideo now (1) checks a backend type hint
+//  first if one is ever provided, and (2) parses the URL properly via
+//  URLComponents before reading the path extension, so a signed/CDN URL
+//  like "https://server.com/video.mp4?token=123" is still detected as a
+//  video — the old version ran pathExtension on the raw string including
+//  the query string, which happened to work for that one example but not
+//  for others where the query string itself contains a dot (e.g.
+//  "...?ref=v1.2").
+//
 
 import Foundation
 import UIKit
@@ -90,13 +99,12 @@ extension ChatItem {
         self.status      = .sent
         self.profile_image = message.sender?.profileImage ?? ""
 
-        // ✅ Only signal is fileUrl — contentType/messageType are always nil.
-        // Video still only has fileUrl as a signal too, so we tell it apart
-        // from an image by file extension. Once the backend actually sends
-        // fileType/contentType/messageType, replace this with a direct read
-        // of that field instead of sniffing the extension.
+        // ✅ Only signal is fileUrl — contentType/messageType are usually
+        // nil on the current backend. We still pass contentType through
+        // as a hint in case the backend starts sending it; ChatMediaKind
+        // falls back to extension sniffing when it's absent.
         if let fileUrl = message.fileUrl, !fileUrl.isEmpty {
-            if ChatMediaKind.isVideo(fileUrl) {
+            if ChatMediaKind.isVideo(urlString: fileUrl, typeHint: message.contentType) {
                 self.messageType = 3
                 self.content     = nil
                 self.imageURL    = nil
@@ -165,13 +173,22 @@ extension ChatItem {
 
 // MARK: - Media kind detection
 
-/// Tells images and videos apart by file extension, since fileUrl is the
-/// only signal the API currently gives us (see ChatItem.init(message:) above).
+/// Tells images and videos apart. Priority order:
+///  1. A backend-supplied type hint (contentType/fileType), if present.
+///  2. The URL's path extension — parsed via URLComponents so query
+///     parameters (tokens, cache-busters, version strings) never affect
+///     detection.
 enum ChatMediaKind {
     private static let videoExtensions: Set<String> = ["mp4", "mov", "m4v", "avi", "webm", "3gp"]
 
-    static func isVideo(_ urlString: String) -> Bool {
-        let ext = (urlString as NSString).pathExtension.lowercased()
+    static func isVideo(urlString: String, typeHint: String? = nil) -> Bool {
+        if let hint = typeHint?.lowercased(), !hint.isEmpty {
+            if hint.contains("video") { return true }
+            if hint.contains("image") { return false }
+        }
+
+        let path = URLComponents(string: urlString)?.path ?? urlString
+        let ext = (path as NSString).pathExtension.lowercased()
         return videoExtensions.contains(ext)
     }
 }

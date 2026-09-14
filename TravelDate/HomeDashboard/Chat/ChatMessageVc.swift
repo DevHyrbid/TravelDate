@@ -8,6 +8,20 @@
 //  Init matches your existing call site in ChatVc:
 //      ChatMessageVc(viewModel:participants:type:)
 //
+//  CHANGED (all surgical, same architecture as before):
+//   1. Pagination no longer jumps the user's scroll position. Before
+//      calling into the older-messages fetch we snapshot contentSize +
+//      contentOffset; when ChatViewModel.onOlderPrepended fires (only for
+//      the prepend case, not every reload) we reloadData() once and then
+//      restore the equivalent offset using the delta in contentSize. See
+//      triggerLoadOlderIfNeeded()/bindViewModel().
+//   2. `ImagePreviewVC(image: image!)` force-unwrap removed — tapping an
+//      image whose UIImage hasn't loaded yet now safely does nothing
+//      instead of being a crash waiting to happen.
+//   3. Video upload's `Data(contentsOf: localURL)` moved off the main
+//      thread — large video files no longer freeze the chat UI while
+//      being read into memory for upload.
+//
 
 import UIKit
 import IQKeyboardManagerSwift
@@ -21,9 +35,14 @@ final class ChatMessageVc: BaseClassVc {
 
     private var inputBottom: NSLayoutConstraint!
 
-    // NEW — bridges UIImagePickerControllerDelegate's callback into
+    // Bridges UIImagePickerControllerDelegate's callback into
     // vidUpload()'s closure-based style (see extension at bottom of file).
     private var videoPickerCompletion: ((URL?) -> Void)?
+
+    // NEW — pagination scroll-position anchoring (fix #1 above).
+    private var isLoadingOlder = false
+    private var pendingOldContentSize: CGSize = .zero
+    private var pendingOldOffset: CGPoint = .zero
 
     // MARK: - ViewModel
     private let viewModel: ChatViewModel
@@ -62,8 +81,6 @@ final class ChatMessageVc: BaseClassVc {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 70
         if #available(iOS 15.0, *) {
             view.keyboardLayoutGuide.followsUndockedKeyboard = false
         }
@@ -92,7 +109,7 @@ final class ChatMessageVc: BaseClassVc {
         tableView.contentInset.bottom = inputBar.frame.height
         tableView.scrollIndicatorInsets.bottom = inputBar.frame.height
     }
-    // MEMBERS LIST VIEW PROFILE VIEW CHAT VIEW NEW MATCH
+
     @objc private func handleIncomingPush(_ notification: Notification) {
 
         guard let userInfo = notification.userInfo else { return }
@@ -107,46 +124,64 @@ final class ChatMessageVc: BaseClassVc {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
+        // FIXED (real bug — this is what was leaving another screen's
+        // content frozen and visible behind the chat): hiding the nav bar
+        // with animated:true at the exact same time the push transition
+        // itself is animating is a well-known way to leave a stray
+        // transition snapshot of the PREVIOUS view controller stuck in
+        // the hierarchy — it doesn't get cleaned up because two
+        // animations are racing over the same view. It has nothing to do
+        // with cell/row sizing; it's a navigation-transition issue.
+        // Always doing this transition-less (animated: false) removes
+        // that race entirely — the bar still ends up hidden, just without
+        // fighting the push/pop animation for it.
+        navigationController?.setNavigationBarHidden(true, animated: false)
         tripsTabBarController?.hideTabBar()
         ChatState.shared.isChatOpen = true
         ChatState.shared.activeRoomId = viewModel.roomId
         
        
             IQKeyboardManager.shared.isEnabled = false
-        
-
-        
-            
-        
     }
     
     
     private func scrollToBottom(animated: Bool) {
         guard !viewModel.sections.isEmpty else { return }
 
-        let lastSection = viewModel.sections.count - 1
-        let lastRow = viewModel.sections[lastSection].items.count - 1
+        // `scrollToRow(at:.bottom)` right after `reloadData()` was the cause
+        // of the visible "jump"/gap after sending a message: self-sizing
+        // cells (automaticDimension) haven't resolved their REAL height yet
+        // on the very first layout pass, only `estimatedRowHeight`, so
+        // scrollToRow lands at a position based on guessed heights and the
+        // screen has to visibly snap once the real heights come in.
+        //
+        // Forcing layout first makes UIKit resolve every visible/needed
+        // cell's true height before we compute where "bottom" actually is,
+        // so we scroll to the right place in one go instead of jumping.
+        // NOTE: this is now cheap and correct with the new ChatMessageCell
+        // — attachment rows size themselves synchronously in configure(),
+        // so this layout pass isn't waiting on any network call either.
+        tableView.layoutIfNeeded()
 
-        guard lastRow >= 0 else { return }
+        let bottomInset = tableView.adjustedContentInset.bottom
+        let maxOffsetY = max(
+            -tableView.adjustedContentInset.top,
+            tableView.contentSize.height - tableView.bounds.height + bottomInset
+        )
 
-        let indexPath = IndexPath(row: lastRow, section: lastSection)
-
-        DispatchQueue.main.async { [weak self] in
-            self?.tableView.scrollToRow(
-                at: indexPath,
-                at: .bottom,
-                animated: animated
-            )
-        }
+        tableView.setContentOffset(
+            CGPoint(x: 0, y: maxOffsetY),
+            animated: animated
+        )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         ChatState.shared.isChatOpen = false
         ChatState.shared.activeRoomId = nil
-        // Restore the nav bar for the rest of the app.
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+        // Same reasoning as viewWillAppear — animated:false so this never
+        // races the pop transition's own animation.
+        navigationController?.setNavigationBarHidden(false, animated: false)
         IQKeyboardManager.shared.isEnabled = true
     }
 
@@ -165,26 +200,13 @@ final class ChatMessageVc: BaseClassVc {
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
-        
-//        let images = self.viewModel.participants
-//            .compactMap { $0.profile_image }
-//            .filter { !$0.isEmpty }
-//
-//        if images.count > 1 {
-//            headerView.configure(
-//                title: roomTitle,
-//                subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
-//                imageURLs: Array(images.prefix(2)),
-//                showMore: true
-//            )
-//        } else {
-            headerView.configure(
-                title: roomTitle,
-                subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
-                imageURL: roomImageURL,
-                showMore: true
-            )
-        print(roomImageURL,"ROOM IMAGE HERE TAPPED  r")
+
+        headerView.configure(
+            title: roomTitle,
+            subtitle: memberCount > 0 ? "\(memberCount) members" : nil,
+            imageURL: roomImageURL,
+            showMore: true
+        )
 
         headerView.onBack    = { [weak self] in self?.backTapped() }
         headerView.onProfile = { [weak self] in self?.handleProfileTapped() }
@@ -192,7 +214,13 @@ final class ChatMessageVc: BaseClassVc {
     }
 
     private func setupTable() {
-        tableView.backgroundColor = .clear
+        // Defense-in-depth against the nav-transition ghost-snapshot bug
+        // fixed in viewWillAppear/viewWillDisappear: an OPAQUE background
+        // matching the screen's own color means even if some other stray
+        // view ever ended up behind the table again, it couldn't show
+        // through. (.clear here relied entirely on nothing ever being
+        // behind it, which turned out not to be a safe assumption.)
+        tableView.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1)
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
@@ -234,9 +262,6 @@ final class ChatMessageVc: BaseClassVc {
         }
     }
 
-    // NEW — attach button now offers Photo or Video instead of jumping
-    // straight into the image picker. Everything else about the input bar
-    // is untouched.
     private func presentAttachmentChoice() {
         let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         sheet.addAction(UIAlertAction(title: "Photo", style: .default) { [weak self] _ in
@@ -274,17 +299,16 @@ final class ChatMessageVc: BaseClassVc {
         }
     }
 
-    // NEW — same optimistic pattern as imgUpload above, for video.
-    // Uses a plain UIImagePickerController (see the delegate extension at
-    // the bottom of this file) since there's no existing video-picker
-    // utility in this bundle to hook into. Swap `videoPickerCompletion`'s
-    // body out for your own picker if you already have one elsewhere.
+    // Same optimistic pattern as imgUpload above, for video. Uses a plain
+    // UIImagePickerController (see the delegate extension at the bottom of
+    // this file).
     //
-    // NOTE: this assumes `uploadImg(_:completion:)` is a generic
-    // "upload this Data, get a server file name/URL back" helper (that's
-    // how imgUpload above uses it for JPEG data) and reuses it for the
-    // video's raw file data. If your video uploads actually need a
-    // different endpoint/multipart field than images, swap that one line.
+    // FIXED: reading the picked video's file data used to happen with
+    // `Data(contentsOf:)` directly on the main thread — for a large video
+    // that blocks the entire UI (including the optimistic bubble that was
+    // supposed to appear instantly) until the read finishes. The read now
+    // happens on a background queue; only the resulting upload call hops
+    // back to main.
     func vidUpload() {
         let picker = UIImagePickerController()
         picker.sourceType = .photoLibrary
@@ -304,19 +328,28 @@ final class ChatMessageVc: BaseClassVc {
             )
             self.viewModel.appendOptimistic(item: tempItem)
 
-            guard let data = try? Data(contentsOf: localURL) else {
-                self.viewModel.markFailed(id: tempItem.id)
-                return
-            }
-            
-            self.uploadImg(false,data) { [weak self] videoName in
-                guard let self else { return }
-                guard let videoName else {
-                    self.viewModel.markFailed(id: tempItem.id)
-                    return
+            // 2. Read the file data off the main thread — this can be a
+            // large file and must never block the UI.
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                let data = try? Data(contentsOf: localURL)
+
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    guard let data else {
+                        self.viewModel.markFailed(id: tempItem.id)
+                        return
+                    }
+
+                    self.uploadImg(false, data) { [weak self] videoName in
+                        guard let self else { return }
+                        guard let videoName else {
+                            self.viewModel.markFailed(id: tempItem.id)
+                            return
+                        }
+                        // 3. Confirm with real URL
+                        self.viewModel.confirmVideoSent(id: tempItem.id, videoURL: videoName)
+                    }
                 }
-                // 2. Confirm with real URL
-                self.viewModel.confirmVideoSent(id: tempItem.id, videoURL: videoName)
             }
         }
         present(picker, animated: true)
@@ -328,12 +361,36 @@ final class ChatMessageVc: BaseClassVc {
 
     private func bindViewModel() {
         viewModel.onReload = { [weak self] in
-            self?.tableView.reloadData()
-//            self?.scrollToBottom(animated: true)
+            guard let self else { return }
+            self.tableView.reloadData()
+            // reloadData() only SCHEDULES layout for the new cells, it
+            // doesn't force it to finish before the next screen paint.
+            // Forcing it here means we never hand a half-laid-out table
+            // back to the screen.
+            self.tableView.layoutIfNeeded()
         }
         viewModel.onAppend = { [weak self] in
-            self?.tableView.reloadData()
-            self?.scrollToBottom(animated: true)
+            guard let self else { return }
+            self.tableView.reloadData()
+            self.tableView.layoutIfNeeded()
+            self.scrollToBottom(animated: true)
+        }
+        // NEW — pagination anchoring (fix #1). Fires only when older
+        // messages were prepended at the top; we reload once and then
+        // restore the user's visual position using the resulting
+        // contentSize delta, instead of letting the table jump to
+        // whatever the new top happens to be.
+        viewModel.onOlderPrepended = { [weak self] in
+            guard let self else { return }
+            self.tableView.reloadData()
+            self.tableView.layoutIfNeeded()
+
+            let newContentSize = self.tableView.contentSize
+            let delta = newContentSize.height - self.pendingOldContentSize.height
+            let newOffsetY = self.pendingOldOffset.y + delta
+
+            self.tableView.setContentOffset(CGPoint(x: 0, y: newOffsetY), animated: false)
+            self.isLoadingOlder = false
         }
         viewModel.onError = { [weak self] message in
             self?.showAlert(message)
@@ -350,31 +407,25 @@ final class ChatMessageVc: BaseClassVc {
     }
 
     private func handleProfileTapped() {
-        // Hook up: open profile / group info screen.
         view.endEditing(true)
     }
 
     private func handleMoreTapped() {
-        // Hook up: open the "Chat Options" sheet (mute, trip dates, leave group).
         view.endEditing(true)
         
         if self.viewModel.roomType == .group {
-            
             didTapManageGroup(.owner)
         } else {
             didTapManageGroup(.match)
         }
-
     }
     
     
     
     func didTapManageGroup(_ type:GroupManageType) {
         var groupId = ""
-        //        viewModel.participants?.toJSON()
         
         let rawMembers = viewModel.participants.toJSON()
-        print(rawMembers,"JOINED HERE")
         let groupMembers: [GroupMember] = rawMembers.map { memberDict in
             
             let userId = memberDict["userId"] as? String ?? ""
@@ -394,7 +445,7 @@ final class ChatMessageVc: BaseClassVc {
                 .compactMap { $0.first.map(String.init) }
                 .joined()
                 .uppercased()
-            print("openGroupID here ----------",groupId)
+
             return GroupMember(
                 id: userId,
                 name: displayName,
@@ -409,7 +460,6 @@ final class ChatMessageVc: BaseClassVc {
             )
         }
         
-        print(groupMembers,"HERE COUNT")
         if type == .owner {
             ManageGroupViewController.present(
                 from: self, groupType:.owner,
@@ -417,13 +467,11 @@ final class ChatMessageVc: BaseClassVc {
                 groupSubtitle: "\(groupMembers.count) travelers",
                 members: groupMembers,
                 onDelete: { [weak self] in
-                    // Delete Group API
                     self?.request.deleteGroupAPi(groupId) { err, code in
                         DispatchQueue.main.async {
                             guard let self else { return }
                             
                             if code == 200 {
-                                
                                 self.navigationController?.popViewController(animated: true)
                                 NotificationCenter.default.post(
                                     name: .valueUpdated,
@@ -431,12 +479,8 @@ final class ChatMessageVc: BaseClassVc {
                                     userInfo: [:]
                                 )
                             }
-                            
-                            
                         }
-                        
                     }
-                    
                 }
             )
         } else {
@@ -461,8 +505,16 @@ final class ChatMessageVc: BaseClassVc {
                     }
                 }
             )
-            
         }
+    }
+
+    // NEW — wraps viewModel.loadOlderIfNeeded() so we only snapshot
+    // scroll state when a fetch is actually about to happen (fix #1).
+    private func triggerLoadOlderIfNeeded() {
+        guard !isLoadingOlder else { return }
+        pendingOldContentSize = tableView.contentSize
+        pendingOldOffset = tableView.contentOffset
+        isLoadingOlder = viewModel.loadOlderIfNeeded()
     }
 }
 
@@ -486,14 +538,17 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         let item = viewModel.sections[indexPath.section].items[indexPath.row]
        
         cell.onImageTapped = { [weak self] image in
-            let preview = ImagePreviewVC(image: image!)
-            self?.present(preview, animated: true)
-            
+            // FIXED: was `ImagePreviewVC(image: image!)` — a force-unwrap
+            // crash waiting to happen if the image hadn't loaded (or
+            // failed to load) yet. Now a no-op in that case.
+            guard let self, let image else { return }
+            let preview = ImagePreviewVC(image: image)
+            self.present(preview, animated: true)
         }
         cell.onRetryTapped = { [weak self] in
             self?.viewModel.retry(itemId: item.id)
         }
-        cell.onVideoTapped = { [weak self] remoteURL, localURL in    // NEW
+        cell.onVideoTapped = { [weak self] remoteURL, localURL in
             guard let self else { return }
             if let remoteURL {
                 ChatVideoPlayerPresenter.present(remoteURLString: remoteURL, from: self)
@@ -522,15 +577,39 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             self.present(alert, animated: true)
         }
-        cell.onAttachmentSizeResolved = { [weak tableView] in
-            guard let tableView else { return }
+        cell.onAttachmentSizeResolved = { [weak self, weak tableView, weak cell] in
+            // FIXED (crash): this used to hop through an extra
+            // DispatchQueue.main.async before re-deriving the index path.
+            // Both Kingfisher's completion and ChatVideoThumbnailLoader's
+            // completion already land on the main thread, so that hop
+            // bought nothing but a window for viewModel.sections to
+            // change shape (e.g. a send/reload landing in between) while
+            // the captured index path went stale — UIKit then rejected
+            // reloadRows(at:) with "insert row N into section M, but
+            // there are only fewer sections after the update".
+            //
+            // Now we resolve the index path and validate it against the
+            // CURRENT data source synchronously, in the same tick as the
+            // callback firing — no window for drift — and simply skip
+            // the (rare, cosmetic-only) correction if it's gone stale;
+            // the cell already shows the correct size either way, only
+            // the table's cached row height would be briefly behind,
+            // and that self-heals on the next reload.
+            guard let self, let tableView, let cell else { return }
+            guard let currentIndexPath = tableView.indexPath(for: cell) else { return }
+            guard currentIndexPath.section < self.viewModel.sections.count,
+                  currentIndexPath.row < self.viewModel.sections[currentIndexPath.section].items.count
+            else { return }
 
-            DispatchQueue.main.async {
-                tableView.beginUpdates()
-                tableView.endUpdates()
+            UIView.performWithoutAnimation {
+                tableView.reloadRows(at: [currentIndexPath], with: .none)
             }
         }
-        cell.configure(with: item)
+        // Pass the tableView's own width explicitly — see the long
+        // comment on ChatMessageCell.availableContentWidth for why this,
+        // and not something read inside the cell itself, is what actually
+        // fixed the narrow/character-wrapped text bubble bug.
+        cell.configure(with: item, availableWidth: tableView.bounds.width)
         return cell
     }
     
@@ -565,7 +644,7 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
     // Load older when reaching the top
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView.contentOffset.y < 60 {
-            viewModel.loadOlderIfNeeded()
+            triggerLoadOlderIfNeeded()
         }
     }
 }
@@ -584,8 +663,6 @@ private extension ChatMessageVc {
             name: UIResponder.keyboardWillHideNotification, object: nil
         )
     }
-
-//    private var inputBottom: NSLayoutConstraint!
 
     @objc private func keyboardWillChange(_ notification: Notification) {
 
@@ -654,11 +731,9 @@ extension UIView {
     }
 }
 
-// MARK: - Video picker (NEW)
+// MARK: - Video picker
 //
 // Self-contained UIImagePickerController delegate for vidUpload() above.
-// Doesn't touch anything else in the file — just bridges the picker's
-// delegate callback into the `videoPickerCompletion` closure.
 
 extension ChatMessageVc: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 

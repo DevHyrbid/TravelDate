@@ -10,6 +10,7 @@ import UIKit
 class ChatTableViewCell: UITableViewCell {
 
     @IBOutlet weak var lblTitle:UILabel!
+    @IBOutlet weak var lblCount:UILabel!
     @IBOutlet weak var imgVw:UIImageView!
     @IBOutlet weak var lblDesc:UILabel!
     @IBOutlet weak var lblOnline:UILabel!

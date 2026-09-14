@@ -9,6 +9,16 @@
 //
 //  Participants / type / roomId are injected by the VC via `configure(...)`.
 //
+//  CHANGED (minimal — no architecture change):
+//   - loadOlderIfNeeded() now returns whether it actually started a fetch,
+//     so the VC can snapshot scroll position ONLY when a fetch really
+//     happened (needed to stop pagination from jumping the user's
+//     position — see ChatMessageVc for the anchoring logic).
+//   - Added a dedicated onOlderPrepended callback, fired only when older
+//     messages are inserted at the top, so the VC can distinguish "older
+//     page arrived" (needs scroll-offset anchoring) from every other kind
+//     of reload (first load, send, refresh — which don't).
+//
 
 import Foundation
 
@@ -34,6 +44,10 @@ final class ChatViewModel {
     // MARK: - Callbacks (VC binds to these)
     var onReload: (() -> Void)?
     var onAppend: (() -> Void)?
+    /// Fires specifically when older messages were prepended (pagination),
+    /// as opposed to onReload's "reload everything, scroll position isn't
+    /// special" semantics.
+    var onOlderPrepended: (() -> Void)?
     var onError: ((String) -> Void)?
     var onLoadingChanged: ((Bool) -> Void)?
 
@@ -62,17 +76,12 @@ final class ChatViewModel {
         } else {
             createRoom()
         }
-        
-//        self.scrollToBottom(animated: true)
     }
 
     // MARK: - 1. Create / Get Room
 
     private func createRoom() {
         let safe = safeParticipants()
-//        guard safe.count >= 1 else {
-//            onError?("Missing participant info"); return
-//        }
         setLoading(true)
 
         service.createRoom(participants: safe, type: roomType) { [weak self] result in
@@ -91,17 +100,7 @@ final class ChatViewModel {
     }
 
     /// Always include current user, find the OTHER one, never duplicate.
-//    private func safeParticipants() -> [String] {
-//        let other = participants.first(where: { $0 != currentUserId && !$0.isEmpty }) ?? ""
-//        var result = [currentUserId]
-//        if !other.isEmpty { result.append(other) }
-//        return result
-//    }
-    
-    
     private func safeParticipants() -> [String] {
-        print(participants, "COUN")
-
         return participants.compactMap { $0.id }
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
@@ -156,7 +155,7 @@ final class ChatViewModel {
         case 2:
             content = item.imageURL ?? ""
             contentType = "image"
-        case 3:                                        // NEW
+        case 3:
             content = item.videoURL ?? ""
             contentType = "video"
         default:
@@ -196,7 +195,7 @@ final class ChatViewModel {
         onReload?()
     }
 
-    // MARK: - 3. Fetch Messagexs
+    // MARK: - 3. Fetch Messages
 
     func loadFirstPage() {
         page = 1
@@ -207,9 +206,13 @@ final class ChatViewModel {
     func refresh() { loadFirstPage() }
 
     /// Called when user scrolls near the top → older messages.
-    func loadOlderIfNeeded() {
-        guard !isLoading, canLoadMore, roomId != nil else { return }
+    /// Returns whether a fetch was actually started, so the caller knows
+    /// whether to expect an onOlderPrepended callback.
+    @discardableResult
+    func loadOlderIfNeeded() -> Bool {
+        guard !isLoading, canLoadMore, roomId != nil else { return false }
         fetch(page: page + 1, isFirst: false)
+        return true
     }
 
     func appendOptimistic(item: ChatItem) {
@@ -239,9 +242,7 @@ final class ChatViewModel {
         onReload?()
     }
 
-    /// NEW — same optimistic-confirm pattern as confirmImageSent, for video.
-    /// Call once the local video file has finished uploading and you have
-    /// the server-side URL back.
+    /// Same optimistic-confirm pattern as confirmImageSent, for video.
     func confirmVideoSent(id: String, videoURL: String) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].videoURL      = videoURL
@@ -293,15 +294,19 @@ final class ChatViewModel {
             let pending = items.filter { $0.status != .sent }
             items = mergeUnique(server: fetched, pending: pending)
             self.page = 1
+            rebuildSections()
+            onReload?()
         } else {
             // Prepend older, drop duplicates.
             let existingIds = Set(items.map { $0.id })
             let older = fetched.filter { !existingIds.contains($0.id) }
             items.insert(contentsOf: older, at: 0)
             self.page = page
+            rebuildSections()
+            // Distinct callback — the VC uses this to anchor scroll
+            // position so the user's view doesn't jump (see ChatMessageVc).
+            onOlderPrepended?()
         }
-        rebuildSections()
-        onReload?()
     }
 
     /// Server messages + still-pending local messages, no duplicate ids.

@@ -421,8 +421,15 @@ private extension ChatVc {
         loadAvatarImage(into: cell.imgVw, urlString: model.imageArr?[0])
         cell.containerView.isHidden  = true
         cell.imgVw.clipsToBounds = true
-        cell.imgVw.contentMode = .scaleToFill
-        
+        cell.imgVw.contentMode = .scaleAspectFill
+        cell.lblCount.text = "\(model.unreadCount ?? 0)"
+        if model.unreadCount == 0 {
+            cell.lblOnline.isHidden = true
+            cell.lblCount.isHidden = true
+        } else {
+            cell.lblOnline.isHidden = false
+            cell.lblCount.isHidden = false
+        }
     }
     
     
@@ -494,6 +501,8 @@ private extension ChatVc {
                 )
             }
         }
+        
+        cell.lblCount.text = "\(model.unreadCount ?? 0)"
     }
 
     func loadAvatarImage(into imageView: UIImageView, urlString: String?) {

@@ -2004,6 +2004,7 @@ struct ChatData : Mappable {
     var createdAt : String?
     var lastMessageAt : String?
     var lastMessage : LastMessage?
+    var unreadCount : Int?
     var members : [UserMembers]?
     var chatRoom : ChatRoom?
     var groupDetails : ChatRoom?
@@ -2013,6 +2014,7 @@ struct ChatData : Mappable {
     }
 
     mutating func mapping(map: Map) {
+        unreadCount <- map["unreadCount"]
         isReported <- map["isReported"]
         chatUserId <- map["chatUserId"]
         isDeleted <- map["isDeleted"]

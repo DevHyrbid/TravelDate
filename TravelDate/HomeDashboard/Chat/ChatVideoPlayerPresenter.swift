@@ -2,11 +2,13 @@
 //  ChatVideoPlayerPresenter.swift
 //  TravelDate
 //
-//  NEW FILE — nothing existing was touched to add this.
-//
 //  Deliberately thin: AVPlayerViewController already gives scrubbing,
-//  fullscreen, AirPlay, PiP for free. Resolves relative-vs-absolute URL
-//  the same way ChatImageLoader/ChatVideoThumbnailLoader do.
+//  fullscreen, AirPlay, PiP for free.
+//
+//  CHANGED: URL resolution now goes through ChatMediaURL instead of its
+//  own local http/https-prefix check, so video playback resolves URLs
+//  exactly the same way the thumbnail loader and image loader do — a
+//  video whose fileUrl is an absolute CDN link is never mangled.
 //
 
 import UIKit
@@ -15,15 +17,10 @@ import AVKit
 enum ChatVideoPlayerPresenter {
 
     /// `urlString` may be remote (server fileUrl) — resolved the same way
-    /// as everywhere else in Chat/.
+    /// as everywhere else in Chat/. Silently does nothing if the URL
+    /// can't be resolved (never presents a player with a nil/garbage URL).
     static func present(remoteURLString urlString: String, from presenter: UIViewController) {
-        let resolved: URL?
-        if urlString.hasPrefix("http://") || urlString.hasPrefix("https://") {
-            resolved = URL(string: urlString)
-        } else {
-            resolved = URL(string: APiConstant.base + urlString)
-        }
-        guard let url = resolved else { return }
+        guard let url = ChatMediaURL.resolved(urlString) else { return }
         present(url: url, from: presenter)
     }
 
@@ -36,6 +33,9 @@ enum ChatVideoPlayerPresenter {
         let player = AVPlayer(url: url)
         let controller = AVPlayerViewController()
         controller.player = player
+        // AVPlayerViewController retains its player; presenter retains the
+        // controller for as long as it's on screen — no extra strong refs
+        // needed here to keep playback alive.
         presenter.present(controller, animated: true) {
             player.play()
         }

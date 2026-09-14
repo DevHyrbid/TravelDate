@@ -16,6 +16,13 @@
 //                         ignore the result if the cell has been reused
 //                         (ChatMessageCell does this via its loadToken).
 //
+//  CHANGED: resolvedURL(from:) now just delegates to ChatMediaURL, so
+//  video thumbnails resolve URLs exactly the same way images/avatars do.
+//  Frame generation also now tries a couple of candidate timestamps
+//  instead of only 0.1s, since some very short clips don't have a frame
+//  there — this was a silent-failure spot before (nil thumbnail, no
+//  fallback attempted).
+//
 
 import UIKit
 import AVFoundation
@@ -26,8 +33,8 @@ enum ChatVideoThumbnailLoader {
 
     // MARK: - into:imageView (fire-and-forget)
 
-    /// `urlString` may be a relative path (resolved against APiConstant.base,
-    /// same convention as ChatImageLoader) or an absolute URL.
+    /// `urlString` may be a relative path (resolved via ChatMediaURL,
+    /// same convention as every other loader) or an absolute URL.
     static func loadRemote(_ urlString: String, into imageView: UIImageView) {
         loadRemote(urlString) { thumbnail in
             guard let thumbnail else { return }
@@ -53,7 +60,7 @@ enum ChatVideoThumbnailLoader {
             DispatchQueue.main.async { completion(cached) }
             return
         }
-        guard let url = resolvedURL(from: urlString) else {
+        guard let url = ChatMediaURL.resolved(urlString) else {
             DispatchQueue.main.async { completion(nil) }
             return
         }
@@ -105,19 +112,21 @@ enum ChatVideoThumbnailLoader {
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 440, height: 440) // 2x @220pt bubble width
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
 
-        do {
-            let cgImage = try generator.copyCGImage(at: CMTime(seconds: 0.1, preferredTimescale: 600), actualTime: nil)
-            return UIImage(cgImage: cgImage)
-        } catch {
-            return nil
-        }
-    }
+        // Try a couple of candidate timestamps — very short clips can
+        // fail at 0.1s but succeed at 0s. Whichever works first wins.
+        let candidateTimes: [CMTime] = [
+            CMTime(seconds: 0.1, preferredTimescale: 600),
+            CMTime(seconds: 0, preferredTimescale: 600)
+        ]
 
-    private static func resolvedURL(from raw: String) -> URL? {
-        if raw.hasPrefix("http://") || raw.hasPrefix("https://") {
-            return URL(string: raw)
+        for time in candidateTimes {
+            if let cgImage = try? generator.copyCGImage(at: time, actualTime: nil) {
+                return UIImage(cgImage: cgImage)
+            }
         }
-        return URL(string: APiConstant.base + raw)
+        return nil
     }
 }
