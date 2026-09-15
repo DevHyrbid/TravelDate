@@ -20,7 +20,8 @@ final class ChatMessageVc: BaseClassVc {
     private let refresh     = UIRefreshControl()
 
     private var inputBottom: NSLayoutConstraint!
-
+    private var hasPerformedInitialScroll = false
+    private var isPreservingScrollPosition = false
     // NEW — bridges UIImagePickerControllerDelegate's callback into
     // vidUpload()'s closure-based style (see extension at bottom of file).
     private var videoPickerCompletion: ((URL?) -> Void)?
@@ -150,30 +151,50 @@ final class ChatMessageVc: BaseClassVc {
     }
 
     private func scrollToBottom(animated: Bool) {
+
         guard !viewModel.sections.isEmpty else { return }
 
-        // `scrollToRow(at:.bottom)` right after `reloadData()` was the cause
-        // of the visible "jump"/gap after sending a message: self-sizing
-        // cells (automaticDimension) haven't resolved their REAL height yet
-        // on the very first layout pass, only `estimatedRowHeight`, so
-        // scrollToRow lands at a position based on guessed heights and the
-        // screen has to visibly snap once the real heights come in.
-        //
-        // Forcing layout first makes UIKit resolve every visible/needed
-        // cell's true height before we compute where "bottom" actually is,
-        // so we scroll to the right place in one go instead of jumping.
+        // Make sure automaticDimension has calculated real cell heights.
         tableView.layoutIfNeeded()
 
-        let bottomInset = tableView.adjustedContentInset.bottom
-        let maxOffsetY = max(
-            -tableView.adjustedContentInset.top,
-            tableView.contentSize.height - tableView.bounds.height + bottomInset
+        let inset = tableView.adjustedContentInset
+
+        let contentHeight = tableView.contentSize.height
+        let visibleHeight = tableView.bounds.height
+
+        let bottomY = contentHeight
+            - visibleHeight
+            + inset.bottom
+
+        let minimumY = -inset.top
+
+        let targetY = max(
+            minimumY,
+            bottomY
         )
 
-        tableView.setContentOffset(
-            CGPoint(x: 0, y: maxOffsetY),
-            animated: animated
+        let targetOffset = CGPoint(
+            x: 0,
+            y: targetY
         )
+
+        if animated {
+            UIView.animate(
+                withDuration: 0.25,
+                delay: 0,
+                options: [.beginFromCurrentState, .curveEaseOut]
+            ) {
+                self.tableView.setContentOffset(
+                    targetOffset,
+                    animated: false
+                )
+            }
+        } else {
+            tableView.setContentOffset(
+                targetOffset,
+                animated: false
+            )
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -362,36 +383,103 @@ final class ChatMessageVc: BaseClassVc {
     // MARK: - Bind
 
     private func bindViewModel() {
+
         viewModel.onReload = { [weak self] in
             guard let self else { return }
+
+            let wasAtBottom = self.isNearBottom(threshold: 100)
+
+            let oldContentHeight = self.tableView.contentSize.height
+            let oldOffsetY = self.tableView.contentOffset.y
+
+            let hadContentBeforeReload = !self.viewModel.sections.isEmpty
+
             self.tableView.reloadData()
-            // This was the missing piece for the historical-load case
-            // (loadFirstPage → onReload): reloadData() only SCHEDULES
-            // layout for the new cells, it doesn't force it to finish
-            // before the next screen paint. If a paint happens before
-            // every cell's Auto Layout pass (and preferredMaxLayoutWidth →
-            // wrapped text → real height) has actually resolved, that
-            // half-resolved frame gets rendered — and since bubbleView
-            // clips to bounds, that shows up as text visually cropped to
-            // a handful of characters until something else forces a
-            // re-layout. Forcing it here means we never hand a
-            // half-laid-out table back to the screen.
+
+            // Resolve automaticDimension cells before calculating offsets.
             self.tableView.layoutIfNeeded()
+
+            let newContentHeight = self.tableView.contentSize.height
+
+            // ---------------------------------------------------------
+            // FIRST LOAD
+            // ---------------------------------------------------------
+            if !self.hasPerformedInitialScroll && !self.viewModel.sections.isEmpty {
+
+                self.hasPerformedInitialScroll = true
+
+                DispatchQueue.main.async {
+                    guard !self.viewModel.sections.isEmpty else { return }
+
+                    self.tableView.layoutIfNeeded()
+                    self.scrollToBottom(animated: false)
+                }
+
+                return
+            }
+
+            // ---------------------------------------------------------
+            // EXISTING CHAT
+            // ---------------------------------------------------------
+
+            if wasAtBottom {
+
+                // User was already at the bottom.
+                // New/updated content should keep them there.
+                self.scrollToBottom(animated: false)
+
+            } else if hadContentBeforeReload {
+
+                // User is reading older messages.
+                //
+                // If older messages were prepended, contentSize grows.
+                // Move the offset by exactly that growth so the same
+                // message stays visually anchored.
+                let heightDelta = newContentHeight - oldContentHeight
+
+                let newOffsetY = oldOffsetY + heightDelta
+
+                let minOffsetY = -self.tableView.adjustedContentInset.top
+                let maxOffsetY = max(
+                    minOffsetY,
+                    self.tableView.contentSize.height
+                        - self.tableView.bounds.height
+                        + self.tableView.adjustedContentInset.bottom
+                )
+
+                self.tableView.setContentOffset(
+                    CGPoint(
+                        x: self.tableView.contentOffset.x,
+                        y: min(max(newOffsetY, minOffsetY), maxOffsetY)
+                    ),
+                    animated: false
+                )
+            }
         }
+
         viewModel.onAppend = { [weak self] in
             guard let self else { return }
-            let shouldScroll = self.isNearBottom()
+
+            // Capture BEFORE reloadData changes the content size.
+            let wasAtBottom = self.isNearBottom(threshold: 120)
+
             self.tableView.reloadData()
             self.tableView.layoutIfNeeded()
-            if shouldScroll {
+
+            // Optimistic outgoing message / new incoming message.
+            if wasAtBottom {
                 self.scrollToBottom(animated: true)
             }
         }
+
         viewModel.onError = { [weak self] message in
             self?.showAlert(message)
         }
+
         viewModel.onLoadingChanged = { [weak self] loading in
-            if !loading { self?.refresh.endRefreshing() }
+            if !loading {
+                self?.refresh.endRefreshing()
+            }
         }
     }
 
@@ -614,6 +702,23 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView.contentOffset.y < 60 {
             viewModel.loadOlderIfNeeded()
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        guard !hasPerformedInitialScroll else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            self.tableView.layoutIfNeeded()
+
+            if !self.viewModel.sections.isEmpty {
+                self.hasPerformedInitialScroll = true
+                self.scrollToBottom(animated: false)
+            }
         }
     }
 }

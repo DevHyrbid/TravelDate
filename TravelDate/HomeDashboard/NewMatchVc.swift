@@ -102,7 +102,7 @@ class NewMatchVc: BaseClassVc {
                     } else {
                         self.lblNoData.isHidden = true
                     }
-                    self.lblNoData.text = "No New match"
+                    self.lblNoData.text = "You have no new match yet..."
                 }
             }
         }
