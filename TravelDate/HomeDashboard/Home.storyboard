@@ -17,7 +17,7 @@
         <!--Home View Controller-->
         <scene sceneID="s0d-6b-0kx">
             <objects>
-                <viewController storyboardIdentifier="HomeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Y6W-OH-hqX" customClass="HomeViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="HomeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Y6W-OH-hqX" customClass="HomeViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="394" height="1200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -173,7 +173,7 @@
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5q-ag-0rz" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5q-ag-0rz" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="276.33333333333326" width="364" height="670"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ZlR-63-CLs">
@@ -191,7 +191,7 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="YHt-cZ-AzS">
                                                         <rect key="frame" x="15" y="280.00000000000006" width="339" height="35"/>
                                                         <subviews>
-                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gX6-jN-4jx" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gX6-jN-4jx" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="170" height="35"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iCT-6Y-QQh">
@@ -223,7 +223,7 @@
                                                                     </userDefinedRuntimeAttribute>
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
-                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wx0-C0-aJ1" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wx0-C0-aJ1" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="185" y="0.0" width="154" height="35"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HeL-OE-C0Y">
@@ -261,7 +261,7 @@
                                                             <constraint firstAttribute="height" constant="35" id="ypX-wY-25P"/>
                                                         </constraints>
                                                     </stackView>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lrW-nS-8gr" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lrW-nS-8gr" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                         <rect key="frame" x="15" y="330.00000000000006" width="334" height="138"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgTime" translatesAutoresizingMaskIntoConstraints="NO" id="KkE-I7-hQs">
@@ -280,7 +280,7 @@
                                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ZtF-BF-wRd">
                                                                 <rect key="frame" x="24" y="50" width="286" height="68"/>
                                                                 <subviews>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sVh-7U-7fx" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sVh-7U-7fx" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RjY-jN-iDY">
@@ -313,7 +313,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Btz-Cu-Jnb" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Btz-Cu-Jnb" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="74" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iOD-dr-jMb">
@@ -346,7 +346,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpj-pm-lu4" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpj-pm-lu4" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="148" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UP7-q6-LfB">
@@ -379,7 +379,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8ra-a7-xiV" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8ra-a7-xiV" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="222" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AbH-Qo-n3m">
@@ -441,7 +441,7 @@
                                                         <rect key="frame" x="20" y="488.00000000000006" width="324" height="37.333333333333314"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </view>
-                                                    <button opaque="NO" tag="104" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9Q-4g-gZG" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
+                                                    <button opaque="NO" tag="104" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="F9Q-4g-gZG" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
                                                         <rect key="frame" x="70" y="555.33333333333326" width="224" height="48"/>
                                                         <color key="backgroundColor" name="ThemeOrange"/>
                                                         <constraints>
@@ -539,7 +539,7 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V9z-12-wMz" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V9z-12-wMz" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="976.33333333333337" width="364" height="90.000000000000114"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Create or join trips " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nsL-gY-VtW">
@@ -629,7 +629,7 @@
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="W4p-Sj-m8H" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="W4p-Sj-m8H" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="344" y="231.33333333333334" width="30" height="30.000000000000028"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
@@ -653,7 +653,7 @@
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gGz-al-NtX" customClass="DesignableButton" customModule="TravelDate" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gGz-al-NtX" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="304" y="231.33333333333334" width="30" height="30.000000000000028"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
@@ -784,7 +784,7 @@
         <!--Create Group View Controller-->
         <scene sceneID="9G6-8b-EFR">
             <objects>
-                <viewController storyboardIdentifier="CreateGroupViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="JDZ-75-2bd" customClass="CreateGroupViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CreateGroupViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="JDZ-75-2bd" customClass="CreateGroupViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8eS-UU-dj3">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -825,7 +825,7 @@
         <!--Invite Friends View Controller-->
         <scene sceneID="dvt-uL-8T6">
             <objects>
-                <viewController storyboardIdentifier="InviteFriendsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Ysw-bF-8ui" customClass="InviteFriendsViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="InviteFriendsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Ysw-bF-8ui" customClass="InviteFriendsViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IqY-5n-1OM">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -840,7 +840,7 @@
         <!--Welcome View Controller-->
         <scene sceneID="PhC-1r-eeb">
             <objects>
-                <viewController storyboardIdentifier="WelcomeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WM0-Jb-sbq" customClass="WelcomeViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WelcomeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="WM0-Jb-sbq" customClass="WelcomeViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Fd6-RJ-409">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -855,7 +855,7 @@
         <!--Trips Tab Bar Controller-->
         <scene sceneID="Bqy-Vh-UeN">
             <objects>
-                <viewController storyboardIdentifier="TripsTabBarController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="0se-we-7gZ" customClass="TripsTabBarController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="TripsTabBarController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="0se-we-7gZ" customClass="TripsTabBarController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="pUZ-c5-anl">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -870,7 +870,7 @@
         <!--My Group View Controller-->
         <scene sceneID="aGO-lI-RNc">
             <objects>
-                <viewController storyboardIdentifier="MyGroupViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="F8q-JA-hF4" customClass="MyGroupViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="MyGroupViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="F8q-JA-hF4" customClass="MyGroupViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="6Z2-ma-myK">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -896,7 +896,7 @@
                                                 <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2rP-sU-nq0" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2rP-sU-nq0" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="114.33333333333331" width="363" height="530"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="XQ9-db-c3k">
@@ -914,10 +914,10 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="gPy-Xc-VsM">
                                                         <rect key="frame" x="15" y="270" width="338" height="40"/>
                                                         <subviews>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="197" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
                                                                         <rect key="frame" x="36" y="0.0" width="161" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -946,10 +946,10 @@
                                                                     </userDefinedRuntimeAttribute>
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="212" y="0.0" width="126" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
                                                                         <rect key="frame" x="31" y="0.0" width="89" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -984,7 +984,7 @@
                                                             <constraint firstAttribute="height" constant="40" id="Vhj-Fj-pOh"/>
                                                         </constraints>
                                                     </stackView>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCk-6Q-k96" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCk-6Q-k96" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                         <rect key="frame" x="15" y="330" width="333" height="138"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgTime" translatesAutoresizingMaskIntoConstraints="NO" id="Ec9-BP-nJw">
@@ -1003,7 +1003,7 @@
                                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="zFN-rY-e5g">
                                                                 <rect key="frame" x="32" y="50" width="286" height="68"/>
                                                                 <subviews>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2h-n0-rUV" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f2h-n0-rUV" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4YU-jh-qy6">
@@ -1036,7 +1036,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rVd-GQ-563" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rVd-GQ-563" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="74" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QIQ-1g-ov6">
@@ -1069,7 +1069,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oeG-ij-oWc" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oeG-ij-oWc" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="148" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="whp-lI-eRO">
@@ -1102,7 +1102,7 @@
                                                                             </userDefinedRuntimeAttribute>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </view>
-                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cRZ-2g-KQT" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cRZ-2g-KQT" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                         <rect key="frame" x="222" y="0.0" width="64" height="68"/>
                                                                         <subviews>
                                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jLY-9r-RpV">
@@ -1291,7 +1291,7 @@
         <!--New Match Vc-->
         <scene sceneID="71z-7H-GyK">
             <objects>
-                <viewController storyboardIdentifier="NewMatchVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="gWb-qF-ck9" customClass="NewMatchVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NewMatchVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="gWb-qF-ck9" customClass="NewMatchVc" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="A1h-i7-sEO">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1350,7 +1350,7 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ndO-UB-vO6">
                                                 <rect key="frame" x="0.0" y="0.0" width="260" height="42"/>
                                                 <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tS0-9U-wcq" customClass="GlassButton" customModule="TravelDate" customModuleProvider="target">
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tS0-9U-wcq" customClass="GlassButton" customModule="Trips" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="120" height="42"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
@@ -1369,7 +1369,7 @@
                                                             <action selector="btnAction:" destination="gWb-qF-ck9" eventType="touchUpInside" id="Ol7-L5-vnA"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ldk-cR-sXG" customClass="GlassButton" customModule="TravelDate" customModuleProvider="target">
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="headTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ldk-cR-sXG" customClass="GlassButton" customModule="Trips" customModuleProvider="target">
                                                         <rect key="frame" x="130" y="0.0" width="130" height="42"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
@@ -1449,7 +1449,7 @@
         <!--My Saved Group Vc-->
         <scene sceneID="bR2-U0-h3Q">
             <objects>
-                <viewController storyboardIdentifier="MySavedGroupVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="OWx-12-mb5" customClass="MySavedGroupVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="MySavedGroupVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="OWx-12-mb5" customClass="MySavedGroupVc" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="grq-GJ-bm1">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1472,7 +1472,7 @@
                                                 <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BPI-mS-MCH" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BPI-mS-MCH" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                 <rect key="frame" x="15" y="130.33333333333337" width="363" height="380"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgFrame2" translatesAutoresizingMaskIntoConstraints="NO" id="S01-Fj-sMK">
@@ -1490,7 +1490,7 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="t5X-zy-mUQ">
                                                         <rect key="frame" x="15" y="310.33333333333337" width="333" height="40"/>
                                                         <subviews>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="T3f-PV-eiY" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="T3f-PV-eiY" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="213" height="40"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Apr 15 - Apr 28 2026" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xh1-gt-rr7">
@@ -1522,7 +1522,7 @@
                                                                     </userDefinedRuntimeAttribute>
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
-                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ccg-zJ-4Ln" customClass="DesignableView" customModule="TravelDate" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ccg-zJ-4Ln" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="228" y="0.0" width="105" height="40"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bali " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DKI-l5-9tz">
@@ -1610,24 +1610,44 @@
                                                     <outlet property="delegate" destination="OWx-12-mb5" id="scf-Sh-8HO"/>
                                                 </connections>
                                             </tableView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgChat 1" translatesAutoresizingMaskIntoConstraints="NO" id="ufk-Rj-ZE4">
+                                                <rect key="frame" x="329" y="48.333333333333343" width="44" height="44"/>
+                                            </imageView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zlM-ym-PyE">
+                                                <rect key="frame" x="329" y="48.333333333333371" width="44" height="44"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="44" id="0uQ-qx-g0q"/>
+                                                    <constraint firstAttribute="width" constant="44" id="MIL-eR-Ecn"/>
+                                                </constraints>
+                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                <connections>
+                                                    <action selector="btnChat:" destination="OWx-12-mb5" eventType="touchUpInside" id="Ibb-rJ-5ec"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstItem="Wxb-dp-RMH" firstAttribute="top" secondItem="C57-dX-6Gi" secondAttribute="top" constant="60" id="0iu-9x-jJH"/>
                                             <constraint firstItem="BPI-mS-MCH" firstAttribute="leading" secondItem="C57-dX-6Gi" secondAttribute="leading" constant="15" id="3V4-L9-Yh9"/>
                                             <constraint firstItem="OB9-lp-ZlH" firstAttribute="top" secondItem="Bnp-hM-0Ka" secondAttribute="bottom" constant="20" id="6M0-5j-dCC"/>
+                                            <constraint firstAttribute="trailing" secondItem="ufk-Rj-ZE4" secondAttribute="trailing" constant="20" id="7zJ-57-Hbi"/>
                                             <constraint firstItem="Wxb-dp-RMH" firstAttribute="leading" secondItem="QX2-OW-ivZ" secondAttribute="trailing" constant="10" id="9Nx-4Q-GjV"/>
+                                            <constraint firstItem="ufk-Rj-ZE4" firstAttribute="centerY" secondItem="Wxb-dp-RMH" secondAttribute="centerY" id="EMK-Q0-cXp"/>
                                             <constraint firstItem="QX2-OW-ivZ" firstAttribute="top" secondItem="Wxb-dp-RMH" secondAttribute="top" id="KAn-B6-rdh"/>
                                             <constraint firstItem="f5G-ar-vju" firstAttribute="top" secondItem="Wxb-dp-RMH" secondAttribute="bottom" constant="5" id="LbU-a4-PRa"/>
+                                            <constraint firstItem="zlM-ym-PyE" firstAttribute="bottom" secondItem="ufk-Rj-ZE4" secondAttribute="bottom" id="Lcx-t8-0P3"/>
                                             <constraint firstAttribute="bottom" secondItem="OB9-lp-ZlH" secondAttribute="bottom" constant="20" id="Nta-Oi-W8V"/>
                                             <constraint firstAttribute="trailing" secondItem="OB9-lp-ZlH" secondAttribute="trailing" constant="5" id="RVe-jT-xAL"/>
+                                            <constraint firstItem="zlM-ym-PyE" firstAttribute="top" secondItem="ufk-Rj-ZE4" secondAttribute="top" id="X5t-ch-ck3"/>
                                             <constraint firstItem="f5G-ar-vju" firstAttribute="leading" secondItem="Wxb-dp-RMH" secondAttribute="leading" id="Yxs-B6-IbF"/>
                                             <constraint firstItem="QX2-OW-ivZ" firstAttribute="leading" secondItem="C57-dX-6Gi" secondAttribute="leading" constant="15" id="Zhk-89-IO5"/>
+                                            <constraint firstItem="zlM-ym-PyE" firstAttribute="leading" secondItem="ufk-Rj-ZE4" secondAttribute="leading" id="c8P-TA-0lw"/>
                                             <constraint firstItem="Bnp-hM-0Ka" firstAttribute="leading" secondItem="C57-dX-6Gi" secondAttribute="leading" constant="15" id="eND-hV-jTC"/>
                                             <constraint firstItem="w9E-xn-WbJ" firstAttribute="centerY" secondItem="f5G-ar-vju" secondAttribute="centerY" id="ghN-Pp-C4k"/>
                                             <constraint firstAttribute="trailing" secondItem="BPI-mS-MCH" secondAttribute="trailing" constant="15" id="oyf-x7-h5R"/>
                                             <constraint firstItem="w9E-xn-WbJ" firstAttribute="leading" secondItem="f5G-ar-vju" secondAttribute="trailing" constant="10" id="qga-j0-Bno"/>
                                             <constraint firstItem="OB9-lp-ZlH" firstAttribute="leading" secondItem="C57-dX-6Gi" secondAttribute="leading" constant="5" id="uaT-z2-RKh"/>
+                                            <constraint firstItem="zlM-ym-PyE" firstAttribute="trailing" secondItem="ufk-Rj-ZE4" secondAttribute="trailing" id="vk0-hj-Upe"/>
                                             <constraint firstItem="BPI-mS-MCH" firstAttribute="top" secondItem="w9E-xn-WbJ" secondAttribute="bottom" constant="28.670000000000002" id="ww0-gP-J1m"/>
                                             <constraint firstItem="Bnp-hM-0Ka" firstAttribute="top" secondItem="BPI-mS-MCH" secondAttribute="bottom" constant="20" id="xiq-Kj-g7W"/>
                                         </constraints>
@@ -1670,7 +1690,7 @@
         <!--Swipe View Controller-->
         <scene sceneID="IKY-ML-ZaS">
             <objects>
-                <viewController storyboardIdentifier="SwipeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="MFH-ji-eD1" customClass="SwipeViewController" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SwipeViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="MFH-ji-eD1" customClass="SwipeViewController" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="VTb-Vz-W1g">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1870,7 +1890,7 @@
         <!--Chat Vc-->
         <scene sceneID="yiq-KU-WiS">
             <objects>
-                <viewController storyboardIdentifier="ChatVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="2R7-0d-tmY" customClass="ChatVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ChatVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="2R7-0d-tmY" customClass="ChatVc" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8L7-n3-2ZZ">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2050,7 +2070,7 @@
         <!--Notification Vc-->
         <scene sceneID="ruT-Ul-Way">
             <objects>
-                <viewController storyboardIdentifier="NotificationVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="tJY-qD-4zZ" customClass="NotificationVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="NotificationVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="tJY-qD-4zZ" customClass="NotificationVc" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="isH-65-26W">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2151,7 +2171,7 @@
         <!--Invite Vc-->
         <scene sceneID="oh9-W1-sEd">
             <objects>
-                <viewController storyboardIdentifier="InviteVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="KJe-U1-aUD" customClass="InviteVc" customModule="TravelDate" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="InviteVc" useStoryboardIdentifierAsRestorationIdentifier="YES" id="KJe-U1-aUD" customClass="InviteVc" customModule="Trips" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="PBS-R8-5Ly">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

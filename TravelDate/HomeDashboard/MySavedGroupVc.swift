@@ -19,6 +19,7 @@ class MySavedGroupVc: BaseClassVc {
     
     // MARK: - Properties
     var data: Group? = nil
+    var chatData: [ChatData] = []
     
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
@@ -174,6 +175,48 @@ extension MySavedGroupVc {
     
     @IBAction func btnChat(_ sender:UIButton) {
         
+        fetchChats { [weak self] in
+            guard let self else { return }
+            let item = chatData.first {
+                print("Comparing '\($0.groupDetails?.id ?? "nil")' == '\(self.data?._id)'")
+                return $0.groupDetails?.id == self.data!._id
+            }
+            
+            print(item == nil ? "NOT FOUND" : "FOUND")
+            
+            let viewModel = ChatViewModel(
+                currentUserId: User.curentUser?.id ?? ""
+            )
+            
+            let vc = ChatMessageVc(
+                viewModel: viewModel,
+                participants: item?.members ?? [],
+                roomId: item?.chatId,
+                roomTitle: item? .name ?? "",
+                type: .group
+            )
+            vc.roomImageURL = ""
+            self.navigationController?.pushViewController(vc, animated: true)
+        }
     }
+        
+
+        
+        
+        
+        private func fetchChats(completion: (() -> Void)? = nil) {
+            request.getChatsInbox(0) { [weak self] model, msg, code in
+                guard let self else { return }
+
+                DispatchQueue.main.async {
+                    if code == 200 {
+                        self.chatData = model?.data ?? []
+                        completion?()
+                    }
+                }
+            }
+        }
+
+    
 }
 

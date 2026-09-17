@@ -1395,7 +1395,7 @@ class MemberGroup: Mappable {
     var title :  String?
     var description : String?
     var notificationOn : Int?
-    
+    var travelStyles : [String]?
     var profile_image :  String?
     var social_type :  String?
     var social_id :  String?
@@ -1409,7 +1409,7 @@ class MemberGroup: Mappable {
     var endDate  : String?
     var maxGroupSize  : Int?
     var travelStyle : [String]?
-    var travelStyles : [String]?
+    
     var isActive : Bool?
     
     var code  : String?
@@ -1476,6 +1476,7 @@ class MemberGroup: Mappable {
     required init?(map: Map) {}
     
     func mapping(map: Map) {
+        travelStyles <- map["travelStyles"]
         isVerified <- map["isVerified"]
         user <- map["user"]
         travelStyles <- map["travelStyles"]

@@ -102,7 +102,7 @@ class TripsTabBarController: UIViewController {
 
     private var tabButtons: [UIButton] = []
     var selectedIndex: Int = 0
-
+    var request = User.new()
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -110,6 +110,40 @@ class TripsTabBarController: UIViewController {
         setupContainer()
         setupTabBar()
         switchTo(index: 0)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(chatPushReceived),
+            name: .didReceiveChatMessage,
+            object: nil
+        )
+    }
+
+    @objc private func chatPushReceived() {
+        updateChatUnreadBadge()
+    }
+    
+    private func updateChatUnreadBadge() {
+
+        self.request.getChatsInbox(0) { [weak self] groupModel, _, _ in
+            guard let self else { return }
+
+            let groupCount = (groupModel?.data ?? [])
+                .reduce(0) { $0 + ($1.unreadCount ?? 0) }
+
+            self.request.getChatsInbox(1) { [weak self] chatModel, _, _ in
+                guard let self else { return }
+
+                let chatCount = (chatModel?.data ?? [])
+                    .reduce(0) { $0 + ($1.unreadCount ?? 0) }
+
+                let total = groupCount + chatCount
+
+                DispatchQueue.main.async {
+                    self.updateChatBadge(count: total)
+                }
+            }
+        }
     }
     
     private func setupChatBadge() {

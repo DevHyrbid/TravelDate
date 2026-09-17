@@ -426,7 +426,7 @@ class SwipeViewController: BaseClassVc {
         
         emptyStateView.isHidden = false
         lblNoData.isHidden = false
-        lblNoData.text = "You've seen all available groups 🎉 \n No New Groups available"
+        lblNoData.text = "You've seen all available groups 🎉"
 
         skipButton.isHidden = true
         likeButton.isHidden = true

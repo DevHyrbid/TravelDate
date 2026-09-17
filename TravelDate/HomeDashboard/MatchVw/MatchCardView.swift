@@ -46,7 +46,7 @@ final class MatchCardView: UIView {
     private let badgeIconLabel: UILabel = { let l = UILabel(); l.text = "🏖"; l.font = AppFont.regular(15.0); return l }()
     
     private let badgeTextLabel: UILabel = {
-        let l = UILabel(); l.text = "Leisure travelers"; l.textColor = .white
+        let l = UILabel(); l.text = "ss"; l.textColor = .white
         l.font = AppFont.medium(16.0); return l
     }()
 
@@ -316,7 +316,13 @@ final class MatchCardView: UIView {
         categoryIconLabel.text = iconEmoji(for: style)
         badgeIconLabel.text    = iconEmoji(for: style)
         badgeTextLabel.text    = badgeText(for: style)
-
+//        let styles = group.travelStyle ?? []
+//        
+//        
+//        
+//        categoryIconLabel.text = styles.map { iconEmoji(for: $0) }.joined(separator: " ")
+//        badgeIconLabel.text = styles.map { iconEmoji(for: $0) }.joined(separator: " ")
+//        badgeTextLabel.text = styles.map { badgeText(for: $0) }.joined(separator: " • ")
         pill1.setText(formatDateRange(from: group.startDate, to: group.endDate))
         pill2.setText("Avg age:25 - 30")
         pill3.setText("\(group.members?.count ?? 0) travelers")

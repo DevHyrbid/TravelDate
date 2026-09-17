@@ -283,7 +283,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     }),
                     illustration: UIImage(named: "onboard_create_trip"),
                     title: "Create or join a trip",
-                    description: "Create a trip in just few steps...",
+                    description: "Create or join a trip in just a few steps",
                     tooltipPosition: .above,
                     scrollView: self?.scrollVw
                 )
@@ -315,7 +315,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     }),
                     illustration: UIImage(named: "imgGroup"),
                     title: "New matches & saved groups",
-                    description: "See your new trips and saved trips here.",
+                    description: "See your matched trips and saved trips here",
                     tooltipPosition: .above,
                     tabIndex: 1
                 ),
