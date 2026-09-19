@@ -24,6 +24,7 @@ class MySavedGroupVc: BaseClassVc {
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
        registerNib()
         setupData()
     }
@@ -174,29 +175,41 @@ extension MySavedGroupVc {
     }
     
     @IBAction func btnChat(_ sender:UIButton) {
-        
+        print(data?._id,data?.toJSON(),"herere")
         fetchChats { [weak self] in
             guard let self else { return }
+
+            let targetGroupId = self.data?._id ?? ""
+
             let item = chatData.first {
-                print("Comparing '\($0.groupDetails?.id ?? "nil")' == '\(self.data?._id ?? "")'")
-                return $0.groupDetails?.id == self.data!.members?.first?.groupId ?? ""
+                let responseGroupId = $0.groupDetails?.group2Id ?? ""
+
+                print("Comparing '\(responseGroupId)' == '\(targetGroupId)'")
+
+                return responseGroupId == targetGroupId
             }
-            
+
             print(item == nil ? "NOT FOUND" : "FOUND")
-            
+
+            guard let item else {
+                return
+            }
+
             let viewModel = ChatViewModel(
                 currentUserId: User.curentUser?.id ?? ""
             )
-            
+
             let vc = ChatMessageVc(
                 viewModel: viewModel,
-                participants: item?.members ?? [],
-                roomId: item?.chatId,
-                roomTitle: item? .name ?? "",
+                participants: item.members ?? [],
+                roomId: item.chatId,
+                roomTitle: item.name ?? "",
                 type: .group
             )
-            vc.roomImageURL = ""
-//             self.navigationController?.pushViewController(vc, animated: true)
+
+            vc.roomImageURL = data?.coverImage ?? ""
+
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
         
@@ -205,7 +218,7 @@ extension MySavedGroupVc {
         
         
         private func fetchChats(completion: (() -> Void)? = nil) {
-            request.getChatsInbox(0) { [weak self] model, msg, code in
+            request.getChatsInbox(1) { [weak self] model, msg, code in
                 guard let self else { return }
 
                 DispatchQueue.main.async {
