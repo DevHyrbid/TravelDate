@@ -86,7 +86,7 @@ class WelcomeViewController: BaseClassVc {
     private let joinBarView  = WelcomeViewController.accentBar()
     private let joinTitleLbl = WelcomeViewController.sectionTitle("Join Trip")
     private let joinDescLbl  = WelcomeViewController.sectionDesc(
-        "Paste the link & join your friends existing travel trip !")
+        "Paste the link & join your friends existing travel group !")
 
   
    

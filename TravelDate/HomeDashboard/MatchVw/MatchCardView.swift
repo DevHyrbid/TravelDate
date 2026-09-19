@@ -312,7 +312,7 @@ final class MatchCardView: UIView {
         
         ImageLoader.setImageKing(coverImageView, urlString: APiConstant.base + "\(group.coverImage ?? "")")
         
-        let style = group.travelStyle?.first ?? "beach"
+        let style = group.travelStyle ?? "beach"
         categoryIconLabel.text = iconEmoji(for: style)
         badgeIconLabel.text    = iconEmoji(for: style)
         badgeTextLabel.text    = badgeText(for: style)

@@ -110,7 +110,7 @@ class TripsTabBarController: UIViewController {
         setupContainer()
         setupTabBar()
         switchTo(index: 0)
-        
+        updateChatUnreadBadge()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(chatPushReceived),
@@ -141,6 +141,7 @@ class TripsTabBarController: UIViewController {
 
                 DispatchQueue.main.async {
                     self.updateChatBadge(count: total)
+                    UNUserNotificationCenter.current().setBadgeCount(total)
                 }
             }
         }

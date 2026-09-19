@@ -1319,7 +1319,7 @@ class Group: Mappable {
     var startDate: String?
     var endDate: String?
     var maxGroupSize: Int?
-    var travelStyle: [String]?
+    var travelStyle: String?
     var isActive: Bool?
     var joinCode: String?
     

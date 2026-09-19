@@ -178,8 +178,8 @@ extension MySavedGroupVc {
         fetchChats { [weak self] in
             guard let self else { return }
             let item = chatData.first {
-                print("Comparing '\($0.groupDetails?.id ?? "nil")' == '\(self.data?._id)'")
-                return $0.groupDetails?.id == self.data!._id
+                print("Comparing '\($0.groupDetails?.id ?? "nil")' == '\(self.data?._id ?? "")'")
+                return $0.groupDetails?.id == self.data!.members?.first?.groupId ?? ""
             }
             
             print(item == nil ? "NOT FOUND" : "FOUND")
@@ -196,7 +196,7 @@ extension MySavedGroupVc {
                 type: .group
             )
             vc.roomImageURL = ""
-            self.navigationController?.pushViewController(vc, animated: true)
+//             self.navigationController?.pushViewController(vc, animated: true)
         }
     }
         

@@ -586,7 +586,7 @@ extension SwipeViewController {
                             groupId:             group.id ?? "",
                             swipeId:             "",
                             groupTitle:          group.title ?? "",
-                            matchedStyles:       group.travelStyle ?? [""],
+                            matchedStyles:      [""],
                             message:             "Ready to make some plans? Start a conversation now!",
                             myGroupImage:        result?.myGroupImage ?? "",
                             matchedGroupImage:   nil,

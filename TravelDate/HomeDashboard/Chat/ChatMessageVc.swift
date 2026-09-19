@@ -689,7 +689,7 @@ extension ChatMessageVc: UITableViewDataSource, UITableViewDelegate {
         let label = UILabel()
         label.text = viewModel.sections[section].title
         label.textAlignment = .center
-        label.font = UIFont(name: "Poppins-Medium", size: 12) ?? .systemFont(ofSize: 12)
+        label.font = UIFont(name: "Inter28pt-Medium", size: 12) ?? .systemFont(ofSize: 12)
         label.textColor = UIColor.white.withAlphaComponent(0.4)
         return label
     }

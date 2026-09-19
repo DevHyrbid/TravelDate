@@ -49,6 +49,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var btnEdit:UIButton!
     @IBOutlet weak var imgVerify:UIImageView!
     @IBOutlet weak var btnCreateGroup:UIButton!
+    @IBOutlet weak var imgCluture:UIImageView!
+    @IBOutlet weak var imgParty:UIImageView!
+    @IBOutlet weak var imgAdventure:UIImageView!
+    @IBOutlet weak var imgLesirue:UIImageView!
     private let refreshControl = UIRefreshControl()
     
     
@@ -69,7 +73,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-        
+        // Hide all first
+         
+
         setupPullToRefresh()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
         
@@ -167,12 +173,10 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         let members = res.members ?? []
         let totalCount = res.members?.count ?? 0
         let completedCount = members.count
+        self.updateTravelStyleImages(res.travelStyle)
 
-        print("========== MEMBERS PROGRESS ==========")
-        print("Members Count     : \(members.count)")
-        print("Total Count       : \(totalCount)")
-        print("Completed Count   : \(completedCount)")
         
+       
         if totalCount > 0 {
             let progress = (Double(completedCount) / Double(totalCount)) * 100
             print("Progress          : \(progress)%")
@@ -200,6 +204,39 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         }
     }
     
+    private func updateTravelStyleImages(_ styles: String?) {
+        imgCluture.isHidden = true
+        imgParty.isHidden = true
+        imgAdventure.isHidden = true
+        imgLesirue.isHidden = true
+
+        guard let styles = styles else { return }
+
+        let styleList = styles
+            .split(separator: ",")
+            .map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            }
+
+        for style in styleList {
+            switch style {
+            case "cultural traveler":
+                imgCluture.isHidden = false
+
+            case "partygoer":
+                imgParty.isHidden = false
+
+            case "adventure traveler":
+                imgAdventure.isHidden = false
+
+            case "leisure traveler":
+                imgLesirue.isHidden = false
+
+            default:
+                break
+            }
+        }
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -530,6 +567,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     self.dataArray = model?.dataGroup ?? []
                     
                     if let groups = model?.dataGroup, !groups.isEmpty {
+                        
                         self.btnEdit.isHidden = false
                         self.btnList.menu = makeTripMenu(trips: groups)
                         self.btnList.showsMenuAsPrimaryAction = true

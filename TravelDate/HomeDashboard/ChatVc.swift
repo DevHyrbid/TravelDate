@@ -74,6 +74,7 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
         tripsTabBarController?.updateChatBadge(
             count: totalUnreadCount
         )
+        UNUserNotificationCenter.current().setBadgeCount(totalUnreadCount)
     }
     
 
@@ -530,6 +531,13 @@ private extension ChatVc {
         }
         
         cell.lblCount.text = "\(model.unreadCount ?? 0)"
+        if model.unreadCount == 0 {
+            cell.lblOnline.isHidden = true
+            cell.lblCount.isHidden = true
+        } else {
+            cell.lblOnline.isHidden = false
+            cell.lblCount.isHidden = false
+        }
     }
 
     func loadAvatarImage(into imageView: UIImageView, urlString: String?) {

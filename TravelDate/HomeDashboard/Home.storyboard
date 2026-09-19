@@ -182,6 +182,26 @@
                                                             <constraint firstAttribute="height" constant="240" id="XIv-Ei-vTG"/>
                                                         </constraints>
                                                     </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="peu-5V-wIn">
+                                                        <rect key="frame" x="10" y="190" width="158" height="40"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgClutral" translatesAutoresizingMaskIntoConstraints="NO" id="p5k-yI-yKa">
+                                                                <rect key="frame" x="0.0" y="0.0" width="32" height="40"/>
+                                                            </imageView>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgAdventure" translatesAutoresizingMaskIntoConstraints="NO" id="jSf-Tg-twL">
+                                                                <rect key="frame" x="42" y="0.0" width="32" height="40"/>
+                                                            </imageView>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgLesiures" translatesAutoresizingMaskIntoConstraints="NO" id="8Cv-JN-y08">
+                                                                <rect key="frame" x="84" y="0.0" width="32" height="40"/>
+                                                            </imageView>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="imgPartygoeres" translatesAutoresizingMaskIntoConstraints="NO" id="GVX-pz-TLd">
+                                                                <rect key="frame" x="126" y="0.0" width="32" height="40"/>
+                                                            </imageView>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="40" id="4pk-z0-icT"/>
+                                                        </constraints>
+                                                    </stackView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="G9e-yJ-b6n">
                                                         <rect key="frame" x="20" y="260.00000000000006" width="0.0" height="0.0"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
@@ -500,6 +520,7 @@
                                                 <color key="backgroundColor" red="0.082352941176470587" green="0.090196078431372548" blue="0.094117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                                 <constraints>
                                                     <constraint firstItem="JiU-xS-Sul" firstAttribute="top" secondItem="J5q-ag-0rz" secondAttribute="top" id="1OC-GA-MaH"/>
+                                                    <constraint firstItem="peu-5V-wIn" firstAttribute="leading" secondItem="ZlR-63-CLs" secondAttribute="leading" constant="10" id="1PC-Q8-EGa"/>
                                                     <constraint firstAttribute="trailing" secondItem="ZlR-63-CLs" secondAttribute="trailing" id="1Ze-GR-3PZ"/>
                                                     <constraint firstItem="JiU-xS-Sul" firstAttribute="leading" secondItem="J5q-ag-0rz" secondAttribute="leading" id="25u-bi-swJ"/>
                                                     <constraint firstItem="lrW-nS-8gr" firstAttribute="top" secondItem="YHt-cZ-AzS" secondAttribute="bottom" constant="15" id="2tW-YV-DOg"/>
@@ -510,6 +531,7 @@
                                                     <constraint firstAttribute="trailing" secondItem="JiU-xS-Sul" secondAttribute="trailing" id="Cw2-Zi-28o"/>
                                                     <constraint firstItem="YHt-cZ-AzS" firstAttribute="leading" secondItem="J5q-ag-0rz" secondAttribute="leading" constant="15" id="DkZ-ZH-uBd"/>
                                                     <constraint firstItem="ZlR-63-CLs" firstAttribute="top" secondItem="J5q-ag-0rz" secondAttribute="top" id="JP3-3m-Six"/>
+                                                    <constraint firstItem="peu-5V-wIn" firstAttribute="bottom" secondItem="ZlR-63-CLs" secondAttribute="bottom" constant="-10" id="K31-PU-80M"/>
                                                     <constraint firstAttribute="trailing" secondItem="K2Y-8p-Hfi" secondAttribute="trailing" constant="20" id="KMX-a0-btk"/>
                                                     <constraint firstItem="G9e-yJ-b6n" firstAttribute="top" secondItem="ZlR-63-CLs" secondAttribute="bottom" constant="20" id="KUq-8x-d0s"/>
                                                     <constraint firstItem="dmX-4p-IFn" firstAttribute="bottom" secondItem="K2Y-8p-Hfi" secondAttribute="bottom" id="KVR-5l-Qno"/>
@@ -754,6 +776,10 @@
                         <outlet property="btnList" destination="W4p-Sj-m8H" id="48i-NV-qy8"/>
                         <outlet property="height" destination="V1i-gq-Ba1" id="llS-8C-G30"/>
                         <outlet property="hideVw" destination="JiU-xS-Sul" id="q5n-hj-hfq"/>
+                        <outlet property="imgAdventure" destination="jSf-Tg-twL" id="lRv-Mn-zbH"/>
+                        <outlet property="imgCluture" destination="p5k-yI-yKa" id="U4U-TY-A6w"/>
+                        <outlet property="imgLesirue" destination="8Cv-JN-y08" id="pwk-5H-8VK"/>
+                        <outlet property="imgParty" destination="GVX-pz-TLd" id="Pm8-HX-guS"/>
                         <outlet property="imgProfile" destination="T0e-b5-quS" id="JKQ-Eh-emB"/>
                         <outlet property="imgTrips" destination="ZlR-63-CLs" id="HwE-TJ-d9o"/>
                         <outlet property="imgVerify" destination="6p3-AI-G7L" id="LP3-Nk-etb"/>
@@ -914,10 +940,10 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="gPy-Xc-VsM">
                                                         <rect key="frame" x="15" y="270" width="338" height="40"/>
                                                         <subviews>
-                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="J5m-Xz-quZ" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="197" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C2b-Ef-qIf">
                                                                         <rect key="frame" x="36" y="0.0" width="161" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -946,10 +972,10 @@
                                                                     </userDefinedRuntimeAttribute>
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
-                                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xfX-AO-RV6" customClass="DesignableView" customModule="Trips" customModuleProvider="target">
                                                                 <rect key="frame" x="212" y="0.0" width="126" height="40"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BUk-pP-jdO">
                                                                         <rect key="frame" x="31" y="0.0" width="89" height="40"/>
                                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
                                                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1614,7 +1640,7 @@
                                                 <rect key="frame" x="329" y="48.333333333333343" width="44" height="44"/>
                                             </imageView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zlM-ym-PyE">
-                                                <rect key="frame" x="329" y="48.333333333333371" width="44" height="44"/>
+                                                <rect key="frame" x="329" y="48.333333333333343" width="44" height="44"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="44" id="0uQ-qx-g0q"/>
                                                     <constraint firstAttribute="width" constant="44" id="MIL-eR-Ecn"/>
@@ -2188,21 +2214,25 @@
         <image name="1-1" width="177" height="53"/>
         <image name="1-2" width="177" height="53"/>
         <image name="arrowshape.down.circle" catalog="system" width="128" height="123"/>
+        <image name="imgAdventure" width="32" height="32"/>
         <image name="imgArea" width="425.33334350585938" height="98.666664123535156"/>
         <image name="imgBack" width="20" height="20"/>
         <image name="imgCalendar" width="16" height="16"/>
         <image name="imgChat" width="111" height="116"/>
         <image name="imgChat 1" width="44" height="44"/>
+        <image name="imgClutral" width="32" height="32"/>
         <image name="imgCross" width="65" height="65"/>
         <image name="imgEdit" width="45.333332061767578" height="45.333332061767578"/>
         <image name="imgFrame2" width="354" height="234"/>
         <image name="imgFrameGlass" width="354" height="46"/>
         <image name="imgLady" width="186.66667175292969" height="186.66667175292969"/>
+        <image name="imgLesiures" width="32" height="32"/>
         <image name="imgLike" width="65" height="65"/>
         <image name="imgLocation" width="10.666666984558105" height="16"/>
         <image name="imgMatchCopy" width="28" height="21.333333969116211"/>
         <image name="imgNew" width="111" height="116"/>
         <image name="imgNotification" width="44" height="44"/>
+        <image name="imgPartygoeres" width="32" height="32"/>
         <image name="imgPhotos" width="424.33334350585938" height="37.333332061767578"/>
         <image name="imgPlus" width="64" height="64"/>
         <image name="imgRead" width="122.66666412353516" height="26.666666030883789"/>

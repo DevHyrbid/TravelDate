@@ -148,7 +148,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate  {
             
             // No type → only show notification if user has enabled push
             if pushEnabled {
-                completionHandler([.banner, .sound, .badge])
+                completionHandler([.banner, .sound])
             } else {
                 completionHandler([])
             }
@@ -180,7 +180,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate  {
             } else {
 
                 // Outside chat → banner + sound + badge
-                completionHandler([.banner, .sound, .badge])
+                completionHandler([.banner, .sound])
             }
 
             return
@@ -203,7 +203,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate  {
             }
 
             // Push enabled → show notification
-            completionHandler([.banner, .sound, .badge])
+            completionHandler([.banner, .sound])
 
             return
         }
@@ -213,14 +213,14 @@ extension AppDelegate: UNUserNotificationCenterDelegate  {
         // Your app can still process/update data here if required.
 
         if pushEnabled {
-            completionHandler([.banner, .sound, .badge])
+            completionHandler([.banner, .sound])
         } else {
             completionHandler([])
         }
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
-        UIApplication.shared.applicationIconBadgeNumber = 0
+        
     }
 }
 
@@ -234,7 +234,6 @@ extension AppDelegate {
     ) {
 
         let userInfo = response.notification.request.content.userInfo
-        UIApplication.shared.applicationIconBadgeNumber = 0
         print("📩 Notification Clicked:", userInfo)
 
         NotificationCenter.default.post(

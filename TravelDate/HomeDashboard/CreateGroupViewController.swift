@@ -963,8 +963,13 @@ class CreateGroupViewController: BaseClassVc {
             self.request.startDate = self.startDate
             self.request.endDate = self.endDate
 
-            self.request.travelStyleSingle = self.styles.first ?? ""
+            let selectedStyleValues = self.selectedStyles
+                .sorted()
+                .map { self.styles[$0] }
 
+            self.request.travelStyleSingle = selectedStyleValues.joined(separator: ",")
+            print(selectedStyleValues,"ADDEDVALUE")
+            
             self.request.maxMembers = self.groupSize
 
             self.request.activityInterests = self.styles
