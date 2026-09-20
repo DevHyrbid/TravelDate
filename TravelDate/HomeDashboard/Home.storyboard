@@ -12,6 +12,9 @@
         <array key="Inter-SemiBold.ttf">
             <string>Inter24pt-SemiBold</string>
         </array>
+        <array key="Inter_28pt-Medium.ttf">
+            <string>Inter28pt-Medium</string>
+        </array>
     </customFonts>
     <scenes>
         <!--Home View Controller-->
@@ -1426,6 +1429,18 @@
                                             <constraint firstItem="ndO-UB-vO6" firstAttribute="leading" secondItem="TzI-We-Njw" secondAttribute="leading" id="mX7-nr-ZEp"/>
                                         </constraints>
                                     </view>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New Match" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="n9i-eS-i8h">
+                                        <rect key="frame" x="20" y="181.33333333333334" width="120" height="19.666666666666657"/>
+                                        <fontDescription key="fontDescription" name="Inter28pt-Medium" family="Inter 28pt" pointSize="16"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Saved Trips" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2cZ-Me-lxX">
+                                        <rect key="frame" x="150" y="181.33333333333334" width="130" height="19.666666666666657"/>
+                                        <fontDescription key="fontDescription" name="Inter28pt-Medium" family="Inter 28pt" pointSize="16"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
@@ -1437,15 +1452,21 @@
                                     <constraint firstItem="Kxx-4E-HWD" firstAttribute="top" secondItem="Mjt-RO-nHu" secondAttribute="bottom" constant="5" id="AfO-LW-Csa"/>
                                     <constraint firstAttribute="trailing" secondItem="C9d-LL-Blp" secondAttribute="trailing" id="FfM-bL-hNK"/>
                                     <constraint firstItem="TzI-We-Njw" firstAttribute="top" secondItem="C9d-LL-Blp" secondAttribute="bottom" constant="15" id="Hxa-L9-i5C"/>
+                                    <constraint firstItem="2cZ-Me-lxX" firstAttribute="centerY" secondItem="ldk-cR-sXG" secondAttribute="centerY" id="LTc-iG-afb"/>
+                                    <constraint firstItem="n9i-eS-i8h" firstAttribute="centerX" secondItem="tS0-9U-wcq" secondAttribute="centerX" id="Lmy-IB-lzX"/>
+                                    <constraint firstItem="n9i-eS-i8h" firstAttribute="leading" secondItem="tS0-9U-wcq" secondAttribute="leading" id="P3m-DI-QQb"/>
                                     <constraint firstItem="Kxx-4E-HWD" firstAttribute="leading" secondItem="Mjt-RO-nHu" secondAttribute="leading" id="QbC-Zm-gSw"/>
+                                    <constraint firstItem="2cZ-Me-lxX" firstAttribute="leading" secondItem="ldk-cR-sXG" secondAttribute="leading" id="UWf-Fg-lud"/>
                                     <constraint firstItem="YyT-PK-2sc" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="15" id="Y7N-ma-0LP"/>
                                     <constraint firstItem="TzI-We-Njw" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="20" id="YGl-KQ-phd"/>
                                     <constraint firstItem="7DB-t0-isr" firstAttribute="centerY" secondItem="stA-JQ-lnz" secondAttribute="centerY" id="bd0-h9-RgB"/>
                                     <constraint firstAttribute="trailing" secondItem="stA-JQ-lnz" secondAttribute="trailing" constant="5" id="bfI-fy-SwN"/>
                                     <constraint firstAttribute="bottom" secondItem="stA-JQ-lnz" secondAttribute="bottom" constant="20" id="c0d-49-TfX"/>
+                                    <constraint firstItem="n9i-eS-i8h" firstAttribute="centerY" secondItem="tS0-9U-wcq" secondAttribute="centerY" id="cOH-y5-btN"/>
                                     <constraint firstItem="YyT-PK-2sc" firstAttribute="centerY" secondItem="Mjt-RO-nHu" secondAttribute="centerY" id="gGb-y0-43L"/>
                                     <constraint firstItem="C9d-LL-Blp" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" id="jQK-En-MHQ"/>
                                     <constraint firstItem="Mjt-RO-nHu" firstAttribute="top" secondItem="3zk-1H-xkL" secondAttribute="top" constant="85" id="mud-Rg-7bD"/>
+                                    <constraint firstItem="2cZ-Me-lxX" firstAttribute="centerX" secondItem="ldk-cR-sXG" secondAttribute="centerX" id="uJa-k4-fje"/>
                                     <constraint firstItem="stA-JQ-lnz" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="5" id="y9O-ml-aMi"/>
                                 </constraints>
                             </view>

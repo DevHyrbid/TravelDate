@@ -437,12 +437,15 @@ private extension ChatVc {
         
         cell.lblTitle.text = model.name ?? ""
         if model.lastMessage?.fileType == "video" {
-            cell.lblDesc.text = "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+            cell.lblDesc.text = "Video"
+            //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
         } else if model.lastMessage?.fileType == "image" {
-            cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+            cell.lblDesc.text = "Image"
+            //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
         } else {
          
-            cell.lblDesc.text  = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+            cell.lblDesc.text  = "\(model.lastMessage?.content ?? "")"
+            //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
         }
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
         loadAvatarImage(into: cell.imgVw, urlString: model.imageArr?[0])
@@ -489,11 +492,14 @@ private extension ChatVc {
             
             cell.lblTitle.text = matchGroup.name ?? ""
             if matchGroup.lastMessage?.fileType == "video" {
-                "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+               
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else if matchGroup.lastMessage?.fileType == "image" {
-                cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+                cell.lblDesc.text = "Image"
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else {
-                cell.lblDesc.text = matchGroup.lastMessage?.content ?? ""
+                cell.lblDesc.text = "\(matchGroup.lastMessage?.content ?? "")  "
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             }
             
             cell.lblTime.text = timeAgo(from: model.lastMessage?.createdAt ?? "")
@@ -509,11 +515,14 @@ private extension ChatVc {
         } else {
             
             if model.lastMessage?.fileType == "video" {
-                cell.lblDesc.text = "Video • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+                cell.lblDesc.text = "Video"
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else if model.lastMessage?.fileType == "image" {
-                cell.lblDesc.text = "Image • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+                cell.lblDesc.text = "Image"
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             } else {
-                cell.lblDesc.text = "\(model.lastMessage?.content ?? "") • \(changeDate(model.lastMessage?.createdAt ?? ""))"
+                cell.lblDesc.text = "\(model.lastMessage?.content ?? "")"
+                //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
             }
             cell.containerView.isHidden = true
 
