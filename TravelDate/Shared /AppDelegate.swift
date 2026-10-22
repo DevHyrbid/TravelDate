@@ -11,6 +11,9 @@ import IQKeyboardManagerSwift
 import UserNotifications
 import Firebase
 import FirebaseMessaging
+import SuperwallKit
+import Instally
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -20,6 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         
+        Instally.configure(
+            appId: "app_3nf080nhmkrg",
+            apiKey: "in_VhvArHBdLY3Wrt3d2sbSMj4Z9CbKK5Ej"
+        )
+
+        Instally.trackInstall()
+      
         if User.currentUserExists {
             
             if User.curentUser!.isSubscriptionByAdmin != 1 {

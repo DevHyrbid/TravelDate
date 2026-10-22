@@ -201,10 +201,10 @@ final class MembersProgressView: UIView {
                     ? URL(string: imagePath)
                     : URL(string: APiConstant.base + imagePath)
 
-                iv.kf.setImage(with: url, placeholder: UIImage(named: "User"))
+                iv.kf.setImage(with: url, placeholder: UIImage(named: "trips"))
 
             } else {
-                iv.image = UIImage(named: "User")
+                iv.image = UIImage(named: "trips")
             }
             iv.layer.borderColor = Theme.orange.cgColor
             iv.layer.borderWidth = 1

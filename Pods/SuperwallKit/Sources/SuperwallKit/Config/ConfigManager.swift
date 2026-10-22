@@ -1,0 +1,888 @@
+//
+//  File.swift
+//
+//
+//  Created by Yusuf Tör on 22/06/2022.
+//
+// swiftlint:disable type_body_length file_length
+
+import Combine
+import UIKit
+
+class ConfigManager {
+  /// A publisher that emits just once only when `config` is non-`nil`.
+  var hasConfig: AnyPublisher<Config, Error> {
+    configState
+      .compactMap { $0.getConfig() }
+      .first()
+      .eraseToAnyPublisher()
+  }
+
+  /// The configuration of the Superwall dashboard
+  var configState = CurrentValueSubject<ConfigState, Error>(.retrieving)
+
+  /// Convenience variable to access config.
+  var config: Config? {
+    return configState.value.getConfig()
+  }
+
+  /// Options for configuring the SDK.
+  var options: SuperwallOptions
+
+  /// A dictionary of triggers by their placement name.
+  @DispatchQueueBacked
+  var triggersByPlacementName: [String: Trigger] = [:]
+
+  var configRetryCount = 0
+
+  /// The purchases load that `fetchConfiguration` published `configState` ahead
+  /// of, when the saved customer info proved the user was still entitled. Trial
+  /// eligibility waits on it so an upgrade during the load still sees the active
+  /// subscription groups.
+  ///
+  /// Protected by a queue: it's written on the config fetch and read from the
+  /// purchase path, which doesn't wait for config.
+  private var _initialPurchasesLoad: Task<Void, Never>?
+  private let initialPurchasesLoadQueue = DispatchQueue(
+    label: "com.superwall.initialPurchasesLoad"
+  )
+
+  var initialPurchasesLoad: Task<Void, Never>? {
+    initialPurchasesLoadQueue.sync { _initialPurchasesLoad }
+  }
+
+  private func setInitialPurchasesLoad(_ task: Task<Void, Never>) {
+    initialPurchasesLoadQueue.sync { _initialPurchasesLoad = task }
+  }
+
+  private unowned let storeKitManager: StoreKitManager
+  unowned let storage: Storage
+  private unowned let network: Network
+  private unowned let paywallManager: PaywallManager
+  private unowned let deviceHelper: DeviceHelper
+  private unowned let entitlementsInfo: EntitlementsInfo
+  private unowned let webEntitlementRedeemer: WebEntitlementRedeemer
+  let expressionEvaluator: CELEvaluator
+
+  /// Runs preloads one at a time so concurrent callers can't race on the task
+  /// reference. See ``preloadAllPaywalls()``.
+  private let preloadingCoordinator = SerialTaskCoordinator()
+
+  typealias Factory = RequestFactory
+    & AudienceFilterAttributesFactory
+    & ReceiptFactory
+    & DeviceHelperFactory
+    & TestModeManagerFactory
+    & HasExternalPurchaseControllerFactory
+  private let factory: Factory
+
+  init(
+    options: SuperwallOptions,
+    storeKitManager: StoreKitManager,
+    storage: Storage,
+    network: Network,
+    paywallManager: PaywallManager,
+    deviceHelper: DeviceHelper,
+    entitlementsInfo: EntitlementsInfo,
+    webEntitlementRedeemer: WebEntitlementRedeemer,
+    factory: Factory
+  ) {
+    self.options = options
+    self.storeKitManager = storeKitManager
+    self.storage = storage
+    self.network = network
+    self.paywallManager = paywallManager
+    self.deviceHelper = deviceHelper
+    self.entitlementsInfo = entitlementsInfo
+    self.webEntitlementRedeemer = webEntitlementRedeemer
+    self.factory = factory
+    self.expressionEvaluator = CELEvaluator(
+      storage: self.storage,
+      factory: self.factory
+    )
+  }
+
+  /// This refreshes config, requiring paywalls to reload and removing unused paywall view controllers.
+  /// It fails quietly, falling back to the old config.
+  ///
+  /// - Parameters:
+  ///   - oldConfig: If provided, uses this config. Otherwise uses stored config.
+  ///   - isUserInitiated: If `true`, bypasses the feature flag check. Defaults to `false`.
+  func refreshConfiguration(
+    oldConfig: Config? = nil,
+    isUserInitiated: Bool = false
+  ) async {
+    let wasConfigProvided = oldConfig != nil
+
+    // If oldConfig is provided, use it. Otherwise, make sure config already exists.
+    guard let oldConfig = oldConfig ?? config else {
+      return
+    }
+
+    // Ensure the config refresh feature flag is enabled (skip check if oldConfig was provided or user-initiated)
+    let shouldBypassFeatureFlagCheck = wasConfigProvided || isUserInitiated
+    guard shouldBypassFeatureFlagCheck || oldConfig.featureFlags.enableConfigRefresh == true else {
+      return
+    }
+
+    do {
+      Task {
+        try? await deviceHelper.getEnrichment()
+      }
+      let startAt = Date()
+      let newConfig = try await network.getConfig { [weak self] attempt in
+        self?.configRetryCount = attempt
+      }
+      let fetchDuration = Date().timeIntervalSince(startAt)
+
+      // Remove all paywalls and paywall vcs that have either been removed or changed.
+      let removedOrChangedPaywallIds = ConfigLogic.getRemovedOrChangedPaywallIds(
+        oldConfig: oldConfig,
+        newConfig: newConfig
+      )
+      await paywallManager.removePaywalls(withIds: removedOrChangedPaywallIds)
+
+      await processConfig(newConfig, isFirstTime: false)
+
+      let configRefresh = InternalSuperwallEvent.ConfigRefresh(
+        buildId: newConfig.buildId,
+        retryCount: configRetryCount,
+        cacheStatus: .notCached,
+        fetchDuration: fetchDuration
+      )
+      await Superwall.shared.track(configRefresh)
+      Task { await preloadPaywalls() }
+    } catch {
+      Logger.debug(
+        logLevel: .warn,
+        scope: .superwallCore,
+        message: "Failed to refresh configuration.",
+        info: nil,
+        error: error
+      )
+    }
+  }
+
+  func fetchConfiguration() async {
+    do {
+      let startAt = Date()
+
+      // Step 1: Determine fetch strategy based on subscription status and cached data
+      let cachedConfig = storage.get(LatestConfig.self)
+      let isSubscribed = hasActiveCachedSubscription()
+
+      let shouldFetchAsync = cachedConfig != nil && isSubscribed
+
+      // Step 2: Fetch or use cached config
+      let fetchResult = try await fetchConfig(
+        cachedConfig: cachedConfig,
+        shouldFetchAsync: shouldFetchAsync,
+        startAt: startAt
+      )
+      let config = fetchResult.config
+      let isUsingCachedConfig = fetchResult.isUsingCached
+      let configFetchDuration = fetchResult.fetchDuration
+
+      // Step 3: Handle enrichment (use cached if async, fetch with timeout if sync)
+      let usingCachedEnrichment = await handleEnrichment(
+        shouldFetchAsync: shouldFetchAsync,
+        cachedConfig: cachedConfig
+      )
+
+      // Step 4: Track config fetch event (only for sync path)
+      if !shouldFetchAsync {
+        trackConfigFetch(
+          config: config,
+          isUsingCachedConfig: isUsingCachedConfig,
+          configFetchDuration: configFetchDuration
+        )
+      }
+
+      // Step 5: Track device attributes
+      let deviceAttributes = await factory.makeSessionDeviceAttributes()
+      await Superwall.shared.track(
+        InternalSuperwallEvent.DeviceAttributes(deviceAttributes: deviceAttributes)
+      )
+
+      // Step 6: Process config and set state.
+      //
+      // `processConfig` reads StoreKit, which can take many seconds on a weak
+      // network, and every `register` call waits on `configState`. When the
+      // customer info saved by the previous launch proves the user is entitled
+      // through a date that hasn't arrived yet, config is published before that
+      // read and the in-memory purchase state is rebuilt from the saved copy.
+      // Only changes made since the last launch can then be missed, and the
+      // read corrects those when it lands.
+      await processConfig(
+        config,
+        isFirstTime: true,
+        publishingEarlyFrom: shouldFetchAsync ? savedCustomerInfoForEarlyPublish() : nil
+      )
+
+      // Step 7: Schedule background tasks
+      scheduleBackgroundTasks(
+        shouldFetchAsync: shouldFetchAsync,
+        isUsingCachedConfig: isUsingCachedConfig,
+        usingCachedEnrichment: usingCachedEnrichment,
+        config: config
+      )
+    } catch {
+      handleConfigFetchError(error)
+    }
+  }
+
+  // MARK: - Config Fetch Helpers
+
+  /// Whether the cached subscription state indicates an active subscriber.
+  ///
+  /// The persisted status is the assigned value, before developer-granted
+  /// entitlements are merged in, so those are checked from their own storage.
+  private func hasActiveCachedSubscription() -> Bool {
+    if storage.get(IsTestModeActiveSubscription.self) ?? false {
+      return false
+    }
+    // isActive rather than a bare `case .active` match: the persisted status
+    // can be .active with no active entitlement (e.g. a developer-assigned
+    // .active([])).
+    if storage.get(SubscriptionStatusKey.self)?.isActive == true {
+      return true
+    }
+    return entitlementsInfo.granted.contains { $0.isActive }
+  }
+
+  /// The saved customer info when it proves the user is still entitled, so
+  /// config can be published before this launch's StoreKit read. `expiresAt` is
+  /// a date the store asserted, and a subscription can't lapse before it, so a
+  /// future date is a guarantee, not a guess. Refunds are the one thing it can't
+  /// see, and the read catches those seconds later. A purchase controller
+  /// changes nothing here: the read never sets the status in that setup, and
+  /// the saved entitlements it preserves carry the same expiry.
+  private func savedCustomerInfoForEarlyPublish() -> CustomerInfo? {
+    // StoreKit 2 only: its read is the slow one, and it is the only one that
+    // saves the device rows the restore rebuilds from. A StoreKit 1 receipt is
+    // parsed locally and saves no rows, so there would be nothing to restore.
+    guard #available(iOS 15.0, *), options.storeKitVersion == .storeKit2 else {
+      return nil
+    }
+    guard let customerInfo = storage.get(LatestCustomerInfo.self) else {
+      return nil
+    }
+    // A developer-granted entitlement is the developer's own verdict. The read
+    // merges it back in on every load, so nothing it learns can change it.
+    if entitlementsInfo.granted.contains(where: { $0.isActive }) {
+      return customerInfo
+    }
+    // A lifetime purchase has no expiry to check and can only be refunded,
+    // which is the same risk the expiry case already accepts.
+    let isStillEntitled = customerInfo.entitlements.contains {
+      $0.isActive && ($0.isLifetime == true || ($0.expiresAt ?? .distantPast) > Date())
+    }
+    return isStillEntitled ? customerInfo : nil
+  }
+
+  private struct ConfigFetchResult {
+    let config: Config
+    let isUsingCached: Bool
+    let fetchDuration: TimeInterval
+  }
+
+  private func fetchConfig(
+    cachedConfig: Config?,
+    shouldFetchAsync: Bool,
+    startAt: Date
+  ) async throws -> ConfigFetchResult {
+    if shouldFetchAsync {
+      // Use cached config immediately for subscribed users
+      guard let cachedConfig = cachedConfig else {
+        throw NSError(
+          domain: "ConfigManager",
+          code: -1,
+          userInfo: [NSLocalizedDescriptionKey: "Cached config unexpectedly nil"]
+        )
+      }
+      return ConfigFetchResult(
+        config: cachedConfig,
+        isUsingCached: true,
+        fetchDuration: 0
+      )
+    } else {
+      // Fetch config synchronously
+      let enableConfigRefresh = cachedConfig?.featureFlags.enableConfigRefresh ?? false
+
+      let isActiveSubscription = hasActiveCachedSubscription()
+      let timeout: TimeInterval = isActiveSubscription ? 0.5 : 1
+
+      if let cachedConfig = cachedConfig,
+        enableConfigRefresh {
+        do {
+          let result = try await network.getConfig(maxRetry: 0, timeout: timeout)
+          return ConfigFetchResult(
+            config: result,
+            isUsingCached: false,
+            fetchDuration: Date().timeIntervalSince(startAt)
+          )
+        } catch {
+          return ConfigFetchResult(
+            config: cachedConfig,
+            isUsingCached: true,
+            fetchDuration: Date().timeIntervalSince(startAt)
+          )
+        }
+      } else {
+        let config = try await network.getConfig { [weak self] attempt in
+          self?.configRetryCount = attempt
+          self?.configState.send(.retrying)
+        }
+        return ConfigFetchResult(
+          config: config,
+          isUsingCached: false,
+          fetchDuration: Date().timeIntervalSince(startAt)
+        )
+      }
+    }
+  }
+
+  private func handleEnrichment(
+    shouldFetchAsync: Bool,
+    cachedConfig: Config?
+  ) async -> Bool {
+    if shouldFetchAsync {
+      // Use cached enrichment for async path - refreshConfiguration will fetch fresh
+      if let cachedEnrichment = storage.get(LatestEnrichment.self) {
+        deviceHelper.enrichment = cachedEnrichment
+        return true
+      }
+      return false
+    } else {
+      // Fetch enrichment with timeout for sync path
+      let enableConfigRefresh = cachedConfig?.featureFlags.enableConfigRefresh ?? false
+
+      let isActiveSubscription = hasActiveCachedSubscription()
+      let timeout: TimeInterval = isActiveSubscription ? 0.5 : 1
+
+      let cachedEnrichment = storage.get(LatestEnrichment.self)
+
+      guard
+        let cachedEnrichment = cachedEnrichment,
+        enableConfigRefresh
+      else {
+        try? await deviceHelper.getEnrichment(maxRetry: 0, timeout: timeout)
+        return false
+      }
+
+      do {
+        try await deviceHelper.getEnrichment(maxRetry: 0, timeout: timeout)
+        return false
+      } catch {
+        deviceHelper.enrichment = cachedEnrichment
+        return true
+      }
+    }
+  }
+
+  private func trackConfigFetch(
+    config: Config,
+    isUsingCachedConfig: Bool,
+    configFetchDuration: TimeInterval
+  ) {
+    Task {
+      let cacheStatus: InternalSuperwallEvent.ConfigCacheStatus =
+        isUsingCachedConfig ? .cached : .notCached
+      let configRefresh = InternalSuperwallEvent.ConfigRefresh(
+        buildId: config.buildId,
+        retryCount: configRetryCount,
+        cacheStatus: cacheStatus,
+        fetchDuration: configFetchDuration
+      )
+      await Superwall.shared.track(configRefresh)
+    }
+  }
+
+  private func scheduleBackgroundTasks(
+    shouldFetchAsync: Bool,
+    isUsingCachedConfig: Bool,
+    usingCachedEnrichment: Bool,
+    config: Config
+  ) {
+    Task {
+      await preloadPaywalls()
+    }
+
+    if shouldFetchAsync {
+      // Async path: refresh config in background (also fetches enrichment)
+      Task {
+        await refreshConfiguration(oldConfig: config)
+      }
+    } else {
+      // Sync path: fetch enrichment if needed, refresh config if using cached
+      if usingCachedEnrichment {
+        Task {
+          try? await deviceHelper.getEnrichment()
+        }
+      }
+      if isUsingCachedConfig {
+        Task {
+          await refreshConfiguration()
+        }
+      }
+    }
+  }
+
+  private func handleConfigFetchError(_ error: Error) {
+    configState.send(completion: .failure(error))
+
+    Task {
+      let configFallback = InternalSuperwallEvent.ConfigFail(
+        message: error.localizedDescription
+      )
+      await Superwall.shared.track(configFallback)
+    }
+
+    Logger.debug(
+      logLevel: .error,
+      scope: .superwallCore,
+      message: "Failed to Fetch Configuration",
+      info: nil,
+      error: error
+    )
+  }
+
+  /// Applies `config`, loads purchases from StoreKit, and sends `configState`.
+  ///
+  /// - Parameter savedCustomerInfo: When given, `configState` is sent before the
+  ///   StoreKit read starts, with the in-memory purchase state rebuilt from this
+  ///   saved copy. Ignored in test mode, where products come from the API.
+  private func processConfig(
+    _ config: Config,
+    isFirstTime: Bool,
+    publishingEarlyFrom savedCustomerInfo: CustomerInfo? = nil
+  ) async {
+    storage.save(
+      config.featureFlags.disableVerbosePlacements, forType: DisableVerbosePlacements.self)
+    storage.save(config, forType: LatestConfig.self)
+    triggersByPlacementName = ConfigLogic.getTriggersByPlacementName(from: config.triggers)
+    choosePaywallVariants(from: config.triggers)
+
+    // Evaluate test mode before loading products
+    let testModeManager = factory.makeTestModeManager()
+    let wasTestMode = testModeManager.isTestMode
+    testModeManager.evaluateTestMode(config: config, options: options)
+    let testModeJustActivated = !wasTestMode && testModeManager.isTestMode
+    let testModeJustDeactivated = wasTestMode && !testModeManager.isTestMode
+
+    var hasPublishedConfig = false
+    if testModeManager.isTestMode {
+      // In test mode, fetch products from API instead of StoreKit
+      await fetchTestModeProducts(testModeManager: testModeManager)
+    } else {
+      // If test mode was just turned off, reset subscription status
+      // so stale test entitlements don't persist. Skip when using an
+      // external purchase controller — it owns the status and
+      // loadPurchasedProducts / the controller itself will restore it.
+      if testModeJustDeactivated,
+        !factory.makeHasExternalPurchaseController() {
+        Superwall.shared.setSubscriptionStatus(assigned: .inactive)
+        // Granted entitlements survive test mode, so the customer info has
+        // to keep carrying them while the status does.
+        Superwall.shared.customerInfo = CustomerInfo(
+          subscriptions: [],
+          nonSubscriptions: [],
+          entitlements: []
+        ).merging(with: .blank(), granting: entitlementsInfo.granted)
+      }
+      // The saved copy from a test-mode launch can still hold test
+      // entitlements, so it isn't restored when test mode just turned off.
+      if let savedCustomerInfo = savedCustomerInfo, !testModeJustDeactivated {
+        await factory.restorePurchases(
+          from: savedCustomerInfo,
+          grantedEntitlements: entitlementsInfo.granted,
+          config: config
+        )
+        // Stored before the send so anything that presents on this config can
+        // wait for the load through `initialPurchasesLoad`.
+        let purchasesLoad = Task { [factory] in
+          await factory.loadPurchasedProducts(config: config)
+        }
+        setInitialPurchasesLoad(purchasesLoad)
+        configState.send(.retrieved(config))
+        hasPublishedConfig = true
+        await purchasesLoad.value
+      } else {
+        await factory.loadPurchasedProducts(config: config)
+      }
+    }
+
+    if !testModeManager.isTestMode {
+      Task {
+        await webEntitlementRedeemer.pollWebEntitlements(config: config, isFirstTime: isFirstTime)
+      }
+    }
+    if isFirstTime {
+      await checkForTouchesBeganTrigger(in: config.triggers)
+    }
+
+    // Show test mode alert if it's the first time OR if test mode just became active
+    if isFirstTime || testModeJustActivated,
+      testModeManager.isTestMode,
+      let reason = testModeManager.testModeReason {
+      if DevMode.isActive(options) {
+        await applyDefaultTestModeState(testModeManager: testModeManager)
+      } else {
+        await presentTestModeModal(reason: reason, config: config)
+      }
+    }
+
+    // Last on purpose: the test mode modal above waits for the tester to pick
+    // entitlements, and anything waiting on config must see that choice.
+    if !hasPublishedConfig {
+      configState.send(.retrieved(config))
+    }
+  }
+
+  /// Reassigns variants and preloads paywalls again.
+  func reset() async {
+    do {
+      let config = try await self.configState
+        .compactMap { $0.getConfig() }
+        .throwableAsync()
+
+      choosePaywallVariants(from: config.triggers)
+
+      await webEntitlementRedeemer.redeem(.existingCodes)
+      await preloadPaywalls()
+    } catch {
+      Logger.debug(
+        logLevel: .error,
+        scope: .superwallCore,
+        message: "There was an error awaiting config. Couldn't reset paywall variants.",
+        error: error
+      )
+    }
+  }
+
+  /// Swizzles the UIWindow's `sendEvent` to intercept the first `began` touch event if
+  /// config's triggers contain `touches_began`.
+  private func checkForTouchesBeganTrigger(in triggers: Set<Trigger>) async {
+    if triggers.contains(where: { $0.placementName == SuperwallEvent.touchesBegan.description }) {
+      await UIWindow.swizzleSendEvent()
+    }
+  }
+
+  // MARK: - Assignments
+
+  private func choosePaywallVariants(from triggers: Set<Trigger>) {
+    var assignments = storage.getAssignments()
+
+    assignments = ConfigLogic.chooseAssignments(
+      fromTriggers: triggers,
+      assignments: assignments
+    )
+
+    storage.overwriteAssignments(assignments)
+  }
+
+  /// Gets the assignments from the server and saves them to disk, overwriting any that already exist on disk/in memory.
+  func getAssignments() async throws {
+    let config =
+      try await configState
+      .compactMap { $0.getConfig() }
+      .throwableAsync()
+
+    let triggers = config.triggers
+
+    guard !triggers.isEmpty else {
+      return
+    }
+
+    do {
+      let serverAssignments = try await network.getAssignments()
+      var localAssignments = storage.getAssignments()
+
+      localAssignments = ConfigLogic.transferAssignments(
+        fromServer: serverAssignments,
+        toDisk: localAssignments,
+        triggers: triggers
+      )
+
+      storage.overwriteAssignments(localAssignments)
+
+      Task { await preloadPaywalls() }
+    } catch {
+      Logger.debug(
+        logLevel: .error,
+        scope: .configManager,
+        message: "Error retrieving assignments.",
+        error: error
+      )
+    }
+  }
+
+  /// Posts back an assignment to the server and updates on-device confirmed assignments.
+  func postbackAssignment(_ assignment: Assignment) {
+    Task { [weak self] in
+      guard let self = self else {
+        return
+      }
+      let confirmedAssignment = await self.network.confirmAssignment(assignment)
+      self.storage.updateAssignment(confirmedAssignment)
+    }
+  }
+
+  // MARK: - Preloading Paywalls
+  private func getTreatmentPaywallIds(from triggers: Set<Trigger>) async -> Set<String> {
+    guard let config = configState.value.getConfig() else {
+      return []
+    }
+    let preloadableTriggers = ConfigLogic.filterTriggers(
+      triggers,
+      removing: config.preloadingDisabled
+    )
+    if preloadableTriggers.isEmpty {
+      return []
+    }
+    let assignments = storage.getAssignments()
+    return await ConfigLogic.getActiveTreatmentPaywallIds(
+      fromTriggers: preloadableTriggers,
+      assignments: assignments,
+      expressionEvaluator: expressionEvaluator
+    )
+  }
+
+  /// Preloads paywalls.
+  ///
+  /// A developer can disable preloading of paywalls by setting ``SuperwallOptions/shouldPreloadPaywalls``.
+  private func preloadPaywalls() async {
+    guard
+      Superwall.shared.options.paywalls.shouldPreload,
+      !DevMode.isActive(Superwall.shared.options)
+    else {
+      return
+    }
+    await preloadAllPaywalls()
+  }
+
+  /// Preloads paywalls referenced by triggers.
+  func preloadAllPaywalls() async {
+    // Queue the preload behind any that's already in flight and return. It's
+    // kicked off from several places (config refresh, retry, reset, public
+    // API), so the queue has to be safe to add to from any thread.
+    preloadingCoordinator.enqueue { [weak self] in
+      guard let self = self else {
+        return
+      }
+      guard
+        let config = try? await self.configState
+          .compactMap({ $0.getConfig() })
+          .throwableAsync()
+      else {
+        return
+      }
+
+      // If there's a prioritized campaign, preload its paywalls first.
+      if let prioritizedCampaignId = config.prioritizedCampaignId {
+        let prioritizedTriggers = config.triggers.filter { trigger in
+          trigger.audiences.contains { $0.experiment.groupId == prioritizedCampaignId }
+        }
+        if !prioritizedTriggers.isEmpty {
+          var prioritizedIds = await getTreatmentPaywallIds(from: Set(prioritizedTriggers))
+          if let presentedPaywallId = await self.paywallManager.presentedViewController?.paywall.identifier {
+            prioritizedIds.remove(presentedPaywallId)
+          }
+          await self.preloadPaywalls(withIdentifiers: prioritizedIds)
+
+          // Delay before preloading the rest to avoid contention.
+          try? await Task.sleep(nanoseconds: 5_000_000_000)
+        }
+      }
+
+      // Then preload all remaining paywalls.
+      var paywallIds = await getTreatmentPaywallIds(from: config.triggers)
+
+      // Do not preload the presented paywall. This is because if config refreshes, we
+      // don't want to refresh the presented paywall until it's dismissed and presented again.
+      if let presentedPaywallId = await self.paywallManager.presentedViewController?.paywall.identifier {
+        paywallIds.remove(presentedPaywallId)
+      }
+      await self.preloadPaywalls(withIdentifiers: paywallIds)
+    }
+  }
+
+  /// Preloads paywalls referenced by the provided triggers.
+  func preloadPaywalls(for placementNames: Set<String>) async {
+    guard
+      let config =
+        try? await configState
+        .compactMap({ $0.getConfig() })
+        .throwableAsync()
+    else {
+      return
+    }
+    let triggersToPreload = config.triggers.filter { placementNames.contains($0.placementName) }
+    var paywallIds = await getTreatmentPaywallIds(from: triggersToPreload)
+    // Do not preload the presented paywall.
+    if let presentedPaywallId = await self.paywallManager.presentedViewController?.paywall.identifier {
+      paywallIds.remove(presentedPaywallId)
+    }
+    await preloadPaywalls(withIdentifiers: paywallIds)
+  }
+
+  /// Preloads paywalls referenced by triggers.
+  private func preloadPaywalls(withIdentifiers paywallIdentifiers: Set<String>) async {
+    let paywallCount = paywallIdentifiers.count
+    let preloadStart = InternalSuperwallEvent.PaywallPreload(
+      state: .start,
+      paywallCount: paywallCount
+    )
+    await Superwall.shared.track(preloadStart)
+
+    await withTaskGroup(of: Void.self) { group in
+      for identifier in paywallIdentifiers {
+        group.addTask { [weak self] in
+          guard let self = self else {
+            return
+          }
+          let request = self.factory.makePaywallRequest(
+            placementData: nil,
+            responseIdentifiers: .init(paywallId: identifier),
+            overrides: nil,
+            isDebuggerLaunched: false,
+            presentationSourceType: nil
+          )
+          guard let paywall = try? await self.paywallManager.getPaywall(from: request) else {
+            return
+          }
+
+          await self.paywallManager.attemptToPreloadArchive(from: paywall)
+
+          _ = try? await self.paywallManager.getViewController(
+            for: paywall,
+            isDebuggerLaunched: request.isDebuggerLaunched,
+            isForPresentation: true,
+            delegate: nil
+          )
+        }
+      }
+    }
+
+    let preloadComplete = InternalSuperwallEvent.PaywallPreload(
+      state: .complete,
+      paywallCount: paywallCount
+    )
+    await Superwall.shared.track(preloadComplete)
+  }
+
+  // MARK: - Test Mode
+
+  private func fetchTestModeProducts(testModeManager: TestModeManager) async {
+    do {
+      let response = try await network.getSuperwallProducts()
+      testModeManager.setProducts(response.data)
+
+      // Also populate storeKitManager.productsById with test products
+      for superwallProduct in response.data {
+        let entitlements = Set(superwallProduct.entitlements.map {
+          Entitlement(id: $0.identifier)
+        })
+        let apiProduct = APIStoreProduct(
+          superwallProduct: superwallProduct,
+          entitlements: entitlements
+        )
+        let storeProduct = StoreProduct(testProduct: apiProduct)
+        await storeKitManager.setProduct(storeProduct, forIdentifier: superwallProduct.identifier)
+      }
+    } catch {
+      Logger.debug(
+        logLevel: .error,
+        scope: .superwallCore,
+        message: "Test mode: failed to fetch products",
+        error: error
+      )
+    }
+  }
+
+  /// Seeds the state the test mode modal would otherwise collect, without
+  /// presenting it. Used when a dev server drives the SDK: every entitlement
+  /// starts inactive so paywalls present, and purchases flip them for real.
+  @MainActor
+  private func applyDefaultTestModeState(testModeManager: TestModeManager) async {
+    testModeManager.setEntitlements([])
+    let testModeCustomerInfo = CustomerInfo(
+      subscriptions: [],
+      nonSubscriptions: [],
+      entitlements: []
+    )
+    testModeManager.overriddenCustomerInfo = testModeCustomerInfo
+    Superwall.shared.customerInfo = testModeCustomerInfo
+    testModeManager.overriddenSubscriptionStatus = .inactive
+    Superwall.shared.setSubscriptionStatus(assigned: .inactive)
+    storage.save(false, forType: IsTestModeActiveSubscription.self)
+  }
+
+  @MainActor
+  private func presentTestModeModal(reason: TestModeReason, config: Config) async {
+    guard
+      let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+      let rootVC = windowScene.windows.first?.rootViewController
+    else {
+      return
+    }
+
+    let testModeManager = factory.makeTestModeManager()
+    let identityManager = testModeManager.identityManager
+    let userId = identityManager.userId
+    let isIdentified = identityManager.isLoggedIn
+    let hasPurchaseController = factory.makeHasExternalPurchaseController()
+
+    let allEntitlementIds = config.products.flatMap { $0.entitlements.map { $0.id } }
+    let availableEntitlements = Array(Set(allEntitlementIds)).sorted()
+
+    await Superwall.shared.track(InternalSuperwallEvent.TestModeModalOpen())
+
+    let result = await TestModeModal.present(
+      reason: reason,
+      userId: userId,
+      isIdentified: isIdentified,
+      hasPurchaseController: hasPurchaseController,
+      availableEntitlements: availableEntitlements,
+      initialFreeTrialOverride: testModeManager.freeTrialOverride,
+      apiKey: storage.apiKey,
+      networkEnvironment: options.networkEnvironment,
+      from: rootVC
+    )
+
+    await Superwall.shared.track(InternalSuperwallEvent.TestModeModalClose(
+      entitlements: result.entitlements,
+      freeTrialOverride: result.freeTrialOverride.rawValue
+    ))
+
+    // Set the selected entitlements on the test mode manager
+    let entitlementIds = Set(result.entitlements.map { $0.id })
+    testModeManager.setEntitlements(entitlementIds)
+
+    // Apply the free trial override
+    testModeManager.freeTrialOverride = result.freeTrialOverride
+
+    // Create test mode CustomerInfo with selected entitlements
+    // This is separate from real device purchases
+    let testModeCustomerInfo = CustomerInfo(
+      subscriptions: [],
+      nonSubscriptions: [],
+      entitlements: Array(result.entitlements)
+    )
+    testModeManager.overriddenCustomerInfo = testModeCustomerInfo
+    Superwall.shared.customerInfo = testModeCustomerInfo
+
+    // Update subscription status based on whether any entitlements are active
+    let hasActiveEntitlements = result.entitlements.contains { $0.isActive }
+    if hasActiveEntitlements {
+      let status = SubscriptionStatus.active(result.entitlements)
+      testModeManager.overriddenSubscriptionStatus = status
+      Superwall.shared.setSubscriptionStatus(assigned: status)
+      storage.save(true, forType: IsTestModeActiveSubscription.self)
+    } else {
+      testModeManager.overriddenSubscriptionStatus = .inactive
+      Superwall.shared.setSubscriptionStatus(assigned: .inactive)
+      storage.save(false, forType: IsTestModeActiveSubscription.self)
+    }
+  }
+}

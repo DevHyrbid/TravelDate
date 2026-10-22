@@ -192,7 +192,7 @@ extension MyGroupViewController : UITableViewDelegate, UITableViewDataSource{
         if let url = URL(string: model?.userMembers?.profile_image ?? "") {
             self.loadImage(cell.imgUser, url: url)
         } else {
-            cell.imgUser.image = UIImage(named: "User")
+            cell.imgUser.image = UIImage(named: "trips")
         }
         cell.imgUser.layer.cornerRadius = cell.imgUser.frame.height / 2
         cell.imgUser.clipsToBounds = true

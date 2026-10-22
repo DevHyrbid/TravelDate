@@ -557,7 +557,7 @@ private extension ChatVc {
         if let str = urlString, let url = URL(string: str) {
             loadImage(imageView, url: url)
         } else {
-            imageView.image = UIImage(named: "User")
+            imageView.image = UIImage(named: "trips")
         }
     }
     

@@ -146,7 +146,7 @@ class BaseClassVc: UIViewController {
     func loadImage(_ img:UIImageView, url: URL) {
         
         if url.absoluteString.isEmpty {
-            img.image = UIImage(named: "User")
+            img.image = UIImage(named: "trips")
         } else {
             var  urlStr = URL(string: "")
             if url.absoluteString.contains("https://lh3.googleusercontent.com") {
@@ -159,7 +159,7 @@ class BaseClassVc: UIViewController {
             
             img.kf.setImage(
                 with: urlStr,
-                placeholder: UIImage(named: "User"), // optional
+                placeholder: UIImage(named: "trips"), // optional
                 options: [
                     .transition(.fade(0.3)),
                     .cacheOriginalImage

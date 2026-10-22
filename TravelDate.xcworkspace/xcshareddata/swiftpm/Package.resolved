@@ -1,0 +1,15 @@
+{
+  "originHash" : "40c190d7df634e071ece03596c0f2a755cc1d465213ad0900ecb56f7e731443a",
+  "pins" : [
+    {
+      "identity" : "instally-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Instally-io/instally-ios-sdk",
+      "state" : {
+        "branch" : "main",
+        "revision" : "93b25dce1758541adc29f2e06e633e67558e935c"
+      }
+    }
+  ],
+  "version" : 3
+}

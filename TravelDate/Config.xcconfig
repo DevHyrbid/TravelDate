@@ -1,0 +1,13 @@
+//
+//  Config.xcconfig
+//  TravelDate
+//
+//  Created by Dev CodingZone on 05/10/26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+API_KEY_Super_Wall = pk_DDAiSmcipumk1wMwGBCCX
+BASE_URL = https://api.tripsapp.io/api/v1/
+//static let baseUrl = "https://api.tripsapp.io/api/v1/"

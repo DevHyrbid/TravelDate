@@ -11,6 +11,7 @@ struct TravelItem {
     let status: String
 }
 import UIKit
+import StoreKit
 class ProfileViewController: BaseClassVc {
     
     // MARK: - IBoutlets
@@ -33,6 +34,8 @@ class ProfileViewController: BaseClassVc {
     @IBOutlet weak var vwPercentage: UIView!
     @IBOutlet weak var lblPercentage: UILabel!
     @IBOutlet weak var imgPermiumHeight: NSLayoutConstraint!
+    @IBOutlet weak var vwTrips: UIView!
+    @IBOutlet weak var btnCancel: UIButton!
     private let progressLayer = CAShapeLayer()
     
     // MARK: - Arr
@@ -46,7 +49,7 @@ class ProfileViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         registerNib()
-        
+        tripsTabBarController?.showTabBar()
         txtAbout.setFont(.medium, size: 14.0)
         lblName.setFont(.bold, size: 20.0)
         lblUserName.setFont(.regular, size: 14.0)
@@ -58,6 +61,11 @@ class ProfileViewController: BaseClassVc {
         
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
     }
@@ -65,7 +73,7 @@ class ProfileViewController: BaseClassVc {
     // MARK: - ViewViewWillAppear
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        getHistoryTrips()
         getUser { success in
             if success {
                 print("User fetched successfully")
@@ -98,7 +106,7 @@ class ProfileViewController: BaseClassVc {
         imgProfile.contentMode = .scaleAspectFill
         imgProfile.clipsToBounds = true
         
-        tripsTabBarController?.showTabBar()
+        
         
         updateProfileCompletion()
         DispatchQueue.main.async {
@@ -106,7 +114,9 @@ class ProfileViewController: BaseClassVc {
                 self.imgPermium.isHidden = false
                 self.imgPermiumHeight.constant = 34
                 self.vwPlan.isHidden = false
+                self.btnCancel.isHidden = false
             } else {
+                self.btnCancel.isHidden = true
                 self.vwPlan.isHidden = true
                 self.imgPermium.isHidden = true
                 self.imgPermiumHeight.constant = 0
@@ -273,17 +283,20 @@ class ProfileViewController: BaseClassVc {
     func registerNib() {
         tblVw.register(TravelCell.self,
                            forCellReuseIdentifier: TravelCell.identifier)
-        getHistoryTrips()
+        
     }
     
     func getHistoryTrips() {
         request.getHistoryTrips { [self] model, err, code in
             if code == 200 {
                 self.data.removeAll()
-//                if data.count == 0 {
-//                    imgMyTrips.isHidden = true
-//                } else {
-//                    imgMyTrips.isHidden = false
+//                DispatchQueue.main.async {
+//                    if self.data.count == 0 {
+//                        self.vwTrips.isHidden = true
+//                        self.heightVw.constant = 0
+//                    } else {
+//                        self.vwTrips.isHidden = false
+//                    }
 //                }
                 for (_, item) in model!.enumerated() {
                     
@@ -303,6 +316,7 @@ class ProfileViewController: BaseClassVc {
                         self.btnVwHistory.isHidden = false
                 } else {
                     self.btnVwHistory.isHidden = true
+                    
                 }
              
                     self.tblVw.reloadData()
@@ -481,5 +495,18 @@ extension ProfileViewController {
     @IBAction func btnView(_ sender:UIButton) {
         let vc = TravelListViewController()
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @IBAction func btnCancel(_ sender:UIButton ) {
+        print("CancelTapped")
+        guard let windowScene = view.window?.windowScene else { return }
+
+           Task { @MainActor in
+               do {
+                   try await AppStore.showManageSubscriptions(in: windowScene)
+               } catch {
+                   print(error.localizedDescription)
+               }
+           }
     }
 }

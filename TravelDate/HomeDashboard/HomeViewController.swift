@@ -15,7 +15,7 @@ struct PastTrip {
     let dateRange: String
     let year: String
 }
-
+import SuperwallKit
 // MARK: - HomeViewController
 
 class HomeViewController: BaseClassVc, UIScrollViewDelegate {
@@ -169,6 +169,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         self.lblTitle.text = res.title ?? ""
         if let url = URL(string: res.coverImage ?? "") {
             self.loadImage(self.imgTrips, url: url)
+        } else {
+            self.imgTrips.image = UIImage(named: "trips")
         }
         let members = res.members ?? []
         let totalCount = res.members?.count ?? 0
@@ -409,11 +411,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         tabBarHideTimer?.invalidate()
         
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        tripsTabBarController?.hideTabBar()
-    }
+//    
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        tripsTabBarController?.hideTabBar()
+//    }
     
     
     func shareInvite(_ code:String) {
@@ -636,11 +638,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
-//        resetTabBarTimer()
+        resetTabBarTimer()
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-//        showTabBarTemporarily()
+        showTabBarTemporarily()
     }
 
 //    func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -654,6 +656,34 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        AppUpdateManager.shared.checkForUpdate { [weak self] updateAvailable in
+            guard updateAvailable else { return }
+
+            let alert = UIAlertController(
+                title: "Update Available",
+                message: "A new version of the app is available. Please update to get the latest features and improvements.",
+                preferredStyle: .alert
+            )
+
+            alert.addAction(
+                UIAlertAction(title: "Update", style: .default) { _ in
+                    AppUpdateManager.shared.openAppStore()
+                }
+            )
+
+            alert.addAction(
+                UIAlertAction(title: "Later", style: .cancel)
+            )
+
+            self?.present(alert, animated: true)
+        }
+    }
+    
+    
+
     
     func getDashboard() {
         
@@ -770,9 +800,12 @@ extension HomeViewController {
             return
         }
         if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
-                self.upgradeButtonTapped()
-            }
+//            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
+//                self.upgradeButtonTapped()
+//            }
+            Superwall.configure(
+                       apiKey: "pk_DDAiSmcipumklwMwGBCcx"
+                   )
             
             return
         }

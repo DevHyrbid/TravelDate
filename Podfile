@@ -1,23 +1,42 @@
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+
+platform :ios, '18.0'
 
 target 'TravelDate' do
-  # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for TravelDate
+  # Authentication
+  pod 'GoogleSignIn'
+  pod 'Firebase'
+  pod 'FirebaseAuth'
+  pod 'FirebaseMessaging'
 
-pod 'GoogleSignIn'
- pod 'IQKeyboardManagerSwift'
- pod 'ObjectMapper', '~> 4.2'
- pod 'Alamofire'
- pod 'Kingfisher', '~> 7.11'
- pod 'Firebase'
- pod 'FirebaseAuth'
- pod 'PhoneNumberKit'
- pod 'FirebaseMessaging'
- pod 'CountryKit'
- pod 'Socket.IO-Client-Swift', '~> 16.0'
- pod 'SDWebImage'
- 
+  # Networking
+  pod 'Alamofire'
+
+  # Models and utilities
+  pod 'ObjectMapper', '~> 4.2'
+  pod 'IQKeyboardManagerSwift'
+  pod 'CountryKit'
+
+  # Images
+  pod 'Kingfisher', '~> 7.11'
+  pod 'SDWebImage'
+
+  # Socket connection
+  pod 'Socket.IO-Client-Swift', '~> 16.0'
+
+  # Subscription / Paywall
+  pod 'SuperwallKit', '< 5.0.0'
+
+  # Optional
+  # pod 'PhoneNumberKit'
 end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '18.0'
+    end
+  end
+end
+

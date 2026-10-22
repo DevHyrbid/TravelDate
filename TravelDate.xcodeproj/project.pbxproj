@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5A053F85EC96DCDA79C1A8F5 /* Pods_TravelDate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23208269C85D8876427E8CAC /* Pods_TravelDate.framework */; };
+		BC3AEE1B3073D4D100E459FB /* Instally in Frameworks */ = {isa = PBXBuildFile; productRef = BC3AEE1A3073D4D100E459FB /* Instally */; };
 		BC7E157B2FE533760058974A /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC7E157A2FE533750058974A /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -48,6 +49,7 @@
 			files = (
 				5A053F85EC96DCDA79C1A8F5 /* Pods_TravelDate.framework in Frameworks */,
 				BC7E157B2FE533760058974A /* StoreKit.framework in Frameworks */,
+				BC3AEE1B3073D4D100E459FB /* Instally in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +141,9 @@
 			);
 			mainGroup = BC0DC0832F7BCF4600C96E41;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BC3AEE193073D4D100E459FB /* XCRemoteSwiftPackageReference "instally-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BC0DC08D2F7BCF4600C96E41 /* Products */;
 			projectDirPath = "";
@@ -230,6 +235,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Trips;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera access to upload your profile photo and trips photos ";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Allow access to your contacts to find friends who are already on the app";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow photo access to upload your profile photo and trips photos ";
@@ -243,7 +249,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ios.Trips;
 				PRODUCT_NAME = Trips;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -271,6 +277,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TravelDate/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Trips;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Allow camera access to upload your profile photo and trips photos ";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Allow access to your contacts to find friends who are already on the app";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow photo access to upload your profile photo and trips photos ";
@@ -284,7 +291,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ios.Trips;
 				PRODUCT_NAME = Trips;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -442,6 +449,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BC3AEE193073D4D100E459FB /* XCRemoteSwiftPackageReference "instally-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Instally-io/instally-ios-sdk";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BC3AEE1A3073D4D100E459FB /* Instally */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC3AEE193073D4D100E459FB /* XCRemoteSwiftPackageReference "instally-ios-sdk" */;
+			productName = Instally;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BC0DC0842F7BCF4600C96E41 /* Project object */;
 }

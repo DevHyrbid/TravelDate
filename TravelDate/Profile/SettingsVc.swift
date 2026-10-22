@@ -12,18 +12,24 @@ class SettingsVc: BaseClassVc {
     @IBOutlet weak var blurVw: UIVisualEffectView!
     @IBOutlet weak var vwSwitch: UIView!
     @IBOutlet weak var vwChangePwd:UIView!
+    @IBOutlet weak var lblVersion:UILabel!
     @IBOutlet weak var vwChangeHeight:NSLayoutConstraint!
+    
     
     // MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-        
     }
     
     func setupUi(){
-        
-        if User.curentUser?.social_id ?? ""  != "" || User.curentUser?.social_id ?? "" != nil {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+
+        print("Version: \(appVersion)")
+        print("Build: \(buildNumber)")
+        self.lblVersion.text = appVersion
+        if User.curentUser?.social_id ?? ""  != "" || User.curentUser?.social_id  != nil {
             self.vwChangePwd.isHidden = false
             self.vwChangeHeight.constant  = 90
         } else {
@@ -54,6 +60,8 @@ class SettingsVc: BaseClassVc {
 }
 
 extension SettingsVc {
+    
+    
     @IBAction func btnBack(_ sender:UIButton) {
         super.backTapped()
     }

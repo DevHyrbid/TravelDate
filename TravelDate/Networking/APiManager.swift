@@ -51,7 +51,7 @@ class NetworkManger {
             guard let httpResponse = response as? HTTPURLResponse else {
                     return
                 }
-            print(httpResponse,url,"hehreFROM")
+//            print(httpResponse,url,"hehreFROM")
                 if httpResponse.statusCode == 401 {
                     SessionManager.shared.handleSessionExpired()
                     return 
@@ -99,7 +99,7 @@ class NetworkManger {
             guard let dataJson = data else { return }
             do {
                 let json = try JSONSerialization.jsonObject(with: dataJson, options: .allowFragments)
-                print(json)
+//                print(json)
             } catch {
                 print(error)
             }
@@ -221,10 +221,10 @@ class NetworkManger {
             request.httpBody = postString.data(using: .utf8)
         }
         
-        print("APIURL-----------------", urlPath)
-        print("PARAMS---------------------", parms ?? [:])
-        print("header---------------------", header)
-        
+//        print("APIURL-----------------", urlPath)
+//        print("PARAMS---------------------", parms ?? [:])
+//        print("header---------------------", header)
+//        
         AF.request(request).responseJSON { response in
             defer { AppLoader.hide() }
             
@@ -274,7 +274,7 @@ class NetworkManger {
         if !token.isEmpty {
             headers["Authorization"] = "Bearer \(token)"
         }
-        print(headers,request.url,request,"KJHSJSJSJSJ")
+//        print(headers,request.url,request,"KJHSJSJSJSJ")
         headers.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         
         do {
@@ -310,7 +310,7 @@ class NetworkManger {
             }
             do {
                 if let jsonObject = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    print(jsonObject)
+//                    print(jsonObject)
                     completion(.success(jsonObject))
                 } else {
                     completion(.failure(NSError(domain: "Invalid JSON format", code: -3)))

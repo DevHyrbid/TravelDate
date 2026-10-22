@@ -32,11 +32,12 @@ class NewMatchVc: BaseClassVc {
     }
     
     func setupUi(){
+//        tripsTabBarController?.showTabBar()
         lblNoData.setFont(.medium, size: 20.0)
         lblNewMatch.setFont(.regular, size: 18.0)
         lblMatchCount.setFont(.regular, size: 16.0)
        
-        print(selectedGlobal,"TYUIO:HYUIOPYUIO")
+        
         
         registerNib()
         if selectedGlobal == 0 {

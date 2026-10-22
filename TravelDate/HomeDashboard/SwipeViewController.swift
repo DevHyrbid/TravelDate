@@ -226,7 +226,7 @@ class SwipeViewController: BaseClassVc {
         case .missingTravelStyles:
             print("Open Travel Styles Screen")
             // push travel style screen
-            
+            self.tripsTabBarController?.hideTabBar()
             self.pushVC(ProfileViewController.self, from: .Settings)
 
         case .noGroups:

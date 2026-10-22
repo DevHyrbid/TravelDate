@@ -10,6 +10,7 @@ enum SubscriptionType {
       case yearly
   }
 import UIKit
+import StoreKit
 class PreiumController: BaseClassVc,SubscriptionView {
     
     // MARK: - IBoutlet
@@ -20,6 +21,8 @@ class PreiumController: BaseClassVc,SubscriptionView {
     @IBOutlet weak var vwMonth:UIView!
     @IBOutlet weak var vwYear:UIView!
     @IBOutlet weak var btnContinue:UIButton!
+    @IBOutlet weak var btnCancel:UIButton!
+    @IBOutlet weak var btnCancelHeight:NSLayoutConstraint!
     
     // MARK: - Properties
     var selectedPlan: SubscriptionType = .weekly
@@ -76,8 +79,59 @@ class PreiumController: BaseClassVc,SubscriptionView {
         }
     }
 
+//    private func selectPlan(_ plan: SubscriptionType) {
+//
+//        selectedPlan = plan
+//
+//        resetView(vwWeek)
+//        resetView(vwMonth)
+//        resetView(vwYear)
+//
+//        let subscriptionTier: SubscriptionTier
+//
+//        switch plan {
+//
+//        case .weekly:
+//            highlightView(vwWeek)
+//            subscriptionTier = .weekly
+//
+//        case .monthly:
+//            highlightView(vwMonth)
+//            subscriptionTier = .monthly
+//
+//        case .yearly:
+//            highlightView(vwYear)
+//            subscriptionTier = .yearly
+//        }
+//
+//        if let selected = presenter.plans.first(where: { $0.tier == subscriptionTier }) {
+//
+//            if isSubscriptionActive(),
+//               let currentPlan = currentSubscriptionType(),
+//               currentPlan == plan {
+//
+//                btnContinue.isHidden = true
+//                btnContinue.isEnabled = false
+//                btnContinue.alpha = 0.5
+//                btnCancelHeight.constant = 50
+//
+//            } else {
+//                btnContinue.isHidden = false
+//                btnContinue.setTitle("Continue - \(selected.priceText)", for: .normal)
+//                btnContinue.isEnabled = true
+//                btnContinue.alpha = 1.0
+//                btnCancelHeight.constant = 0
+//            }
+//
+//        } else {
+//            btnContinue.isHidden = false
+//            btnCancelHeight.constant = 0
+//            btnContinue.setTitle("Continue", for: .normal)
+//        }
+//    }
+    
+    
     private func selectPlan(_ plan: SubscriptionType) {
-
         selectedPlan = plan
 
         resetView(vwWeek)
@@ -87,7 +141,6 @@ class PreiumController: BaseClassVc,SubscriptionView {
         let subscriptionTier: SubscriptionTier
 
         switch plan {
-
         case .weekly:
             highlightView(vwWeek)
             subscriptionTier = .weekly
@@ -101,28 +154,51 @@ class PreiumController: BaseClassVc,SubscriptionView {
             subscriptionTier = .yearly
         }
 
-        if let selected = presenter.plans.first(where: { $0.tier == subscriptionTier }) {
+        let hasActiveSubscription = isSubscriptionActive()
+        let currentPlan = currentSubscriptionType()
 
-            if isSubscriptionActive(),
-               let currentPlan = currentSubscriptionType(),
-               currentPlan == plan {
+        // If any subscription is active, show Cancel Plan.
+        if hasActiveSubscription {
+            btnContinue.isHidden = true
+            btnContinue.isEnabled = false
 
-                btnContinue.setTitle("Current Plan", for: .normal)
-                btnContinue.isEnabled = false
-                btnContinue.alpha = 0.5
+            btnCancel.isHidden = false
+            btnCancel.isEnabled = true
+            btnCancelHeight.constant = 50
 
-            } else {
-
-                btnContinue.setTitle("Continue - \(selected.priceText)", for: .normal)
-                btnContinue.isEnabled = true
-                btnContinue.alpha = 1.0
+            // Optional: visually highlight the active subscription.
+            if currentPlan == .weekly {
+                highlightView(vwWeek)
+            } else if currentPlan == .monthly {
+                highlightView(vwMonth)
+            } else if currentPlan == .yearly {
+                highlightView(vwYear)
             }
 
-        } else {
+            return
+        }
 
+        // No active subscription: show Continue.
+        btnCancel.isHidden = true
+        btnCancel.isEnabled = false
+        btnCancelHeight.constant = 0
+
+        btnContinue.isHidden = false
+        btnContinue.isEnabled = true
+        btnContinue.alpha = 1.0
+
+        if let selected = presenter.plans.first(where: {
+            $0.tier == subscriptionTier
+        }) {
+            btnContinue.setTitle(
+                "Continue - \(selected.priceText)",
+                for: .normal
+            )
+        } else {
             btnContinue.setTitle("Continue", for: .normal)
         }
     }
+
 
     private func highlightView(_ view: UIView) {
         view.layer.borderColor = UIColor.appOrange.cgColor
@@ -164,7 +240,20 @@ extension PreiumController {
     }
     
     @IBAction func btnContinue(_ sender: UIButton) {
+        if sender.tag == 1001 {
+            guard let windowScene = view.window?.windowScene else { return }
+
+               Task { @MainActor in
+                   do {
+                       try await AppStore.showManageSubscriptions(in: windowScene)
+                   } catch {
+                       print(error.localizedDescription)
+                   }
+               }
+        } else {
             presenter.purchaseSelectedPlan()
+        }
+            
     }
 }
 
