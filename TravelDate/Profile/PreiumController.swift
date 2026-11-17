@@ -23,6 +23,8 @@ class PreiumController: BaseClassVc,SubscriptionView {
     @IBOutlet weak var btnContinue:UIButton!
     @IBOutlet weak var btnCancel:UIButton!
     @IBOutlet weak var btnCancelHeight:NSLayoutConstraint!
+    @IBOutlet weak var btnContinueHeight:NSLayoutConstraint!
+    @IBOutlet weak var btnContinueTop:NSLayoutConstraint!
     
     // MARK: - Properties
     var selectedPlan: SubscriptionType = .weekly
@@ -164,7 +166,9 @@ class PreiumController: BaseClassVc,SubscriptionView {
 
             btnCancel.isHidden = false
             btnCancel.isEnabled = true
-            btnCancelHeight.constant = 50
+            btnCancelHeight.constant = 40
+            btnContinueHeight.constant = 0
+            btnContinueTop.constant = 0
 
             // Optional: visually highlight the active subscription.
             if currentPlan == .weekly {

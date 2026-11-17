@@ -73,9 +73,16 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
-        // Hide all first
+        // Hide all fir
+    
          
-
+        Superwall.configure(
+                   apiKey: "pk_DDAiSmcipumklwMwGBCcx"
+               )
+        
+        Superwall.shared.identify(
+            userId: User.curentUser?.id ?? ""
+        )
         setupPullToRefresh()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
         
@@ -276,6 +283,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                 
                 self.request.logout { errMsg, errCode in
                     DispatchQueue.main.async {
+                        Superwall.shared.reset()
                         User.resetCurrentUser()
                         self.pushVC(LoginViewController.self, from: .Main)
                     }
@@ -641,9 +649,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         resetTabBarTimer()
     }
     
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        showTabBarTemporarily()
-    }
+//    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+//        showTabBarTemporarily()
+//    }
 
 //    func scrollViewDidScroll(_ scrollView: UIScrollView) {
 //        resetTabBarTimer()
@@ -800,12 +808,11 @@ extension HomeViewController {
             return
         }
         if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-//            showMaterialConfirm(title: "", message: "Upgrade to a subscription to create more than one group.") {
-//                self.upgradeButtonTapped()
-//            }
-            Superwall.configure(
-                       apiKey: "pk_DDAiSmcipumklwMwGBCcx"
-                   )
+            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to create multiple trips at once" ) {
+                //"Upgrade to a subscription to create more than one group."
+                self.upgradeButtonTapped()
+            }
+            
             
             return
         }

@@ -1735,19 +1735,21 @@
                                                         </constraints>
                                                     </view>
                                                     <button opaque="NO" tag="1001" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fls-Rq-z6j" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
-                                                        <rect key="frame" x="76.666666666666686" y="788" width="200" height="45"/>
-                                                        <color key="backgroundColor" red="1" green="0.070588235289999995" blue="0.066666666669999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <rect key="frame" x="126.66666666666666" y="778" width="100" height="30"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" constant="200" id="cxj-yL-ahf"/>
-                                                            <constraint firstAttribute="height" constant="45" id="v6B-yA-yUW"/>
+                                                            <constraint firstAttribute="width" constant="100" id="cxj-yL-ahf"/>
+                                                            <constraint firstAttribute="height" constant="30" id="v6B-yA-yUW"/>
                                                         </constraints>
-                                                        <fontDescription key="fontDescription" name="Poppins-Medium" family="Poppins" pointSize="20"/>
+                                                        <fontDescription key="fontDescription" name="Poppins-Medium" family="Poppins" pointSize="12"/>
                                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                                        <state key="normal" title="Cancel Plan"/>
+                                                        <state key="normal">
+                                                            <color key="titleColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
-                                                                <real key="value" value="22.5"/>
+                                                                <real key="value" value="15"/>
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                         <connections>
@@ -1810,7 +1812,7 @@
                                                     <constraint firstItem="ZRn-3X-vXw" firstAttribute="leading" secondItem="5QP-yP-JCz" secondAttribute="trailing" constant="10" id="MRE-9k-YcN"/>
                                                     <constraint firstItem="Ycd-wr-TAl" firstAttribute="top" secondItem="Y1C-L6-FcY" secondAttribute="bottom" constant="10" id="N1d-HJ-AzP"/>
                                                     <constraint firstAttribute="trailing" secondItem="EtZ-CO-ZyP" secondAttribute="trailing" constant="5" id="VOu-HN-2RK"/>
-                                                    <constraint firstItem="Fls-Rq-z6j" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="bottom" constant="20" id="aoM-37-3il"/>
+                                                    <constraint firstItem="Fls-Rq-z6j" firstAttribute="top" secondItem="vqD-OV-Em9" secondAttribute="bottom" constant="10" id="aoM-37-3il"/>
                                                     <constraint firstItem="UYb-s5-lRi" firstAttribute="top" secondItem="ZRn-3X-vXw" secondAttribute="bottom" constant="20" id="cpM-R2-tjX"/>
                                                     <constraint firstItem="ZRn-3X-vXw" firstAttribute="centerY" secondItem="5QP-yP-JCz" secondAttribute="centerY" id="dhP-va-VM2"/>
                                                     <constraint firstItem="vqD-OV-Em9" firstAttribute="top" secondItem="Q31-MO-2gh" secondAttribute="bottom" constant="30" id="etx-LS-9Gd"/>
@@ -2354,7 +2356,7 @@
                                 <rect key="frame" x="0.0" y="127" width="393" height="725"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rxI-E9-9lV">
-                                        <rect key="frame" x="0.0" y="0.0" width="393" height="937"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="932"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fr" translatesAutoresizingMaskIntoConstraints="NO" id="4OX-hs-OvP">
                                                 <rect key="frame" x="20" y="0.0" width="353" height="69.333333333333329"/>
@@ -2588,13 +2590,13 @@
                                                 </connections>
                                             </button>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="By Continuing, you agree to terms of use and privacy policy" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AyH-ca-kTQ">
-                                                <rect key="frame" x="20" y="784.33333333333337" width="353" height="32.666666666666629"/>
+                                                <rect key="frame" x="20" y="779.33333333333337" width="353" height="32.666666666666629"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="88e-Fk-MgE" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
-                                                <rect key="frame" x="20" y="784.33333333333337" width="353" height="32.666666666666629"/>
+                                                <rect key="frame" x="20" y="779.33333333333337" width="353" height="32.666666666666629"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Poppins-Medium" family="Poppins" pointSize="10"/>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2622,19 +2624,19 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <button opaque="NO" tag="1001" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="so2-fX-sch" customClass="DesignableButton" customModule="Trips" customModuleProvider="target">
-                                                <rect key="frame" x="96.666666666666686" y="729.33333333333337" width="200" height="45"/>
-                                                <color key="backgroundColor" red="1" green="0.070588235289999995" blue="0.066666666669999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <rect key="frame" x="131.66666666666666" y="729.33333333333337" width="129.99999999999997" height="40"/>
+                                                <color key="backgroundColor" red="0.99607843137254903" green="0.16078431372549018" blue="0.30196078431372547" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="45" id="lq0-eC-pFW"/>
-                                                    <constraint firstAttribute="width" constant="200" id="v9Z-xJ-ykX"/>
+                                                    <constraint firstAttribute="height" constant="40" id="lq0-eC-pFW"/>
+                                                    <constraint firstAttribute="width" constant="130" id="v9Z-xJ-ykX"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" name="Poppins-Medium" family="Poppins" pointSize="20"/>
+                                                <fontDescription key="fontDescription" name="Poppins-Medium" family="Poppins" pointSize="15"/>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                 <state key="normal" title="Cancel Plan"/>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="cornerRadiusValue">
-                                                        <real key="value" value="22.5"/>
+                                                        <real key="value" value="20"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
                                                 <connections>
@@ -2712,6 +2714,8 @@
                         <outlet property="btnCancel" destination="so2-fX-sch" id="5eW-Sw-nOo"/>
                         <outlet property="btnCancelHeight" destination="lq0-eC-pFW" id="HES-hA-EQa"/>
                         <outlet property="btnContinue" destination="HxG-y9-hDZ" id="z6I-By-xRS"/>
+                        <outlet property="btnContinueHeight" destination="qqG-m8-rTe" id="q2L-Ht-zrO"/>
+                        <outlet property="btnContinueTop" destination="4PX-IO-Yhi" id="E2k-Ry-Anm"/>
                         <outlet property="lblMonth" destination="yzy-E1-zwO" id="kPi-h9-xCi"/>
                         <outlet property="lblWeek" destination="7Ks-rT-qyh" id="UgP-by-Bgp"/>
                         <outlet property="lblYear" destination="K9q-U3-k0m" id="NID-ez-Vu6"/>

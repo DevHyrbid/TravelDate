@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="25098" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="25073"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -1336,16 +1336,16 @@
                                         </constraints>
                                     </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="New Matches" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mjt-RO-nHu">
-                                        <rect key="frame" x="50" y="85" width="111" height="20.333333333333329"/>
+                                        <rect key="frame" x="70" y="85" width="111" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YyT-PK-2sc">
-                                        <rect key="frame" x="15" y="82.666666666666671" width="20" height="25"/>
+                                        <rect key="frame" x="15" y="72.666666666666671" width="45" height="45"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="25" id="ZKt-B4-emW"/>
-                                            <constraint firstAttribute="width" constant="20" id="o75-E2-9V3"/>
+                                            <constraint firstAttribute="height" constant="45" id="ZKt-B4-emW"/>
+                                            <constraint firstAttribute="width" constant="45" id="o75-E2-9V3"/>
                                         </constraints>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                         <state key="normal" image="imgBack"/>
@@ -1354,7 +1354,7 @@
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Kxx-4E-HWD">
-                                        <rect key="frame" x="50" y="110.33333333333333" width="0.0" height="0.0"/>
+                                        <rect key="frame" x="70" y="110.33333333333333" width="0.0" height="0.0"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -1444,7 +1444,7 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="Mjt-RO-nHu" firstAttribute="leading" secondItem="YyT-PK-2sc" secondAttribute="trailing" constant="15" id="0Bg-iH-18n"/>
+                                    <constraint firstItem="Mjt-RO-nHu" firstAttribute="leading" secondItem="YyT-PK-2sc" secondAttribute="trailing" constant="10" id="0Bg-iH-18n"/>
                                     <constraint firstItem="stA-JQ-lnz" firstAttribute="top" secondItem="TzI-We-Njw" secondAttribute="bottom" constant="20" id="79E-NN-0UK"/>
                                     <constraint firstItem="7DB-t0-isr" firstAttribute="leading" secondItem="3zk-1H-xkL" secondAttribute="leading" constant="20" id="7IG-8r-cQl"/>
                                     <constraint firstItem="7DB-t0-isr" firstAttribute="centerX" secondItem="stA-JQ-lnz" secondAttribute="centerX" id="7YA-c0-2WS"/>
@@ -2234,7 +2234,7 @@
     <resources>
         <image name="1-1" width="177" height="53"/>
         <image name="1-2" width="177" height="53"/>
-        <image name="arrowshape.down.circle" catalog="system" width="128" height="123"/>
+        <image name="arrowshape.down.circle" catalog="system" width="128" height="128"/>
         <image name="imgAdventure" width="32" height="32"/>
         <image name="imgArea" width="425.33334350585938" height="98.666664123535156"/>
         <image name="imgBack" width="20" height="20"/>
@@ -2264,8 +2264,8 @@
         <image name="imgTinderSw" width="402.66665649414062" height="53.333332061767578"/>
         <image name="imgTravel" width="50.666667938232422" height="50.666667938232422"/>
         <image name="imgVerified" width="341.33334350585938" height="341.33334350585938"/>
-        <image name="square.and.arrow.up.circle.fill" catalog="system" width="128" height="123"/>
-        <image name="trash.fill" catalog="system" width="117" height="128"/>
+        <image name="square.and.arrow.up.circle.fill" catalog="system" width="128" height="128"/>
+        <image name="trash.fill" catalog="system" width="113" height="128"/>
         <namedColor name="ThemeBG">
             <color red="0.067000001668930054" green="0.071000002324581146" blue="0.067000001668930054" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

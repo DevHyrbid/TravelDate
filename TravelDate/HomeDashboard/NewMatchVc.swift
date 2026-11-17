@@ -59,7 +59,7 @@ class NewMatchVc: BaseClassVc {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tripsTabBarController?.hideTabBar()
+//        self.tripsTabBarController?.hideTabBar()
         setupUi()
     }
     

@@ -34,9 +34,23 @@ class SwipeViewController: BaseClassVc {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.tripsTabBarController?.showTabBar()
         fetchGroups()
         checkRequirements()
-        self.tripsTabBarController?.showTabBar()
+        if User.curentUser!.isSubscriptionByAdmin == 1 {
+            fetchGroups()
+            checkRequirements()
+            return
+        }
+        if !hasPaidSubscription  {
+            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to Find trips" ) {
+                //"Upgrade to a subscription to create more than one group."
+                self.upgradeButtonTapped()
+            }
+            
+            
+            return
+        }
     }
 
     private var didSetupUI = false
@@ -688,7 +702,8 @@ enum OverlayType {
         switch self {
         case .missingLocation:    return "Add your location to start discovering travel groups."
         case .missingTravelStyles: return "Select your travel styles to find matching groups."
-        case .noGroups:           return "Check back later to see who’s heading there on your dates."
+        case .noGroups:           return "Please create a trip to match with travellers going to your destination at a similar date !"
+            //"Check back later to see who’s heading there on your dates."
         }
     }
 

@@ -110,7 +110,7 @@ class ProfileViewController: BaseClassVc {
         
         updateProfileCompletion()
         DispatchQueue.main.async {
-            if self.hasPaidSubscription {
+            if self.hasPaidSubscription ||  User.curentUser!.isSubscriptionByAdmin == 1 {
                 self.imgPermium.isHidden = false
                 self.imgPermiumHeight.constant = 34
                 self.vwPlan.isHidden = false
@@ -123,21 +123,7 @@ class ProfileViewController: BaseClassVc {
             }
             print(User.curentUser?.plan,"jjjjjjeherr")
             
-            if let plan = User.curentUser?.plan {
-                switch plan {
-                case  "weekly",SubscriptionTier.weekly.rawValue:
-                    self.lblPlanName.text = "Weekly Plan"
-                    
-                case  "monthly",SubscriptionTier.monthly.rawValue:
-                    self.lblPlanName.text = "Monthly Plan"
-                    
-                case  "yearly",SubscriptionTier.yearly.rawValue:
-                    self.lblPlanName.text = "Yearly Plan"
-                    
-                default:
-                    self.lblPlanName.text = "Free"
-                }
-            }
+
                 
             
 
@@ -149,19 +135,69 @@ class ProfileViewController: BaseClassVc {
 
                     var components = DateComponents()
 
-                    switch User.curentUser?.plan {
-                    case "weekly",SubscriptionTier.weekly.rawValue:
-                        components.day = 7
+                    if User.curentUser!.isSubscriptionByAdmin == 1 {
+                        switch User.curentUser?.productId {
+                        case "weekly",SubscriptionTier.weekly.rawValue:
+                            components.day = 7
+    
+                        case "monthly",SubscriptionTier.monthly.rawValue:
+                            components.month = 1
 
-                    case "monthly",SubscriptionTier.monthly.rawValue:
-                        components.month = 1
+                        case "yearly",SubscriptionTier.yearly.rawValue:
+                            components.year = 1
 
-                    case "yearly",SubscriptionTier.yearly.rawValue:
-                        components.year = 1
+                        default:
+                            break
+                        }
+                        if let plan = User.curentUser?.productId {
+                            switch plan {
+                            case  "weekly",SubscriptionTier.weekly.rawValue:
+                                self.lblPlanName.text = "Weekly Plan"
+                                
+                            case  "monthly",SubscriptionTier.monthly.rawValue:
+                                self.lblPlanName.text = "Monthly Plan"
+                                
+                            case  "yearly",SubscriptionTier.yearly.rawValue:
+                                self.lblPlanName.text = "Yearly Plan"
+                                
+                            default:
+                                self.lblPlanName.text = "Free"
+                            }
+                        }
+                        
+                    } else {
+                        switch User.curentUser?.plan {
+                        case "weekly",SubscriptionTier.weekly.rawValue:
+                            components.day = 7
+    
+                        case "monthly",SubscriptionTier.monthly.rawValue:
+                            components.month = 1
 
-                    default:
-                        break
+                        case "yearly",SubscriptionTier.yearly.rawValue:
+                            components.year = 1
+
+                        default:
+                            break
+                        }
+                        
+                        if let plan = User.curentUser?.plan {
+                            switch plan {
+                            case  "weekly",SubscriptionTier.weekly.rawValue:
+                                self.lblPlanName.text = "Weekly Plan"
+                                
+                            case  "monthly",SubscriptionTier.monthly.rawValue:
+                                self.lblPlanName.text = "Monthly Plan"
+                                
+                            case  "yearly",SubscriptionTier.yearly.rawValue:
+                                self.lblPlanName.text = "Yearly Plan"
+                                
+                            default:
+                                self.lblPlanName.text = "Free"
+                            }
+                        }
                     }
+                    
+
 
                     if let endDate = Calendar.current.date(byAdding: components, to: startDate) {
 
