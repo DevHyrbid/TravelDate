@@ -1,471 +1,926 @@
 //
+
 //  SubscriptionPresenter.swift
+
 //  TravelDate
-//
-//  MVP — Presenter owns all business logic & StoreKit.
-//  ViewController only renders what the presenter tells it to.
+
 //
 
+//  MVP — Presenter owns all business logic & StoreKit.
+
+//  ViewController only renders what the presenter tells it to.
+
+//
+
+
+
 import Foundation
+
 import StoreKit
+
+
 
 // MARK: - Subscription Tier
 
+
+
 enum SubscriptionTier: String, CaseIterable {
+
     case weekly  = "com.ios.trips.weekly"
+
     case monthly = "com.ios.travel.monhtly"
+
     case yearly  = "com.ios.travel.yearly"
 
+
+
     var title: String {
+
         switch self {
+
         case .weekly:  return "Weekly"
+
         case .monthly: return "Monthly"
+
         case .yearly:  return "Yearly"
+
         }
+
     }
+
+
 
     var duration: String {
+
         switch self {
+
         case .weekly:  return "week"
+
         case .monthly: return "month"
+
         case .yearly:  return "year"
+
         }
+
     }
+
+
 
     var badge: String? {
+
         self == .yearly ? "BEST VALUE" : nil
+
     }
+
+
 
     var description: String {
+
         switch self {
+
         case .weekly:  return "Try it out, cancel anytime."
+
         case .monthly: return "Most flexible option."
+
         case .yearly:  return "Save the most, billed yearly."
+
         }
+
     }
 
+
+
     /// How this tier is represented on our backend.
+
     var serverPlan: String {
+
         rawValue
+
     }
+
 }
+
+
 
 // MARK: - Subscription Plan (UI model)
 
+
+
 struct SubscriptionPlan {
+
     let tier: SubscriptionTier
+
     var product: Product?
 
+
+
     var id: String { tier.rawValue }
+
     var title: String { tier.title }
+
     var badge: String? { tier.badge }
+
     var description: String { tier.description }
 
+
+
     var priceText: String {
+
         guard let product else { return "--" }
+
         return "\(product.displayPrice)"
+
     }
+
 }
+
+
 
 // MARK: - View Protocol
 
+
+
 @MainActor
+
 protocol SubscriptionView: AnyObject {
+
     func showLoading()
+
     func hideLoading()
+
     func reloadPlans()
+
     func updateCTA(title: String)
+
     func purchaseSucceeded()
+
     func purchaseFailed(message: String)
+
     func subscriptionStatusChanged(isSubscribed: Bool)
+
 }
+
+
 
 // MARK: - Presenter
 
+
+
 @MainActor
+
 final class SubscriptionPresenter {
 
-    
+
+
+
+
     // MARK: Dependencies
 
+
+
     weak var view: SubscriptionView?
+
     private var lastSyncedPlan: String?
+
     private var lastSyncedIsSubscribed: Bool?
+
     // MARK: State
 
+
+
     private(set) var plans: [SubscriptionPlan] = []
+
     private(set) var selectedIndex = 0
+
     private(set) var activeTier: SubscriptionTier?
 
+
+
     private let productIDs = SubscriptionTier.allCases.map(\.rawValue)
+
     private var transactionListenerTask: Task<Void, Never>?
 
+
+
     // Prevents sending the same backend update twice in a row.
+
     private var isSyncing = false
+
     private let isoFormatter: ISO8601DateFormatter = {
+
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
         return formatter
+
     }()
 
-    private var lastSyncedEndDate: Date?
 
-    
+
+    private var lastSyncedEndDate: Date?
+    private var pendingBackendSync: (plan: String, startDate: Date?, endDate: Date?, isSubscribed: Bool)?
+
+
+
+
+
+
 
     // MARK: Init
 
+
+
     init(view: SubscriptionView?) {
+
         self.view = view
+
         createDefaultPlans()
+
         transactionListenerTask = observeTransactionUpdates()
+
     }
 
+
+
     deinit {
+
         transactionListenerTask?.cancel()
+
     }
+
+
 
     // MARK: - Default Plans
 
+
+
     private func createDefaultPlans() {
+
         plans = SubscriptionTier.allCases.map { SubscriptionPlan(tier: $0, product: nil) }
+
     }
+
+
 
     // MARK: - Public: Load
 
+
+
     /// Called once when the screen appears.
+
     func load() {
+
         Task {
+
             view?.showLoading()
 
+
+
             await loadProducts()
+
             if User.curentUser?.isSubscriptionByAdmin != 1 {
+
                 await refreshSubscriptionStatus()
+
             }
 
+
+
             view?.reloadPlans()
+
             notifyCTA()
+
             view?.hideLoading()
+
         }
+
     }
 
+
+
     /// Called from `viewDidAppear` to catch renewals/refunds that
+
     /// happened while the app was in the background.
+
     func applicationDidBecomeActive() {
+
         Task {
+
             await refreshSubscriptionStatus()
+
             view?.reloadPlans()
+
         }
+
     }
+
+
 
     // MARK: - Products
 
+
+
     private func loadProducts() async {
+
         do {
+
             let storeProducts = try await Product.products(for: productIDs)
 
+
+
             for index in plans.indices {
+
                 let plan = plans[index]
+
                 plans[index].product = storeProducts.first { $0.id == plan.id }
+
             }
+
         } catch {
+
             view?.purchaseFailed(message: error.localizedDescription)
+
         }
+
     }
+
+
 
     // MARK: - Plan Selection
 
+
+
     func selectPlan(at index: Int) {
+
         guard plans.indices.contains(index) else { return }
+
         selectedIndex = index
+
         notifyCTA()
+
     }
 
+
+
     var selectedPlan: SubscriptionPlan {
+
         plans[selectedIndex]
+
     }
+
+
 
     // MARK: - CTA
 
+
+
     func ctaTitle() -> String {
+
         guard let product = selectedPlan.product else {
+
             return "Continue"
+
         }
+
         return "Continue • \(product.displayPrice) / \(selectedPlan.tier.duration)"
+
     }
 
+
+
     private func notifyCTA() {
+
         view?.updateCTA(title: ctaTitle())
+
     }
+
+
 
     // MARK: - Purchase
 
+
+
     func purchaseSelectedPlan() {
+
         guard let product = selectedPlan.product else {
+
             view?.purchaseFailed(message: "This plan is not available right now.")
+
             return
+
         }
+
+
 
         Task {
+
             view?.showLoading()
+
             await purchase(product)
+
             view?.hideLoading()
+
         }
+
     }
+
+
 
     private func purchase(_ product: Product) async {
+
         do {
+
             let result = try await product.purchase()
 
+
+
             switch result {
+
             case .success(let verification):
+
                 await handlePurchaseVerification(verification)
 
+
+
             case .userCancelled:
+
                 break
+
+
 
             case .pending:
+
                 view?.purchaseFailed(message: "Purchase is pending approval.")
 
+
+
             @unknown default:
+
                 break
+
             }
+
         } catch {
+
             view?.purchaseFailed(message: error.localizedDescription)
+
         }
+
     }
+
+
 
     private func handlePurchaseVerification(_ verification: VerificationResult<Transaction>) async {
+
         switch verification {
+
         case .verified(let transaction):
+
             await transaction.finish()
+
             await refreshSubscriptionStatus()
+
             view?.purchaseSucceeded()
 
+
+
         case .unverified(_, let error):
+
             view?.purchaseFailed(message: error.localizedDescription)
+
         }
+
     }
+
+
 
     // MARK: - Restore
 
+
+
     func restorePurchases() {
+
         Task {
+
             view?.showLoading()
 
+
+
             do {
+
                 try await AppStore.sync()
+
                 await refreshSubscriptionStatus()
 
+
+
                 if activeTier != nil {
+
                     view?.purchaseSucceeded()
+
                 } else {
+
                     view?.purchaseFailed(message: "No active subscriptions found.")
+
                 }
+
             } catch {
+
                 view?.purchaseFailed(message: error.localizedDescription)
+
             }
 
+
+
             view?.hideLoading()
+
         }
+
     }
+
+
 
     // MARK: - Subscription Status
 
+
+
     /// Walks current entitlements and figures out the single active tier,
+
     /// skipping anything expired or refunded. Also syncs the result to
+
     /// the backend.
+
     func refreshSubscriptionStatus() async {
 
+
+
         print("🔵 REFRESH SUBSCRIPTION START")
+
         print("Current Date:", Date())
+
+
 
         var activeTransaction: Transaction?
 
+
+
         for await result in Transaction.currentEntitlements {
+
+
 
             switch result {
 
+
+
             case .verified(let transaction):
 
+
+
                 print("================================")
+
                 print("✅ PRODUCT:", transaction.productID)
+
                 print("✅ TYPE:", transaction.productType)
+
                 print("✅ PURCHASE:", transaction.purchaseDate)
+
                 print("✅ EXPIRY:", transaction.expirationDate as Any)
+
                 print("✅ REVOCATION:", transaction.revocationDate as Any)
+
                 print("================================")
+
+
 
                 guard transaction.productType == .autoRenewable else {
+
                     continue
+
                 }
+
+
 
                 guard transaction.revocationDate == nil else {
+
                     continue
+
                 }
+
+
 
                 guard transaction.isUpgraded == false else {
+
                     continue
+
                 }
+
+
 
                 guard let expiry = transaction.expirationDate else {
+
                     continue
+
                 }
+
+
 
                 guard expiry > Date() else {
+
                     print("❌ EXPIRED:", transaction.productID)
+
                     continue
+
                 }
 
+
+
                 activeTransaction = transaction
+
                 break
+
+
 
             case .unverified(_, let error):
 
+
+
                 print("❌ UNVERIFIED TRANSACTION:")
+
                 print(error.localizedDescription)
+
             }
+
         }
+
+
 
         // MARK: Active Subscription
 
+
+
         if let transaction = activeTransaction {
+
+
 
             let tier = SubscriptionTier(rawValue: transaction.productID)
 
+
+
             activeTier = tier
 
+
+
             print("🟢 ACTIVE SUBSCRIPTION")
+
             print("Plan:", transaction.productID)
+
             print("Tier:", tier?.title ?? "Unknown")
+
             print("Expiry:", transaction.expirationDate as Any)
 
+
+
             syncBackend(
+
                 plan: transaction.productID,
+
                 startDate: transaction.purchaseDate,
+
                 endDate: transaction.expirationDate,
+
                 isSubscribed: true
+
             )
+
+
 
             view?.subscriptionStatusChanged(isSubscribed: true)
 
+
+
             print("🔵 REFRESH SUBSCRIPTION END - ACTIVE")
 
+
+
             return
+
         }
+
+
 
         // MARK: No Active Subscription
 
-        
+
+
+
+
+
 
         print(User.curentUser?.isSubscriptionByAdmin,"CheckADmin")
+
         if  User.curentUser?.isSubscriptionByAdmin !=  1 {
+
             activeTier = nil
+
             print("🔴 NO ACTIVE SUBSCRIPTION")
+
             syncBackend(
+
                 plan: "free",
+
                 startDate: nil,
+
                 endDate: nil,
+
                 isSubscribed: false
+
             )
+
             view?.subscriptionStatusChanged(isSubscribed: false)
+
             print("🔴 REFRESH SUBSCRIPTION END - FREE")
+
         }
 
-        
 
-        
+
+
+
+
+
+
+
     }
+
+
 
     // MARK: - Transaction Updates
 
+
+
     /// Catches renewals, refunds, and purchases made on another device.
+
     private func observeTransactionUpdates() -> Task<Void, Never> {
+
         Task { [weak self] in
+
             guard let self else { return }
+
+
 
             for await result in Transaction.updates {
 
+
+
                 guard case .verified(let transaction) = result else {
+
                     continue
+
                 }
+
+
 
                 print("🔔 TRANSACTION UPDATE:", transaction.productID)
 
+
+
                 await transaction.finish()
+
+
 
                 await self.refreshSubscriptionStatus()
 
+
+
                 self.view?.reloadPlans()
+
             }
+
         }
+
     }
+
+
 
     // MARK: - Backend Sync
 
+
+
     private func syncBackend(
+
         plan: String,
+
         startDate: Date?,
+
         endDate: Date?,
+
         isSubscribed: Bool
+
     ) {
 
-        
+
+
+
+
         print("📡 SYNC BACKEND")
+
         print("Plan:", plan)
+
         print("Subscribed:", isSubscribed)
+
         print("Start:", startDate as Any)
+
         print("End:", endDate as Any)
 
-        guard !isSyncing else {
-            print("⚠️ SYNC ALREADY IN PROGRESS")
-            return
-        }
+
 
         if lastSyncedPlan == plan &&
            lastSyncedIsSubscribed == isSubscribed &&
-           lastSyncedEndDate == endDate {
+           lastSyncedEndDate == endDate &&
+           pendingBackendSync == nil {
 
             print("⚠️ SAME STATE ALREADY SYNCED")
             return
         }
 
-        isSyncing = true
+        guard !isSyncing else {
+            print("⚠️ SYNC ALREADY IN PROGRESS — QUEUING LATEST STATE")
+            pendingBackendSync = (plan: plan, startDate: startDate, endDate: endDate, isSubscribed: isSubscribed)
+            return
+        }
 
-        lastSyncedPlan = plan
-        lastSyncedIsSubscribed = isSubscribed
-        lastSyncedEndDate = endDate
+        isSyncing = true
 
         let request = User.new()
 
+
+
         request.plan = plan
 
+
+
         request.planStartDate = startDate.map {
+
             isoFormatter.string(from: $0)
+
         }
+
+
 
         request.planEndDate = endDate.map {
+
             isoFormatter.string(from: $0)
+
         }
+
         print("logHereToupdate",plan)
+
         request.editProfileAPi { [weak self] response, status in
 
+
+
             guard let self else {
+
                 return
+
             }
+
+
 
             Task { @MainActor in
 
-                self.isSyncing = false
+
 
                 print("📡 BACKEND STATUS:", status)
                 print("📡 BACKEND RESPONSE:", response as Any)
 
                 if status == 200 {
+                    self.lastSyncedPlan = plan
+                    self.lastSyncedIsSubscribed = isSubscribed
+                    self.lastSyncedEndDate = endDate
                     print("✅ SUBSCRIPTION SYNC SUCCESS")
                 } else {
                     print("❌ SUBSCRIPTION SYNC FAILED")
                 }
+
+                self.isSyncing = false
+
+                if let pending = self.pendingBackendSync {
+                    self.pendingBackendSync = nil
+                    self.syncBackend(
+                        plan: pending.plan,
+                        startDate: pending.startDate,
+                        endDate: pending.endDate,
+                        isSubscribed: pending.isSubscribed
+                    )
+                }
+
             }
+
         }
+
     }
+
 }
+

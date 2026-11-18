@@ -1,4 +1,3 @@
-
 // EditGroupViewController.swift
 // TravelDate
 
@@ -68,8 +67,25 @@ class EditGroupViewController: CreateGroupViewController {
     private var didPickNewImage = false
     private var datesLocked     = false
 
+    /// true only while we assign the image downloaded from the server,
+    /// so that assignment is NOT treated as a user pick.
+    private var isSettingRemoteImage = false
+
     private let localStyles = ["Partygoer", "Adventure traveler",
                                 "Cultural traveler", "Leisure traveler"]
+
+    // MARK: - Image pick observer
+    // Parent's image picker sets `selectedImage` — we observe it here so a
+    // replaced image is marked for upload and the thumbnail refreshes.
+    override var selectedImage: UIImage? {
+        didSet {
+            guard !isSettingRemoteImage, let img = selectedImage else { return }
+            didPickNewImage = true
+            DispatchQueue.main.async { [weak self] in
+                self?.updateCoverThumbnail(img)
+            }
+        }
+    }
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -122,7 +138,7 @@ class EditGroupViewController: CreateGroupViewController {
         ])
     }
 
-    
+
 
     // MARK: - Prefill
     private func prefillAll() {
@@ -265,17 +281,64 @@ class EditGroupViewController: CreateGroupViewController {
         let urlString = path.hasPrefix("https") ? path : base + path
         guard let url = URL(string: urlString) else { return }
 
+        showCoverLoader()
+
         URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
-            guard let self, let data, let img = UIImage(data: data) else { return }
             DispatchQueue.main.async {
-                self.selectedImage   = img
-                self.didPickNewImage = true
+                guard let self else { return }
+                self.hideCoverLoader()
+
+                guard let data, let img = UIImage(data: data) else { return }
+
+                // User already picked a new image before download finished — don't overwrite it
+                guard !self.didPickNewImage else { return }
+
+                self.isSettingRemoteImage = true
+                self.selectedImage = img
+                self.isSettingRemoteImage = false
+
+                self.didPickNewImage = false
                 self.updateCoverThumbnail(img)
             }
         }.resume()
     }
 
+    // MARK: - Cover Loader
+    private func showCoverLoader() {
+        guard let card = formCard.viewWithTag(999) else { return }
+        if card.viewWithTag(3001) != nil { return }
+
+        let loader = UIActivityIndicatorView(style: .large)
+        loader.tag              = 3001
+        loader.color            = .white
+        loader.hidesWhenStopped = true
+        loader.translatesAutoresizingMaskIntoConstraints = false
+        card.addSubview(loader)
+        NSLayoutConstraint.activate([
+            loader.centerXAnchor.constraint(equalTo: card.centerXAnchor),
+            loader.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+        ])
+
+        // Hide placeholder (camera icon / text) while loading
+        card.subviews.compactMap { $0 as? UIStackView }.first?.isHidden = true
+        loader.startAnimating()
+    }
+
+    private func hideCoverLoader() {
+        guard let card = formCard.viewWithTag(999),
+              let loader = card.viewWithTag(3001) as? UIActivityIndicatorView else { return }
+        loader.stopAnimating()
+        loader.removeFromSuperview()
+
+        // Show placeholder again if no image ended up in the card
+        if card.viewWithTag(1002) == nil {
+            card.subviews.compactMap { $0 as? UIStackView }.first?.isHidden = false
+        }
+    }
+
     private func updateCoverThumbnail(_ img: UIImage) {
+        hideCoverLoader()
+
         guard let card = formCard.viewWithTag(999) else { return }
 
         card.layer.sublayers?
@@ -284,6 +347,7 @@ class EditGroupViewController: CreateGroupViewController {
 
         if let existing = card.viewWithTag(1002) as? UIImageView {
             existing.image = img
+            card.bringSubviewToFront(existing)
         } else {
             let iv = UIImageView(image: img)
             iv.tag               = 1002
@@ -291,7 +355,7 @@ class EditGroupViewController: CreateGroupViewController {
             iv.clipsToBounds     = true
             iv.layer.cornerRadius = 20
             iv.translatesAutoresizingMaskIntoConstraints = false
-            card.insertSubview(iv, at: 0)
+            card.addSubview(iv)
 
             NSLayoutConstraint.activate([
                 iv.topAnchor.constraint(equalTo: card.topAnchor),
@@ -307,8 +371,8 @@ class EditGroupViewController: CreateGroupViewController {
         }
     }
 
-    
-    
+
+
 
     // MARK: - Save (PATCH)
     @objc private func handleSave() {
@@ -348,8 +412,16 @@ class EditGroupViewController: CreateGroupViewController {
         if didPickNewImage,
            let img  = selectedImage,
            let data = img.jpegData(compressionQuality: 0.7) {
-            uploadImg(true,data) { imageName in
-                patch(imageName: imageName ?? m.coverImagePath)
+            uploadImg(true, data) { [weak self] imageName in
+                guard let self = self else { return }
+
+                guard let imageName = imageName, !imageName.isEmpty else {
+                    AppLoader.hide()
+                    self.showAlert("Image upload failed. Please try again.")
+                    return
+                }
+
+                patch(imageName: imageName)
             }
         } else {
             patch(imageName: m.coverImagePath)
@@ -452,4 +524,3 @@ class EditGroupViewController: CreateGroupViewController {
         }.resume()
     }
 }
-

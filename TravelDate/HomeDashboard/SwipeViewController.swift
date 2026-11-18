@@ -1,5 +1,5 @@
 import UIKit
-
+import SuperwallKit
 class SwipeViewController: BaseClassVc {
 
     // MARK: - Outlets
@@ -22,6 +22,9 @@ class SwipeViewController: BaseClassVc {
     private var panOriginCenter: CGPoint = .zero
     private var blurView: UIVisualEffectView?
     var groupsCount = 0
+    private var shouldShowMatchPaywall: Bool {
+        return !hasPaidSubscription
+    }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -61,6 +64,11 @@ class SwipeViewController: BaseClassVc {
         setupStaticUI()
     }
     
+    func showMatchPaywall() {
+        Superwall.shared.register(
+            placement: "premium_match"
+        )
+    }
     
     private func checkRequirements() {
 
@@ -571,6 +579,12 @@ extension SwipeViewController: UIGestureRecognizerDelegate {
 extension SwipeViewController {
 
     @IBAction func btnSwipeRight(_ sender: UIButton) {
+        
+        if shouldShowMatchPaywall {
+                showMatchPaywall()
+                return
+            }
+
         performSwipe(isRight: true)
     }
 

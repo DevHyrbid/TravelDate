@@ -44,7 +44,6 @@ class ProfileViewController: BaseClassVc {
     var selectedTravelStyles: [TravelStyle] = []
     var data = [TravelItem]()
     
-    
     // MARK: - ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,11 +60,6 @@ class ProfileViewController: BaseClassVc {
         
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-    }
-    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
     }
@@ -77,7 +71,6 @@ class ProfileViewController: BaseClassVc {
         getUser { success in
             if success {
                 print("User fetched successfully")
-                
                 DispatchQueue.main.async {
                     self.setupViewData()
                 }
@@ -88,7 +81,6 @@ class ProfileViewController: BaseClassVc {
     }
     
     func setupViewData() {
-        
         self.txtAbout.text = User.curentUser?.short_bio ?? ""
         lblName.text = User.curentUser?.name ?? ""
         if User.curentUser?.userName != "" {
@@ -102,12 +94,8 @@ class ProfileViewController: BaseClassVc {
             imgProfile.image = AvatarHelper.image(for: User.curentUser?.name ?? "")
         }
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
-        
         imgProfile.contentMode = .scaleAspectFill
         imgProfile.clipsToBounds = true
-        
-        
-        
         updateProfileCompletion()
         DispatchQueue.main.async {
             if self.hasPaidSubscription ||  User.curentUser!.isSubscriptionByAdmin == 1 {
@@ -122,11 +110,6 @@ class ProfileViewController: BaseClassVc {
                 self.imgPermiumHeight.constant = 0
             }
             print(User.curentUser?.plan,"jjjjjjeherr")
-            
-
-                
-            
-
             if let startDateString = User.curentUser?.planStartDate {
                 let formatter = ISO8601DateFormatter()
                 formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -302,7 +285,6 @@ class ProfileViewController: BaseClassVc {
     }
     
     @objc private func percentageViewTapped() {
-        // Open your screen here
         print("HHHHHHHH")
         let vc = GetVerifiedVc()
         navigationController?.pushViewController(vc, animated: true)
@@ -326,6 +308,7 @@ class ProfileViewController: BaseClassVc {
         request.getHistoryTrips { [self] model, err, code in
             if code == 200 {
                 self.data.removeAll()
+                
 //                DispatchQueue.main.async {
 //                    if self.data.count == 0 {
 //                        self.vwTrips.isHidden = true
@@ -335,9 +318,9 @@ class ProfileViewController: BaseClassVc {
 //                    }
 //                }
                 for (_, item) in model!.enumerated() {
-                    
+                    print(item,"NEWWJWJWWJWJWJWJWWJWJWJWWJW")
                     self.data.append(TravelItem(
-                        title: item.title ?? "",
+                        title: item.destination ?? "",
                         month: updateDate(item.endDate ?? ""),
                         icon: item.coverImage,
                         status: item.status ?? ""
@@ -346,7 +329,6 @@ class ProfileViewController: BaseClassVc {
                 DispatchQueue.main.async {
                     let rowHeight: CGFloat = 116
                     let count = min(data.count, 3)
-
                     self.heightVw.constant = CGFloat(count) * rowHeight
                     if self.data.count > 3 {
                         self.btnVwHistory.isHidden = false
@@ -398,11 +380,9 @@ extension ProfileViewController {
     }
     
     @IBAction func btnAddStyles(_ sender: UIButton) {
-
         selectedTravelStyles = (User.curentUser?.travelStyles ?? []).compactMap {
             TravelStyle(title: $0)
         }
-
         let picker = TravelStylePickerView(selectedStyles: selectedTravelStyles)
         picker.delegate = self
         picker.present()
@@ -410,39 +390,26 @@ extension ProfileViewController {
     
     func openAboutEdit() {
         let editView = AboutEditView()
-        
         editView.onSave = { [weak self] text in
             guard let self = self else { return }
-            
             self.txtAbout.text = text
-            
             //                request.name = txtName.text ?? ""
             request.short_bio = text
             request.editProfileAPi { msg, errCode in
-                
             }
-            
         }
-        
         editView.present(in: self.view, text: txtAbout.text)
     }
 }
 
 extension ProfileViewController: TravelStylePickerDelegate {
     func travelStylePicker(_ picker: TravelStylePickerView, didSelect style: [TravelStyle]) {
-
         print("Selected count:", style.count)
         print(style.map { $0.title })
-
         selectedTravelStyles = style
-
         arr = style.map { $0.title }
-
         print(arr)
-
         request.travelStyles = arr
-
-        
         request.editProfileAPi { [weak self] msg, errCode in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -511,7 +478,7 @@ extension ProfileViewController:UITableViewDelegate,UITableViewDataSource {
             withIdentifier: TravelCell.identifier,
             for: indexPath
         ) as! TravelCell
-
+        print(item)
         cell.configure(
             title: item.title,
             month: item.month,

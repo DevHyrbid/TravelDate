@@ -801,22 +801,45 @@ extension HomeViewController {
     }
     
     
-    @IBAction func btnCreateGroup(_ sender:UIButton) {
-        
-        if User.curentUser!.isSubscriptionByAdmin == 1 {
-            self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
+//    @IBAction func btnCreateGroup(_ sender:UIButton) {
+//        
+//        if User.curentUser!.isSubscriptionByAdmin == 1 {
+//            self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
+//            return
+//        }
+//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
+//            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to create multiple trips at once" ) {
+//                //"Upgrade to a subscription to create more than one group."
+//                self.upgradeButtonTapped()
+//            }
+//            
+//            
+//            return
+//        }
+//        self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
+//    }
+    
+    @IBAction func btnCreateGroup(_ sender: UIButton) {
+
+        if User.curentUser?.isSubscriptionByAdmin == 1 {
+            self.pushVC(
+                WelcomeViewController.self,
+                from: .Home,
+                hideTabBar: true
+            )
             return
         }
+
         if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to create multiple trips at once" ) {
-                //"Upgrade to a subscription to create more than one group."
-                self.upgradeButtonTapped()
-            }
-            
-            
+            Superwall.shared.register(placement: "create_multiple_trips")
             return
         }
-        self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
+
+        self.pushVC(
+            WelcomeViewController.self,
+            from: .Home,
+            hideTabBar: true
+        )
     }
     
     // MARK: - App Tutorial
