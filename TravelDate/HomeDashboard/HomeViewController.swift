@@ -19,7 +19,7 @@ import SuperwallKit
 // MARK: - HomeViewController
 
 class HomeViewController: BaseClassVc, UIScrollViewDelegate {
-    
+
     @IBOutlet weak var scrollVw:UIScrollView!
     @IBOutlet weak var lblName:UILabel!
     @IBOutlet weak var lblGreating:UILabel!
@@ -54,8 +54,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     @IBOutlet weak var imgAdventure:UIImageView!
     @IBOutlet weak var imgLesirue:UIImageView!
     private let refreshControl = UIRefreshControl()
-    
-    
+
+
     // MARK: - Properties
     var timer: Timer?
     private var hasTriggeredOnboarding = false
@@ -66,37 +66,43 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     var pastData: [Group]? = nil
     var selected : Group? = nil
     let membersView = MembersProgressView()
-    private var tabBarHideTimer: Timer?
-    private var tabBarAutoHideDuration: TimeInterval = 7 // seconds
-    
+
+    // MARK: - Tab bar scroll behaviour
+    // Tab bar ab hamesha visible rahega. Sirf user ke scroll DOWN karne par
+    // hide hoga, aur scroll UP / top par aane par wapas show hoga.
+    // Koi auto-hide timer nahi hai (wahi onboarding tod raha tha).
+    private var lastScrollOffsetY: CGFloat = 0
+    private let scrollDirectionThreshold: CGFloat = 10
+    private var isTabBarHiddenByScroll = false
+
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
         // Hide all fir
-        
-         
+
+
         Superwall.configure(
                    apiKey: "pk_DDAiSmcipumklwMwGBCcx"
                )
-        
+
         Superwall.shared.identify(
             userId: User.curentUser?.id ?? ""
         )
         setupPullToRefresh()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(percentageViewTapped))
-        
-        
+
+
         imgVerify.isUserInteractionEnabled = true
         imgVerify.addGestureRecognizer(tapGesture)
     }
-    
+
     @objc private func percentageViewTapped() {
         // Open your screen here
         let vc = GetVerifiedVc()
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     private func setupPullToRefresh() {
         refreshControl.tintColor = .white
         refreshControl.addTarget(
@@ -107,7 +113,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
 
         scrollVw.refreshControl = refreshControl
     }
-    
+
     @objc private func handlePullToRefresh() {
         getGroups()
         getPastGroups()
@@ -118,49 +124,48 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             }
         }
     }
-    
-    private func showTabBarTemporarily() {
+
+    // MARK: - Tab bar show / hide
+    private func showTabBarIfNeeded() {
+        isTabBarHiddenByScroll = false
         tripsTabBarController?.showTabBar()
-        resetTabBarTimer()
     }
 
-    private func resetTabBarTimer() {
-        tabBarHideTimer?.invalidate()
-
-        tabBarHideTimer = Timer.scheduledTimer(withTimeInterval: tabBarAutoHideDuration, repeats: false) { [weak self] _ in
-            self?.tripsTabBarController?.hideTabBar()
-        }
+    private func hideTabBarIfNeeded() {
+        guard !isTabBarHiddenByScroll else { return }
+        isTabBarHiddenByScroll = true
+        tripsTabBarController?.hideTabBar()
     }
-    
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
-        showTabBarTemporarily()
+        showTabBarIfNeeded()
     }
-    
-    
+
+
     @objc private func handleValueUpdated(_ notification: Notification) {
         getGroups()
         getPastGroups()
     }
-    
-    
+
+
     func makeTripMenu(trips: [Group]) -> UIMenu {
         let actions = trips.map { trip in
             UIAction(
                 title: trip.title ?? "",
                 image: UIImage(systemName:"arrow.right")
             ) { _ in
-                
+
                 self.didSelectTrip(trip)
             }
         }
 
         return UIMenu(title: "Trips", children: actions)
     }
-    
-    
+
+
     func didSelectTrip(_ res: Group) {
-        
+
         self.selected  = res
         AppData.shared.latitude = res.latitude
         AppData.shared.longitude = res.longitude
@@ -184,8 +189,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         let completedCount = members.count
         self.updateTravelStyleImages(res.travelStyle)
 
-        
-       
+
+
         if totalCount > 0 {
             let progress = (Double(completedCount) / Double(totalCount)) * 100
             print("Progress          : \(progress)%")
@@ -212,7 +217,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             print("Container tapped — open group detail")
         }
     }
-    
+
     private func updateTravelStyleImages(_ styles: String?) {
         imgCluture.isHidden = true
         imgParty.isHidden = true
@@ -246,9 +251,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             }
         }
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        // Screen par aate hi tab bar visible
+        showTabBarIfNeeded()
+        lastScrollOffsetY = scrollVw?.contentOffset.y ?? 0
+
         getUser { suc in
             print(suc)
         }
@@ -264,7 +274,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                    self.getDashboard()
                }
            }
-        
+
         print(hasPaidSubscription)
         lblName.text = User.curentUser?.name ?? ""
         if let url = URL(string: User.curentUser?.profile_image ?? "") {
@@ -275,12 +285,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         navigationController?.setNavigationBarHidden(true, animated: false)
         navigationItem.hidesBackButton = true
         navigationItem.leftBarButtonItem = nil
-        
-        
-        
+
+
+
         if User.curentUser?.isBlockByAdmin == true {
             self.showAlertAction("You have been blocked via admin Please contact with support") {
-                
+
                 self.request.logout { errMsg, errCode in
                     DispatchQueue.main.async {
                         Superwall.shared.reset()
@@ -292,25 +302,21 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         }
         setupUi()
     }
-    
+
 
     func showAll(hasGroups: Bool) {
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-            
+
             guard let tabBar = self?.tripsTabBarController else {
                 return
             }
-            
-            tabBar.showTabBar()
-            self?.tabBarHideTimer?.invalidate()
-            
+
+            // Onboarding se pehle tab bar pakka visible
+            self?.showTabBarIfNeeded()
+
             var steps: [OnboardingStep] = [
-                
-                
-                
-                
-                
+
                 // 1. First
                 OnboardingStep(
                     style: .spotlight(target: { [weak self] in
@@ -335,7 +341,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     scrollView: self?.scrollVw
                 )
             ]
-            
+
             // Sirf tab dikhao jab kam se kam ek group ho — warna btnList
             // hidden hi hota hai (getGroups() mein), spotlight galat jagah dikhega
             if hasGroups {
@@ -352,13 +358,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     )
                 )
             }
-            
+
             steps.append(contentsOf: [
-                
+
                 // New Matches & Saved Groups
                 OnboardingStep(
-                    style: .spotlight(target: { [weak tabBar] in
-                        tabBar?.groupsTabButton
+                    style: .spotlight(target: { [weak self, weak tabBar] in
+                        self?.showTabBarIfNeeded()
+                        return tabBar?.groupsTabButton
                     }),
                     illustration: UIImage(named: "imgGroup"),
                     title: "New matches & saved groups",
@@ -366,11 +373,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     tooltipPosition: .above,
                     tabIndex: 1
                 ),
-                
+
                 // Match With People
                 OnboardingStep(
-                    style: .spotlight(target: { [weak tabBar] in
-                        tabBar?.discoverTabButton
+                    style: .spotlight(target: { [weak self, weak tabBar] in
+                        self?.showTabBarIfNeeded()
+                        return tabBar?.discoverTabButton
                     }),
                     illustration: UIImage(named: "imgMatch"),
                     title: "Match with people who travel like you",
@@ -378,11 +386,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     tooltipPosition: .above,
                     tabIndex: 2
                 ),
-                
+
                 // Chat
                 OnboardingStep(
-                    style: .spotlight(target: { [weak tabBar] in
-                        tabBar?.chatTabButton
+                    style: .spotlight(target: { [weak self, weak tabBar] in
+                        self?.showTabBarIfNeeded()
+                        return tabBar?.chatTabButton
                     }),
                     illustration: UIImage(named: "imgChat2"),
                     title: "Chat with people & groups",
@@ -390,11 +399,12 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     tooltipPosition: .above,
                     tabIndex: 3
                 ),
-                
+
                 // Profile
                 OnboardingStep(
-                    style: .spotlight(target: { [weak tabBar] in
-                        tabBar?.profileTabButton
+                    style: .spotlight(target: { [weak self, weak tabBar] in
+                        self?.showTabBarIfNeeded()
+                        return tabBar?.profileTabButton
                     }),
                     illustration: UIImage(named: "imgprofile"),
                     title: "Update your profile",
@@ -404,9 +414,9 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     tabIndex: 4
                 )
             ])
-            
+
             let flowID = hasGroups ? "home_v2_with_group" : "home_v2_no_group"
-            
+
             OnboardingCoachMarkManager.shared.start(
                 flowID: flowID,
                 steps: steps,
@@ -414,45 +424,39 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             )
         }
     }
-    
+
     deinit {
-        tabBarHideTimer?.invalidate()
-        
+        timer?.invalidate()
     }
-//    
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        tripsTabBarController?.hideTabBar()
-//    }
-    
-    
+
+
     func shareInvite(_ code:String) {
-        
+
         let message = """
         ✈️ Join my travel group!
-        
+
         Use this link to join:
         \(code)
-        
+
         Let’s plan something awesome 🌍
         """
-        
+
         let activityVC = UIActivityViewController(
             activityItems: [message],
             applicationActivities: nil
         )
-        
+
         // For iPad support
         if let popover = activityVC.popoverPresentationController {
             popover.sourceView = self.view
             popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
             popover.permittedArrowDirections = []
         }
-        
+
         present(activityVC, animated: true)
     }
-   
-   
+
+
     func setupUi(){
         view.backgroundColor = .black
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -468,7 +472,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         imgProfile.layer.cornerRadius = imgProfile.frame.height / 2
         imgProfile.contentMode = .scaleAspectFill
         getGroups()
-        
+
         membersView.translatesAutoresizingMaskIntoConstraints = false
         vwMembers.addSubview(membersView)
         if User.curentUser?.isVerified == 1 {
@@ -476,7 +480,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         } else {
             imgVerify.isHidden = true
         }
-        
+
         NSLayoutConstraint.activate([
             membersView.leadingAnchor.constraint(equalTo: vwMembers.leadingAnchor),
             membersView.trailingAnchor.constraint(equalTo: vwMembers.trailingAnchor),
@@ -484,11 +488,11 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             membersView.bottomAnchor.constraint(equalTo: vwMembers.bottomAnchor),
         ])
 
-        
+
         tblVw.register(PastTableViewCell.self)
-        
+
         getPastGroups()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleValueUpdated(_:)),
@@ -496,7 +500,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             object: nil
         )
     }
-    
+
     func setupCountdown(startDateString: String) {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -506,8 +510,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             startTimer()
         }
     }
-    
-    
+
+
     func startTimer() {
         timer?.invalidate() // avoid multiple timers
 
@@ -515,7 +519,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             self?.updateCountdown()
         }
     }
-    
+
     func updateCountdown() {
         guard let targetDate = targetDate else { return }
 
@@ -547,8 +551,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         lblMin.text = String(format: "%02d", components.minute ?? 0)
         lblSec.text = String(format: "%02d", components.second ?? 0)
     }
-    
-    
+
+
     func getPastGroups() {
         request.getGroups(3) { model,msg, code in
             if code == 200 {
@@ -568,40 +572,40 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             }
         }
     }
-    
+
     func getGroups() {
-        
+
         request.getGroups(0) { model,msg, code in
             if code == 200 {
                 DispatchQueue.main.async { [self] in
                     self.dataArray = model?.dataGroup ?? []
-                    
+
                     if let groups = model?.dataGroup, !groups.isEmpty {
-                        
+
                         self.btnEdit.isHidden = false
                         self.btnList.menu = makeTripMenu(trips: groups)
                         self.btnList.showsMenuAsPrimaryAction = true
-                        
+
                         let savedId = UserDefaults.standard.string(forKey: "selectedGroupId")
-                        
+
                         // Find previously selected group
                         let selectedGroup = groups.first {
                             $0.id == savedId
                         } ?? groups.first!
-                        
+
                         self.didSelectTrip(selectedGroup)
-                        
+
                         self.hideVw.isHidden = true
                         self.height.constant = 670
                         self.btnList.isHidden = false
-                        
+
                     } else {
                         self.btnEdit.isHidden = true
                         self.btnList.isHidden = true
                         self.hideVw.isHidden = false
                         self.height.constant = 100
                     }
-                    
+
                     self.view.layoutIfNeeded()
 
                     let newGroupCount = self.dataArray?.count ?? 0
@@ -635,35 +639,67 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
                     self.btnList.isHidden = true
                     self.showAlert(msg)
                 }
-                
+
             }
         }
-        
+
         DispatchQueue.main.async {
             self.refreshControl.endRefreshing()
         }
     }
-    
+
+    // MARK: - UIScrollViewDelegate
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        lastScrollOffsetY = scrollView.contentOffset.y
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         handleScroll(scrollView)
-        resetTabBarTimer()
-    }
-    
-//    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-//        showTabBarTemporarily()
-//    }
 
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        resetTabBarTimer()
-//    }
-    
-    
+        // Programmatic scroll (jaise onboarding spotlight ka auto-scroll)
+        // ko ignore karo — sirf user ke finger scroll par react karo.
+        let isUserScrolling = scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating
+        guard isUserScrolling else {
+            lastScrollOffsetY = scrollView.contentOffset.y
+            return
+        }
+
+        let topInset = scrollView.adjustedContentInset.top
+        let maxOffsetY = max(
+            -topInset,
+            scrollView.contentSize.height - scrollView.bounds.height + scrollView.adjustedContentInset.bottom
+        )
+        // Top / bottom bounce ko clamp karo taaki flicker na ho
+        let currentY = min(max(scrollView.contentOffset.y, -topInset), maxOffsetY)
+
+        // Top par ho to hamesha show
+        if currentY <= -topInset + 1 {
+            showTabBarIfNeeded()
+            lastScrollOffsetY = currentY
+            return
+        }
+
+        let delta = currentY - lastScrollOffsetY
+
+        if delta > scrollDirectionThreshold {
+            // Scrolling DOWN → hide
+            hideTabBarIfNeeded()
+            lastScrollOffsetY = currentY
+        } else if delta < -scrollDirectionThreshold {
+            // Scrolling UP → show
+            showTabBarIfNeeded()
+            lastScrollOffsetY = currentY
+        }
+    }
+
+
     @objc private func createGroupTapped() {
         print(":tag105")
-        
+
         self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
@@ -689,17 +725,17 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
             self?.present(alert, animated: true)
         }
     }
-    
-    
 
-    
+
+
+
     func getDashboard() {
-        
+
         getPastGroups()
-       
-        
+
+
         request.getDashBoardAPi { model, errMsg, errCode in
-            
+
             if errCode == 200 {
                 DispatchQueue.main.async {
                     if let first = model?.data?.counts {
@@ -716,13 +752,13 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
 
 
 extension HomeViewController {
-    
+
     @IBAction func btnActions(_ sender:UIButton) {
         print(sender.tag , "CLODIDID")
         switch sender.tag {
         case 101:
             selectedGlobal = 0
-             
+
             self.tripsTabBarController?.switchTo(index: 1)
             break
         case 102:
@@ -742,22 +778,22 @@ extension HomeViewController {
             break
         }
     }
-    
+
     @IBAction func btnOpenGroup(_ sender:UIButton) {
-        
+
         self.pushVC(MyGroupViewController.self, from: .Home,hideTabBar: true) { vc in
             vc.res = self.selected
-            
+
         }
     }
-    
+
     @IBAction func editGroupTapped(_ sender:UIButton) {
         if selected == nil {
             return
         }
         self.editGroupTappedfunc(self.selected!.toJSON())
     }
-    
+
     @objc private func editGroupTappedfunc(_ group: [String: Any]) {
         guard let model = GroupModel.from(group) else { return }
 
@@ -765,13 +801,13 @@ extension HomeViewController {
         vc.groupModel = model
         navigationController?.pushViewController(vc, animated: true)
     }
-    
-    
-    
+
+
+
     func btnOpenGroupChat() {
-        
+
         let group = self.selected
-        
+
 
         let currentUserId = User.curentUser?.id ?? ""
 
@@ -795,30 +831,11 @@ extension HomeViewController {
 
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     @IBAction func btnNotification(_ sender:UIButton) {
         self.pushVC(NotificationVc.self, from: .Home,hideTabBar: true)
     }
-    
-    
-//    @IBAction func btnCreateGroup(_ sender:UIButton) {
-//        
-//        if User.curentUser!.isSubscriptionByAdmin == 1 {
-//            self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
-//            return
-//        }
-//        if !hasPaidSubscription && (self.dataArray?.count ?? 0) >= 1 {
-//            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to create multiple trips at once" ) {
-//                //"Upgrade to a subscription to create more than one group."
-//                self.upgradeButtonTapped()
-//            }
-//            
-//            
-//            return
-//        }
-//        self.pushVC(WelcomeViewController.self, from: .Home,hideTabBar: true)
-//    }
-    
+
     @IBAction func btnCreateGroup(_ sender: UIButton) {
 
         if User.curentUser?.isSubscriptionByAdmin == 1 {
@@ -841,11 +858,6 @@ extension HomeViewController {
             hideTabBar: true
         )
     }
-    
-    // MARK: - App Tutorial
-
-    
-    
 }
 
 
@@ -853,7 +865,7 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return  pastData?.count ?? 0
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : PastTableViewCell = tblVw.dequeue(PastTableViewCell.self, for: indexPath)
         let model = pastData?[indexPath.row]
@@ -862,27 +874,29 @@ extension HomeViewController : UITableViewDelegate,UITableViewDataSource {
             end: model?.endDate ?? ""
         )
         cell.lblTitle.text = model?.title ?? ""
-        loadImage(cell.imgVw, url: URL(string: model?.coverImage ?? "")!)
+        if let url = URL(string: model?.coverImage ?? "") {
+            loadImage(cell.imgVw, url: url)
+        }
         cell.imgVw.layer.cornerRadius =  10
         cell.imgVw.contentMode = .scaleAspectFill
         cell.imgVw.clipsToBounds = true
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+
     }
-    
-    
+
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 125
     }
-    
+
 }
 
 
 extension HomeViewController {
-    
+
     @IBAction func btnShare(_ sender:UIButton) {
         print("SHARE TAPPED ,","\(self.selected?.joinCode ?? "")")
         self.shareInvite(self.selected?.joinCode ?? "")
