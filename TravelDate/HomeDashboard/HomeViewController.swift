@@ -67,14 +67,14 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     var selected : Group? = nil
     let membersView = MembersProgressView()
     private var tabBarHideTimer: Timer?
-    private let tabBarAutoHideDuration: TimeInterval = 3 // seconds
+    private var tabBarAutoHideDuration: TimeInterval = 7 // seconds
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUi()
         // Hide all fir
-    
+        
          
         Superwall.configure(
                    apiKey: "pk_DDAiSmcipumklwMwGBCcx"

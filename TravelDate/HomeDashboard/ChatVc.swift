@@ -402,12 +402,7 @@ extension ChatVc: UITableViewDataSource, UITableViewDelegate {
 extension ChatVc: BlockReportPopupDelegate {
 
     func blockReportPopup(_ popup: BlockReportPopupViewController, didConfirmBlockUser username: String) {
-        // yahan apna block API call karo
-//        BlockService.blockUser(username: username) { success in
-//            if success {
-//                // UI update, navigate back, etc.
-//            }
-//        }
+        
     }
 
     func blockReportPopup(_ popup: BlockReportPopupViewController, didSubmitReportForUser username: String, reason: String, otherText: String?) {
@@ -448,7 +443,9 @@ private extension ChatVc {
             //• \(changeDate(model.lastMessage?.createdAt ?? ""))"
         }
         cell.lblTime.text  = timeAgo(from: model.lastMessage?.createdAt ?? "")
-        loadAvatarImage(into: cell.imgVw, urlString: model.imageArr?[0])
+        if model.imageArr?.count != 0 {
+            loadAvatarImage(into: cell.imgVw, urlString: model.imageArr?[0])
+        }
         cell.containerView.isHidden  = true
         cell.imgVw.clipsToBounds = true
         cell.imgVw.contentMode = .scaleAspectFill

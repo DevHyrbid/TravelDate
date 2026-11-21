@@ -1,7 +1,7 @@
 import UIKit
 import SuperwallKit
 class SwipeViewController: BaseClassVc {
-
+    
     // MARK: - Outlets
     @IBOutlet weak var navTitleLabel: UILabel!
     @IBOutlet weak var lblNoData: UILabel!
@@ -10,13 +10,14 @@ class SwipeViewController: BaseClassVc {
     @IBOutlet weak var skipButton: UIButton!
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var emptyStateView: UIView!
-
+    
     // MARK: - Properties
     var chatData: [ChatData] = [] // Replace with your actual model type
     private var overlayView: UIView?
     private var overlayType: OverlayType?
     private var groups: [Group] = []
     private var visibleCards: [MatchCardView] = []
+    var dataArray: [Group]? = nil
     private var currentIndex = 0
     private let maxVisible = 3
     private var panOriginCenter: CGPoint = .zero
@@ -25,38 +26,47 @@ class SwipeViewController: BaseClassVc {
     private var shouldShowMatchPaywall: Bool {
         return !hasPaidSubscription
     }
+    private var didLoadMyGroups = false
+    private var didLoadDiscoverGroups = false
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
         
-//         showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
+        //         showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
         // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tripsTabBarController?.showTabBar()
+        
+        
+        didLoadMyGroups = false
+        didLoadDiscoverGroups = false
+        
+        getGroup()
         fetchGroups()
-        checkRequirements()
         if User.curentUser!.isSubscriptionByAdmin == 1 {
             fetchGroups()
             checkRequirements()
             return
         }
         if !hasPaidSubscription  {
-            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to Find trips" ) {
-                //"Upgrade to a subscription to create more than one group."
-                self.upgradeButtonTapped()
-            }
-            
-            
+            //            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to Find trips" ) {
+            //                //"Upgrade to a subscription to create more than one group."
+            //                self.upgradeButtonTapped()
+            //            }
+            showMatchPaywall()
             return
         }
+        
+        
     }
-
+    
     private var didSetupUI = false
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         guard !didSetupUI else { return }
@@ -65,10 +75,67 @@ class SwipeViewController: BaseClassVc {
     }
     
     func showMatchPaywall() {
+        print("Registering Superwall placement: premium_match_paywall")
+
         Superwall.shared.register(
-            placement: "premium_match"
+            placement: "premium_match_paywall"
         )
+        
+        
     }
+    
+    
+    
+    
+//    private func checkRequirements() {
+//        
+//        let location = User.curentUser?.locationString?
+//            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+//        
+//        if location.isEmpty {
+//            overlayType = .missingLocation
+//            showOverlay()
+//            return
+//        }
+//        
+//        if (User.curentUser?.travelStyles ?? []).isEmpty {
+//            overlayType = .missingTravelStyles
+//            showOverlay()
+//            return
+//        }
+//        
+////        if dataArray?.isEmpty == false {
+////            // Group exists, but no trips/data are available
+////            overlayType = .onegroup
+////            showOverlay()
+////            return
+////        }
+////        
+////        if groups.isEmpty {
+////            // No group created by the user
+////            overlayType = .noGroups
+////            showOverlay()
+////            return
+////        }
+//        
+//        if groups.isEmpty {
+//            // User has not created any group
+//            overlayType = .noGroups
+//            showOverlay()
+//            return
+//        } else {
+//            // User has created at least one group
+//            overlayType = .onegroup
+//            showOverlay()
+//            return
+//        }
+//
+//      
+//        
+//        
+//        overlayType = nil
+//        hideOverlay()
+//    }
     
     private func checkRequirements() {
 
@@ -86,77 +153,51 @@ class SwipeViewController: BaseClassVc {
             showOverlay()
             return
         }
-        
 
-        if groups.isEmpty {
+        // 1. Check whether the user has created a trip
+        if (dataArray ?? []).isEmpty {
             overlayType = .noGroups
             showOverlay()
-           /* let title = "No trips yet"
-            let subtitle = "We’ll keep looking. Check back tomorrow to see who’s heading there on your dates."
-
-            let attributedText = NSMutableAttributedString()
-
-            attributedText.append(
-                NSAttributedString(
-                    string: title + "\n\n",
-                    attributes: [
-                        .font: UIFont.systemFont(ofSize: 22, weight: .semibold),
-                        .foregroundColor: UIColor.white
-                    ]
-                )
-            )
-
-            attributedText.append(
-                NSAttributedString(
-                    string: subtitle,
-                    attributes: [
-                        .font: UIFont.systemFont(ofSize: 15, weight: .regular),
-                        .foregroundColor: UIColor.white
-                    ]
-                )
-            )
-
-            self.lblNoData.attributedText = attributedText
-            self.lblNoData.textAlignment = .center
-            
-            self.likeButton.isHidden = true
-            self.skipButton.isHidden = true
-//            showOverlay()
-            */
             return
         }
-        
-        
 
+        // 2. Check whether other users' trips are available
+        if groups.isEmpty {
+            overlayType = .onegroup
+            showOverlay()
+            return
+        }
+
+        // 3. Both conditions satisfied
         overlayType = nil
         hideOverlay()
     }
     
     
     private func showOverlay() {
-
+        
         guard let type = overlayType else { return }
-
+        
         cardContainerView.isUserInteractionEnabled = false
         skipButton.isEnabled = false
         likeButton.isEnabled = false
-
+        
         overlayView?.removeFromSuperview()
-
+        
         let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
         blur.frame = view.bounds
         blur.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
+        
         let container = UIView()
         container.backgroundColor = UIColor.black.withAlphaComponent(0.65)
         container.layer.cornerRadius = 20
         container.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let iconView = UIImageView(image: UIImage(systemName: type.iconName))
         iconView.tintColor = .white
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let titleLabel = UILabel()
         titleLabel.text = type.title
         titleLabel.textColor = .white
@@ -164,7 +205,7 @@ class SwipeViewController: BaseClassVc {
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let messageLabel = UILabel()
         messageLabel.text = type.message
         messageLabel.textColor = .lightGray
@@ -172,7 +213,7 @@ class SwipeViewController: BaseClassVc {
         messageLabel.textAlignment = .center
         messageLabel.numberOfLines = 0
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let actionButton = UIButton(type: .system)
         actionButton.setTitle(type.buttonTitle, for: .normal)
         actionButton.backgroundColor = UIColor.systemPink
@@ -181,86 +222,96 @@ class SwipeViewController: BaseClassVc {
         actionButton.titleLabel?.font = .boldSystemFont(ofSize: 16)
         actionButton.translatesAutoresizingMaskIntoConstraints = false
         actionButton.addTarget(self, action: #selector(overlayButtonTapped), for: .touchUpInside)
-
+        
         blur.contentView.addSubview(container)
-
+        
         container.addSubview(iconView)
         container.addSubview(titleLabel)
         container.addSubview(messageLabel)
         container.addSubview(actionButton)
-
+        
         view.addSubview(blur)
-
+        
         NSLayoutConstraint.activate([
-
+            
             container.centerXAnchor.constraint(equalTo: blur.contentView.centerXAnchor),
             container.centerYAnchor.constraint(equalTo: blur.contentView.centerYAnchor),
             container.leadingAnchor.constraint(equalTo: blur.contentView.leadingAnchor, constant: 24),
             container.trailingAnchor.constraint(equalTo: blur.contentView.trailingAnchor, constant: -24),
-
+            
             iconView.topAnchor.constraint(equalTo: container.topAnchor, constant: 24),
             iconView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
             iconView.widthAnchor.constraint(equalToConstant: 60),
             iconView.heightAnchor.constraint(equalToConstant: 60),
-
+            
             titleLabel.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 16),
             titleLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
-
+            
             messageLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
             messageLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             messageLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
-
+            
             actionButton.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 24),
             actionButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             actionButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
             actionButton.heightAnchor.constraint(equalToConstant: 50),
             actionButton.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -24)
         ])
-
+        
         overlayView = blur
     }
     
     
     private func hideOverlay() {
-
+        
         cardContainerView.isUserInteractionEnabled = true
         skipButton.isEnabled = true
         likeButton.isEnabled = true
-
+        
         overlayView?.removeFromSuperview()
         overlayView = nil
     }
     
     
     @objc private func overlayButtonTapped() {
-
+        
         guard let type = overlayType else { return }
-
+        
         switch type {
-
+            
         case .missingLocation:
             print("Open Location Screen")
             
             
             self.pushVC(EditProfileVc.self, from: .Settings)
-
+            
         case .missingTravelStyles:
             print("Open Travel Styles Screen")
             // push travel style screen
             self.tripsTabBarController?.hideTabBar()
             self.pushVC(ProfileViewController.self, from: .Settings)
-
+            
         case .noGroups:
             fetchGroups()
+            
+        case .onegroup:
+            fetchGroups()
+        }
+    }
+    
+    func getGroup() {
+        request.getGroups(0) { model,msg, code in
+            if code == 200 {
+                self.dataArray = model?.dataGroup ?? []
+                self.didLoadMyGroups = true
+                self.runRequirementsCheck()
+            }
         }
     }
 
     // MARK: - API
     private func fetchGroups() {
-         
-         
-
         request.latitude = AppData.shared.latitude
         request.longitude = AppData.shared.longitude
         request.getGroups(1) { [weak self] model, msg, code in
@@ -279,13 +330,22 @@ class SwipeViewController: BaseClassVc {
                        self.lblNoData.isHidden = !self.groups.isEmpty
                        self.buildCardStack()
 
-                       self.checkRequirements()
+                    self.didLoadDiscoverGroups = true
+                    self.runRequirementsCheck()
                 } else {
                     print("EERRR", msg as Any, code as Any)
                     self.checkRequirements()
                 }
             }
         }
+    }
+    
+    private func runRequirementsCheck() {
+        guard didLoadMyGroups && didLoadDiscoverGroups else {
+            return
+        }
+
+        checkRequirements()
     }
 
     // MARK: - Card Stack Builder
@@ -453,9 +513,9 @@ class SwipeViewController: BaseClassVc {
         skipButton.isHidden = true
         likeButton.isHidden = true
         cardContainerView.isHidden = true
-        // Optional:
-        // customView.isHidden = false
     }
+    
+    
     private func showTestMatchBottomSheet() {
 
         let baseURL = APiConstant.base
@@ -703,12 +763,14 @@ enum OverlayType {
     case missingLocation
     case missingTravelStyles
     case noGroups
+    case onegroup
 
     var title: String {
         switch self {
         case .missingLocation:    return "Location Required"
         case .missingTravelStyles: return "Travel Styles Required"
         case .noGroups:           return "No trips yet"
+        case .onegroup:           return "No trips yet"
         }
     }
 
@@ -717,6 +779,7 @@ enum OverlayType {
         case .missingLocation:    return "Add your location to start discovering travel groups."
         case .missingTravelStyles: return "Select your travel styles to find matching groups."
         case .noGroups:           return "Please create a trip to match with travellers going to your destination at a similar date !"
+        case .onegroup:           return "Check back later to see who's heading there on your dates"
             //"Check back later to see who’s heading there on your dates."
         }
     }
@@ -726,6 +789,7 @@ enum OverlayType {
         case .missingLocation:    return "Add Location"
         case .missingTravelStyles: return "Select Travel Styles"
         case .noGroups:           return "Refresh"
+        case .onegroup:           return "Refresh"
         }
     }
 
@@ -734,6 +798,7 @@ enum OverlayType {
         case .missingLocation:    return "location.fill"
         case .missingTravelStyles: return "figure.travel"
         case .noGroups:           return "arrow.clockwise"
+        case .onegroup:           return "arrow.clockwise"
         }
     }
 }
