@@ -22,6 +22,10 @@ class SettingsVc: BaseClassVc {
         setupUi()
     }
     
+    
+    
+    
+    
     func setupUi(){
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
         let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""

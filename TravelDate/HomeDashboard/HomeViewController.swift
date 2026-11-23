@@ -655,7 +655,8 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        handleScroll(scrollView)
+        // BaseClassVc ka handleScroll() yahan call nahi karna — wo apna alag
+        // state rakhta hai aur neeche wale logic se ladke tab bar flicker karta tha.
 
         // Programmatic scroll (jaise onboarding spotlight ka auto-scroll)
         // ko ignore karo — sirf user ke finger scroll par react karo.

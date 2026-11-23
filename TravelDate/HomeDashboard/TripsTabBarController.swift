@@ -429,7 +429,13 @@ class TripsTabBarController: UIViewController {
         let feedback = UIImpactFeedbackGenerator(style: .soft)
         feedback.prepare()
         feedback.impactOccurred()
-        
+
+        // Home tab pe already ho aur Home pe dobara tap kiya → tab bar hide
+        if sender.tag == 0 && selectedIndex == 0 {
+            hideTabBar()
+            return
+        }
+
         switchTo(index: sender.tag)
     }
     
