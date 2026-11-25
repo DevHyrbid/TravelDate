@@ -38,17 +38,14 @@ final class MatchCardView: UIView {
     private let topStripsContainer = UIView()
     private var topGlassStrips: [UIVisualEffectView] = []
     
-    private let badgeBlurView: UIVisualEffectView = {
-        let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
-        v.clipsToBounds = true; v.layer.cornerRadius = 21; return v
-    }()
+    
    
     private let badgeIconLabel: UILabel = { let l = UILabel(); l.text = "🏖"; l.font = AppFont.regular(15.0); return l }()
     
-    private let badgeTextLabel: UILabel = {
-        let l = UILabel(); l.text = "ss"; l.textColor = .white
-        l.font = AppFont.medium(16.0); return l
-    }()
+//    private let badgeTextLabel: UILabel = {
+//        let l = UILabel(); l.text = "ss"; l.textColor = .white
+//        l.font = AppFont.medium(16.0); return l
+//    }()
 
     // Flip button
     private let flipButton: UIButton = {
@@ -113,10 +110,10 @@ final class MatchCardView: UIView {
         frontView.addSubview(topStripsContainer)
         buildTopStrips()
 
-        frontView.addSubview(badgeBlurView)
-        badgeBlurView.contentView.addSubview(badgeIconLabel)
-        badgeBlurView.contentView.addSubview(badgeTextLabel)
-        addGlassBorder(to: badgeBlurView)
+//        frontView.addSubview(badgeBlurView)
+//        badgeBlurView.contentView.addSubview(badgeIconLabel)
+//        badgeBlurView.contentView.addSubview(badgeTextLabel)
+//        addGlassBorder(to: badgeBlurView)
 
         frontView.addSubview(flipButtonBlur)
         flipButtonBlur.contentView.addSubview(flipButton)
@@ -207,9 +204,9 @@ final class MatchCardView: UIView {
 
         // Badge
         let bW: CGFloat = 180, bH: CGFloat = 42
-        badgeBlurView.frame = CGRect(x: 16, y: 20, width: bW, height: bH)
+//        badgeBlurView.frame = CGRect(x: 16, y: 20, width: bW, height: bH)
         badgeIconLabel.frame = CGRect(x: 10, y: (bH-22)/2, width: 22, height: 22)
-        badgeTextLabel.frame = CGRect(x: 38, y: 0, width: bW-48, height: bH)
+//        badgeTextLabel.frame = CGRect(x: 38, y: 0, width: bW-48, height: bH)
 
         // Flip btn
         let btnSz: CGFloat = 46
@@ -314,11 +311,12 @@ final class MatchCardView: UIView {
         
         let style = group.travelStyle ?? "beach"
         categoryIconLabel.text = iconEmoji(for: style)
-        badgeIconLabel.text    = iconEmoji(for: style)
-        badgeTextLabel.text    = badgeText(for: style)
+//        badgeIconLabel.text    = iconEmoji(for: style)
+//        badgeTextLabel.text    = badgeText(for: style)
 
         pill1.setText(formatDateRange(from: group.startDate, to: group.endDate))
-        pill2.setText("Avg age:25 - 30")
+        pill2.setText("Avg age: 25 - 30")
+        print(group.members?.first?.user?.age,"HERE AGE NEW ONE ")
         pill3.setText("\(group.members?.count ?? 0) travelers")
         pill4.setText(group.destination ?? "Bali, Japan")
         
@@ -495,7 +493,7 @@ final class MemberCell: UIView {
         l.font = AppFont.semibold(13.0); l.numberOfLines = 1; return l
     }()
     // Pink-purple gradient avatar badge
-    private let avatarBadge: UIView = MatchCardView.makeGradientAvatar(letter: "D")
+//    private let avatarBadge: UIView = MatchCardView.makeGradientAvatar(letter: "D")
     // Small emoji icon circle
     private let iconCircle: UIView = {
         let v = UIView(); v.backgroundColor = UIColor(white: 0.15, alpha: 0.85)
@@ -511,7 +509,7 @@ final class MemberCell: UIView {
     private func setup() {
         clipsToBounds = true; layer.cornerRadius = 20
         addSubview(imageView); addSubview(scrimView)
-        addSubview(nameLabel); addSubview(avatarBadge)
+        addSubview(nameLabel);
         addSubview(iconCircle); iconCircle.addSubview(iconLabel)
     }
 
@@ -527,9 +525,9 @@ final class MemberCell: UIView {
         }
 //        imageView.kf.setImage(with: <#T##Source?#>)
         nameLabel.text = member.user?.name ?? "Traveler"
-        let letter = String((member.user?.name ?? "D").prefix(1)).uppercased()
-        avatarBadge.subviews.compactMap { $0 as? UILabel }.first?.text = letter
-        iconLabel.text = styleEmoji(for: member.user?.travelStyles?.first ?? "")
+//        let letter = String((member.user?.name ?? "D").prefix(1)).uppercased()
+//        avatarBadge.subviews.compactMap { $0 as? UILabel }.first?.text = letter
+//        iconLabel.text = styleEmoji(for: member.user?.travelStyles?.first ?? "")
     }
 
     override func layoutSubviews() {
@@ -548,9 +546,9 @@ final class MemberCell: UIView {
 
         // Avatar badge (pink circle, D letter)
         let avSz: CGFloat = 24
-        avatarBadge.frame = CGRect(x: 10, y: H - avSz - 10, width: avSz, height: avSz)
-        avatarBadge.layer.cornerRadius = avSz / 2
-        if let g = avatarBadge.layer.sublayers?.first as? CAGradientLayer { g.frame = avatarBadge.bounds }
+//        avatarBadge.frame = CGRect(x: 10, y: H - avSz - 10, width: avSz, height: avSz)
+//        avatarBadge.layer.cornerRadius = avSz / 2
+//        if let g = avatarBadge.layer.sublayers?.first as? CAGradientLayer { g.frame = avatarBadge.bounds }
 
         // Icon circle next to avatar
         let icSz: CGFloat = 24
