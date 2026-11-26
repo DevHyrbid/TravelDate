@@ -69,8 +69,17 @@ final class MatchCardView: UIView {
         let v = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
         v.clipsToBounds = true; v.layer.cornerRadius = 20; return v
     }()
+    private let categoryIconImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.image = UIImage(named: "imgLesiures")
+        return iv
+    }()
+    // Fallback only — shown when the asset image is missing
     private let categoryIconLabel: UILabel = {
-        let l = UILabel(); l.text = "🏖"; l.font = AppFont.regular(14.0); l.textAlignment = .center; return l
+        let l = UILabel(); l.text = "🏖️"; l.font = AppFont.regular(14.0); l.textAlignment = .center
+        l.isHidden = true; return l
     }()
 
     // Title + pills
@@ -124,6 +133,7 @@ final class MatchCardView: UIView {
         frontView.bringSubviewToFront(flipButtonBlur)
 
         frontView.addSubview(categoryIconBlur)
+        categoryIconBlur.contentView.addSubview(categoryIconImageView)
         categoryIconBlur.contentView.addSubview(categoryIconLabel)
         addGlassBorder(to: categoryIconBlur)
 
@@ -230,8 +240,12 @@ final class MatchCardView: UIView {
         titleLabel.frame = CGRect(x: 16, y: tY, width: W - 32, height: tH)
 
         // Category icon
-        let cSz: CGFloat = 40
+        let cSz: CGFloat = 38
         categoryIconBlur.frame = CGRect(x: 16, y: tY - 10 - cSz, width: cSz, height: cSz)
+        categoryIconBlur.layer.cornerRadius = cSz / 2
+        // Image fills the whole circle (background + icon scale together)
+        categoryIconImageView.frame = CGRect(x: 0, y: 0, width: cSz, height: cSz)
+        categoryIconImageView.layer.cornerRadius = cSz / 2
         categoryIconLabel.frame = CGRect(x: 0, y: 0, width: cSz, height: cSz)
 
         // Member pill
@@ -310,7 +324,16 @@ final class MatchCardView: UIView {
         ImageLoader.setImageKing(coverImageView, urlString: APiConstant.base + "\(group.coverImage ?? "")")
         
         let style = group.travelStyle ?? "beach"
-        categoryIconLabel.text = iconEmoji(for: style)
+        if let img = UIImage(named: iconImageName(for: style)) {
+            categoryIconImageView.image = img
+            categoryIconImageView.isHidden = false
+            categoryIconLabel.isHidden = true
+        } else {
+            // Asset missing → fall back to emoji
+            categoryIconImageView.isHidden = true
+            categoryIconLabel.text = iconEmoji(for: style)
+            categoryIconLabel.isHidden = false
+        }
 //        badgeIconLabel.text    = iconEmoji(for: style)
 //        badgeTextLabel.text    = badgeText(for: style)
 
@@ -394,6 +417,35 @@ final class MatchCardView: UIView {
         l.layer.cornerRadius = 6; l.textAlignment = .center; return l
     }
 
+    // Asset image names (used by categoryIconImageView)
+    
+    private func iconImageName(for style: String) -> String {
+        let normalizedStyle = style
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+
+        print("Travel Style:", normalizedStyle)
+
+        switch normalizedStyle {
+        case "adventure", "adventure traveler":
+            return "imgAdventure"
+
+        case "party", "partygoer":
+            return "imgPartygoeres"
+
+        case "culture", "cultural", "cultural traveler":
+            return "imgClutral"
+
+        case "beach", "leisure", "leisure traveler":
+            return "imgLesiures"
+
+        default:
+            return "imgLesiures"
+        }
+    }
+
+
+    // Older emoji version (kept as fallback)
     private func iconEmoji(for style: String) -> String {
         switch style.lowercased() {
         case "adventure":
@@ -408,6 +460,8 @@ final class MatchCardView: UIView {
             return "✈️"
         }
     }
+    
+       
 
     private func badgeText(for style: String) -> String {
         print(style)
