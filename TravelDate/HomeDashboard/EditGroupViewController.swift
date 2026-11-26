@@ -182,13 +182,18 @@ class EditGroupViewController: CreateGroupViewController {
         minAgeLabel.text = "\(minAge)"
         maxAgeLabel.text = "\(maxAge)"
 
-        let serverStyles = Set(
-            ([m.travelStyle] + m.activityInterests).map { $0.lowercased() }
+        // travelStyle is comma-separated ("Cultural traveler,Leisure traveler"),
+        // activityInterests is an array — combine both and match leniently.
+        let serverIcons = TravelStyleIcon.icons(
+            from: ([m.travelStyle] + m.activityInterests).joined(separator: ",")
         )
         selectedStyles = Set(
             localStyles.enumerated()
-                .filter { serverStyles.contains($0.element.lowercased()) }
-                .map    { $0.offset }
+                .filter { item in
+                    guard let icon = TravelStyleIcon(rawStyle: item.element) else { return false }
+                    return serverIcons.contains(icon)
+                }
+                .map { $0.offset }
         )
         refreshStyleRows()
 
@@ -387,6 +392,14 @@ class EditGroupViewController: CreateGroupViewController {
         }
         guard let m = groupModel else { return }
 
+        // Selected styles in the fixed on-screen order (Set order is random).
+        let chosenStyles = selectedStyles.sorted().compactMap { index in
+            localStyles.indices.contains(index) ? localStyles[index] : nil
+        }
+        guard !chosenStyles.isEmpty else {
+            showAlert("Please select at least one travel style"); return
+        }
+
         AppLoader.show()
 
         func patch(imageName: String) {
@@ -397,13 +410,13 @@ class EditGroupViewController: CreateGroupViewController {
                 destination:       dest,
                 startDate:         self.startDate,
                 endDate:           self.endDate,
-                travelStyle:       self.localStyles.first ?? "",
+                travelStyle:       chosenStyles.joined(separator: ","),
                 maxMembers:        self.groupSize,
                 coverImage:        imageName,
                 minAge:            self.minAge,
                 maxAge:            self.maxAge,
                 preferredGender:   "ANY",
-                activityInterests: Array(self.selectedStyles).map { self.localStyles[$0] },
+                activityInterests: chosenStyles,
                 latitude:          self.request.latitude ?? m.latitude ?? 0.0,
                 longitude:         self.request.longitude ?? m.longitude ?? 0.0
             )

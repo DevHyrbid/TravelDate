@@ -187,7 +187,7 @@ class HomeViewController: BaseClassVc, UIScrollViewDelegate {
         let members = res.members ?? []
         let totalCount = res.members?.count ?? 0
         let completedCount = members.count
-        self.updateTravelStyleImages(res.travelStyle)
+        self.updateTravelStyleImages(res.preferences?.activityInterests?.joined(separator: ","))
 
 
 

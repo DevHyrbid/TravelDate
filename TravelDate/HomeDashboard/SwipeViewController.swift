@@ -23,9 +23,11 @@ class SwipeViewController: BaseClassVc {
     private var panOriginCenter: CGPoint = .zero
     private var blurView: UIVisualEffectView?
     var groupsCount = 0
-    private var shouldShowMatchPaywall: Bool {
-        return !hasPaidSubscription
-    }
+    /// True while a card is animating off screen. Blocks double taps / overlapping gestures.
+    private var isSwipeInProgress = false
+    /// True from the moment the paywall is requested until it closes / is skipped / errors.
+    private var isPresentingPaywall = false
+    private static let matchPaywallPlacement = "premium_match_paywall"
     private var didLoadMyGroups = false
     private var didLoadDiscoverGroups = false
     
@@ -33,9 +35,6 @@ class SwipeViewController: BaseClassVc {
     override func viewDidLoad() {
         super.viewDidLoad()
         navTitleLabel.setFont(.medium, size: 18.0)
-        
-        //         showTestMatchBottomSheet()  // ⚠️ test-only — remove before shipping, was popping a full-screen
-        // match sheet on every load and could confuse gesture testing on the swipe screen underneath.
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -48,21 +47,12 @@ class SwipeViewController: BaseClassVc {
         
         getGroup()
         fetchGroups()
-        if User.curentUser!.isSubscriptionByAdmin == 1 {
-            fetchGroups()
-            checkRequirements()
-            return
-        }
-        if !hasPaidSubscription  {
-            //            showMaterialConfirm(title: "", message: "Sorry ! \n\n Upgrade to Pro to Find trips" ) {
-            //                //"Upgrade to a subscription to create more than one group."
-            //                self.upgradeButtonTapped()
-            //            }
+        // Requirements overlay is evaluated by runRequirementsCheck() once both
+        // requests finish, so no need to check (or fetch twice) here.
+
+        if !hasPremiumAccess {
             showMatchPaywall()
-            return
         }
-        
-        
     }
     
     private var didSetupUI = false
@@ -74,50 +64,92 @@ class SwipeViewController: BaseClassVc {
         setupStaticUI()
     }
     
+    // MARK: - Premium gate
+
+    /// Single gate for every swipe path (pan left/right, both buttons).
+    /// Returns true if the swipe may proceed; otherwise presents the existing
+    /// paywall (once) and returns false.
+    private func canSwipe() -> Bool {
+        guard !isSwipeInProgress else { return false }
+        guard hasPremiumAccess else {
+            showMatchPaywall()
+            return false
+        }
+        return true
+    }
+
+    /// Presents the existing Superwall paywall. Guarded so rapid gestures can't
+    /// stack multiple presentations. Dismissing never unlocks anything by itself —
+    /// access is always re-read from `hasPremiumAccess` after a status refresh.
     func showMatchPaywall() {
-        print("Registering Superwall placement: premium_match_paywall")
+        guard !isPresentingPaywall, !Superwall.shared.isPaywallPresented else { return }
+        isPresentingPaywall = true
+
+        let handler = PaywallPresentationHandler()
+        handler.onDismiss { [weak self] _, _ in
+            // Purchased, restored or just closed — refresh and let hasPremiumAccess decide.
+            DispatchQueue.main.async { self?.paywallDidFinish() }
+        }
+        handler.onSkip { [weak self] _ in
+            DispatchQueue.main.async { self?.paywallDidFinish() }
+        }
+        handler.onError { [weak self] error in
+            print("Superwall paywall error:", error)
+            DispatchQueue.main.async { self?.paywallDidFinish() }
+        }
 
         Superwall.shared.register(
-            placement: "premium_match_paywall"
-        )
-        
-        
+            placement: Self.matchPaywallPlacement,
+            handler: handler
+        ) { [weak self] in
+            // Feature block: Superwall reports the user has access (purchase/restore/
+            // already subscribed). Sync our status source so hasPremiumAccess updates.
+            DispatchQueue.main.async {
+                self?.refreshPremiumStatus { }
+            }
+        }
+    }
+
+    private func paywallDidFinish() {
+        refreshPremiumStatus { [weak self] in
+            self?.isPresentingPaywall = false
+        }
     }
     
     
     
     
 //    private func checkRequirements() {
-//        
+//
 //        let location = User.curentUser?.locationString?
 //            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-//        
+//
 //        if location.isEmpty {
 //            overlayType = .missingLocation
 //            showOverlay()
 //            return
 //        }
-//        
+//
 //        if (User.curentUser?.travelStyles ?? []).isEmpty {
 //            overlayType = .missingTravelStyles
 //            showOverlay()
 //            return
 //        }
-//        
+//
 ////        if dataArray?.isEmpty == false {
 ////            // Group exists, but no trips/data are available
 ////            overlayType = .onegroup
 ////            showOverlay()
 ////            return
 ////        }
-////        
+////
 ////        if groups.isEmpty {
 ////            // No group created by the user
 ////            overlayType = .noGroups
 ////            showOverlay()
 ////            return
 ////        }
-//        
+//
 //        if groups.isEmpty {
 //            // User has not created any group
 //            overlayType = .noGroups
@@ -130,9 +162,9 @@ class SwipeViewController: BaseClassVc {
 //            return
 //        }
 //
-//      
-//        
-//        
+//
+//
+//
 //        overlayType = nil
 //        hideOverlay()
 //    }
@@ -301,8 +333,10 @@ class SwipeViewController: BaseClassVc {
     }
     
     func getGroup() {
-        request.getGroups(0) { model,msg, code in
-            if code == 200 {
+        request.getGroups(0) { [weak self] model, msg, code in
+            guard code == 200 else { return }
+            DispatchQueue.main.async {
+                guard let self else { return }
                 self.dataArray = model?.dataGroup ?? []
                 self.didLoadMyGroups = true
                 self.runRequirementsCheck()
@@ -353,12 +387,17 @@ class SwipeViewController: BaseClassVc {
         visibleCards.forEach { $0.removeFromSuperview() }
         visibleCards.removeAll()
         currentIndex = 0
+        isSwipeInProgress = false
 
         guard !groups.isEmpty else {
             emptyStateView.isHidden = false
             return
         }
         emptyStateView.isHidden = true
+        // Undo showAllCardsFinishedView() when fresh groups arrive.
+        cardContainerView.isHidden = false
+        skipButton.isHidden = false
+        likeButton.isHidden = false
 
         let count = min(maxVisible, groups.count)
         for i in stride(from: count - 1, through: 0, by: -1) {
@@ -428,11 +467,15 @@ class SwipeViewController: BaseClassVc {
         case .ended, .cancelled:
             let velocity = gr.velocity(in: cardContainerView)
             let isHardSwipe = abs(t.x) > 110 || abs(velocity.x) > 700
-            if isHardSwipe {
-                animateSwipe(card: card, toRight: t.x > 0)
-            } else {
+            // Re-check at release too (status may change mid-drag).
+            guard isHardSwipe, currentIndex < groups.count, canSwipe() else {
                 animateReset(card: card)
+                return
             }
+            let toRight = t.x > 0
+            isSwipeInProgress = true
+            submitSwipe(for: groups[currentIndex], isRight: toRight)
+            animateSwipe(card: card, toRight: toRight)
 
         default: break
         }
@@ -447,7 +490,7 @@ class SwipeViewController: BaseClassVc {
             card.center = CGPoint(x: exitX, y: card.center.y + 40)
             card.alpha  = 0
         } completion: { _ in
-            self.finishSwipe(card: card, joined: toRight)
+            self.finishSwipe(card: card)
         }
     }
 
@@ -473,11 +516,13 @@ class SwipeViewController: BaseClassVc {
     }
 
     // MARK: - Post-swipe cleanup
-    private func finishSwipe(card: MatchCardView, joined: Bool) {
-        guard !visibleCards.isEmpty else { return }
-
-        let swipedGroup = groups[currentIndex]
-        if joined { handleJoin(group: swipedGroup) }
+    private func finishSwipe(card: MatchCardView) {
+        defer { isSwipeInProgress = false }
+        // Stack may have been rebuilt (refresh) while this card was animating out.
+        guard visibleCards.first === card else {
+            card.removeFromSuperview()
+            return
+        }
 
         visibleCards.removeFirst()
         card.removeFromSuperview()
@@ -516,27 +561,6 @@ class SwipeViewController: BaseClassVc {
     }
     
     
-    private func showTestMatchBottomSheet() {
-
-        let baseURL = APiConstant.base
-
-        let result = MatchResult(
-            groupId: "b7333e2b-ee27-4df2-bfb9-341954fe4b2f",
-            swipeId: "f63fdfea-4564-40f4-93d9-711349fbe21b",
-            groupTitle: "Weekend Trip",
-            matchedStyles: ["Partygoer", "Adventure traveler"],
-            message: "Is Ready To Make Some Plans. Why not start the conversation?",
-            myGroupImageURL: baseURL + "/uploads/1783600038080-56423482.jpg",
-            matchedGroupImageURL: baseURL + "/uploads/1783600182171-623694586.jpg"
-        )
-
-        MatchBottomSheetVC.show(
-            on: self,
-            result: result,
-            delegate: self
-        )
-    }
-
     // MARK: - Add card to back
     private func addCardToBack(groupIndex: Int) {
         let card = MatchCardView.make()
@@ -553,14 +577,6 @@ class SwipeViewController: BaseClassVc {
         visibleCards.append(card)
         applyStackAppearance(to: card, stackPosition: visibleCards.count - 1)
         UIView.animate(withDuration: 0.3) { card.alpha = 1 }
-    }
-
-    // MARK: - Join Action
-    private func handleJoin(group: Group) {
-        guard let groupId = group._id else { return }
-        print("Joining group: \(groupId)")
-//        performSwipe(isRight: true)
-        
     }
 
     // MARK: - Static UI
@@ -622,7 +638,11 @@ extension SwipeViewController: UIGestureRecognizerDelegate {
 
         // Only fire swipe pan when horizontal drag is dominant
         let v = pan.velocity(in: cardContainerView)
-        return abs(v.x) > abs(v.y)
+        guard abs(v.x) > abs(v.y) else { return false }
+
+        // Premium / in-flight gate: card never moves if swiping isn't allowed;
+        // non-premium users get the (single) paywall instead.
+        return canSwipe()
     }
 
     func gestureRecognizer(
@@ -639,12 +659,6 @@ extension SwipeViewController: UIGestureRecognizerDelegate {
 extension SwipeViewController {
 
     @IBAction func btnSwipeRight(_ sender: UIButton) {
-        
-        if shouldShowMatchPaywall {
-                showMatchPaywall()
-                return
-            }
-
         performSwipe(isRight: true)
     }
 
@@ -652,47 +666,47 @@ extension SwipeViewController {
         performSwipe(isRight: false)
     }
 
+    /// Button-driven swipe. Same premium gate as the pan gesture.
     func performSwipe(isRight: Bool) {
-        guard currentIndex < groups.count else { return }
-        let group = groups[currentIndex]
-        request.swipedId = group.id ?? ""
-        request.action  = isRight ? "RIGHT" : "LEFT"
+        guard currentIndex < groups.count, let top = visibleCards.first else { return }
+        guard canSwipe() else { return }
 
-        request.swipeAPi { [weak self] match, msg, errCode in
-            guard let self else { return }
-            print("Swipe API:", msg)
-            DispatchQueue.main.async {
-                if errCode == 200 {
-                    // Uncomment and use real model data:
-                    // guard data.isMatch == 1 else { return }
-                    let result = match
-                           
-                           
-                       
-                    if match?.message ?? "" == "It is a match!" {
-                        let result = MatchResult(
-                            groupId:             group.id ?? "",
-                            swipeId:             "",
-                            groupTitle:          group.title ?? "",
-                            matchedStyles:      [""],
-                            message:             "Ready to make some plans? Start a conversation now!",
-                            myGroupImage:        result?.myGroupImage ?? "",
-                            matchedGroupImage:   nil,
-                            myGroupImageURL:    result?.myGroupImage ?? "",
-                            matchedGroupImageURL: result?.matchedGroupImage ?? ""
-                        )
-                        MatchBottomSheetVC.show(on: self, result: result, delegate: self)
-                    }
-                }
-            }
-        }
+        isSwipeInProgress = true
+        submitSwipe(for: groups[currentIndex], isRight: isRight)
 
-        guard let top = visibleCards.first else { return }
         panOriginCenter = top.center
         if isRight { top.showLikeStamp(true, intensity: 1.0) }
         else       { top.showNopeStamp(true, intensity: 1.0) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             self.animateSwipe(card: top, toRight: isRight)
+        }
+    }
+
+    /// Sends the swipe to the backend and shows the match sheet on a match.
+    /// Called exactly once per swipe, from both the pan gesture and the buttons.
+    private func submitSwipe(for group: Group, isRight: Bool) {
+        request.swipedId = group.id ?? ""
+        request.action  = isRight ? "RIGHT" : "LEFT"
+
+        request.swipeAPi { [weak self] match, msg, errCode in
+            print("Swipe API:", msg)
+            DispatchQueue.main.async {
+                guard let self, errCode == 200 else { return }
+                guard match?.message == "It is a match!" else { return }
+
+                let matchResult = MatchResult(
+                    groupId:              group.id ?? "",
+                    swipeId:              "",
+                    groupTitle:           group.title ?? "",
+                    matchedStyles:        [""],
+                    message:              "Ready to make some plans? Start a conversation now!",
+                    myGroupImage:         match?.myGroupImage ?? "",
+                    matchedGroupImage:    nil,
+                    myGroupImageURL:      match?.myGroupImage ?? "",
+                    matchedGroupImageURL: match?.matchedGroupImage ?? ""
+                )
+                MatchBottomSheetVC.show(on: self, result: matchResult, delegate: self)
+            }
         }
     }
 }
@@ -735,7 +749,7 @@ extension SwipeViewController: MatchBottomSheetDelegate {
                 viewModel: viewModel,
                 participants: item?.members ?? [],
                 roomId: item?.chatId,
-                roomTitle: item? .name ?? "",
+                roomTitle: item?.name ?? "",
                 type: .group
             )
 
