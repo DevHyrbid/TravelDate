@@ -91,11 +91,11 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
         registerNibs()
         fetchAllData()        // ← API called ONCE here
         NotificationCenter.default.addObserver(
-               self,
-               selector: #selector(handleIncomingPush(_:)),
-               name: .didReceiveChatMessage,
-               object: nil
-           )
+            self,
+            selector: #selector(handleIncomingPush(_:)),
+            name: .didReceiveChatMessage,
+            object: nil
+        )
         txtSearch.attributedPlaceholder = NSAttributedString(
             string: "Search by trip name",
             attributes: [
@@ -108,7 +108,18 @@ final class ChatVc: BaseClassVc, UITextFieldDelegate {
         txtSearch.addTarget(self,
                             action: #selector(searchTextChanged(_:)),
                             for: .editingChanged)
-//     nvwGlass)
+        //     nvwGlass)
+        
+        
+        
+        
+        
+//        guard let roomId = viewModel.roomId, !roomId.isEmpty else {
+//            showAlert("Send a message first to start sharing memories.")
+//            return
+//        }
+//
+        
     }
     
     @objc

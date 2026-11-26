@@ -612,16 +612,16 @@ final class MatchCardView: UIView {
         updateTravelStyleIcons(group.travelStyle)
 
         pill1.setText(formatDateRange(from: group.startDate, to: group.endDate))
-
-        pill2.setText("Avg age: 25 - 30")
-
+        pill2.setText("Avg age: \(group.preferences?.minAge ?? 0)-\(group.preferences?.minAge ?? 0)")
         pill3.setText("\(group.members?.count ?? 0) travelers")
-
         pill4.setText(group.destination ?? "Bali, Japan")
 
 
-
-
+        if group.members?.count == 1 {
+            pill3.setText("\(group.members?.count ?? 0) traveler")
+        } else {
+            pill3.setText("\(group.members?.count ?? 0) travelers")
+        }
 
         // Back face: fill member cells
 

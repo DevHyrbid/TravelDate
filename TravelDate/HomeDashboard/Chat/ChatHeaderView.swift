@@ -12,6 +12,7 @@ final class ChatHeaderView: UIView {
     var onBack: (() -> Void)?
     var onProfile: (() -> Void)?
     var onMore: (() -> Void)?
+    var onGallery: (() -> Void)?
 
     // MARK: - Subviews
 
@@ -24,6 +25,7 @@ final class ChatHeaderView: UIView {
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let moreButton = UIButton(type: .system)
+    private let galleryButton = UIButton(type: .system)
     private let textStack = UIStackView()
     private let separator = UIView()
 
@@ -74,6 +76,11 @@ final class ChatHeaderView: UIView {
         
         leftImageView.layer.cornerRadius = self.leftImageView.frame.height / 2
         
+    }
+
+    /// Show the "add photos" (Memories) button — only for trip/group chats.
+    func setGalleryVisible(_ visible: Bool) {
+        galleryButton.isHidden = !visible
     }
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -237,6 +244,26 @@ final class ChatHeaderView: UIView {
             for: .touchUpInside
         )
 
+        // Gallery / add photos button (left of the more button)
+
+        let galleryImage = UIImage(systemName: "photo.badge.plus")
+            ?? UIImage(systemName: "plus.rectangle.on.rectangle")
+        galleryButton.setImage(galleryImage, for: .normal)
+        galleryButton.tintColor = .white
+        galleryButton.contentEdgeInsets = UIEdgeInsets(
+            top: 8,
+            left: 8,
+            bottom: 8,
+            right: 4
+        )
+        galleryButton.accessibilityLabel = "Trip memories"
+        galleryButton.isHidden = true          // shown via setGalleryVisible(_:)
+        galleryButton.addTarget(
+            self,
+            action: #selector(galleryTapped),
+            for: .touchUpInside
+        )
+
         // Separator
 
         separator.backgroundColor = UIColor.white.withAlphaComponent(0.08)
@@ -247,6 +274,7 @@ final class ChatHeaderView: UIView {
             backButton,
             avatarContainerView,
             textStack,
+            galleryButton,
             moreButton,
             separator
         ].forEach {
@@ -351,8 +379,18 @@ final class ChatHeaderView: UIView {
             ),
 
             textStack.trailingAnchor.constraint(
-                lessThanOrEqualTo: moreButton.leadingAnchor,
+                lessThanOrEqualTo: galleryButton.leadingAnchor,
                 constant: -8
+            ),
+
+            // Gallery (sits just left of More)
+
+            galleryButton.trailingAnchor.constraint(
+                equalTo: moreButton.leadingAnchor
+            ),
+
+            galleryButton.centerYAnchor.constraint(
+                equalTo: rowCenter
             ),
 
             // More
@@ -399,6 +437,15 @@ final class ChatHeaderView: UIView {
             .required,
             for: .horizontal
         )
+
+        galleryButton.setContentHuggingPriority(
+            .required,
+            for: .horizontal
+        )
+        galleryButton.setContentCompressionResistancePriority(
+            .required,
+            for: .horizontal
+        )
     }
 
     // MARK: - Actions
@@ -413,5 +460,9 @@ final class ChatHeaderView: UIView {
 
     @objc private func moreTapped() {
         onMore?()
+    }
+
+    @objc private func galleryTapped() {
+        onGallery?()
     }
 }

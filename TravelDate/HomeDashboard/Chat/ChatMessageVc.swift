@@ -245,6 +245,8 @@ final class ChatMessageVc: BaseClassVc {
         headerView.onBack    = { [weak self] in self?.backTapped() }
         headerView.onProfile = { [weak self] in self?.handleProfileTapped() }
         headerView.onMore    = { [weak self] in self?.handleMoreTapped() }
+        headerView.onGallery = { [weak self] in self?.openTripMemories() }
+        headerView.setGalleryVisible(tripGroupId != nil)
     }
 
     private func setupTable() {
@@ -492,6 +494,30 @@ final class ChatMessageVc: BaseClassVc {
     private func handleProfileTapped() {
         // Hook up: open profile / group info screen.
         view.endEditing(true)
+    }
+
+    // MARK: - Trip Memories
+
+    /// The trip this chat belongs to. Group chats carry it on every participant
+    /// (same field didTapManageGroup reads). Match / private chats have none.
+    private var tripGroupId: String? {
+        guard viewModel.roomType == .group else { return nil }
+        return viewModel.participants
+            .compactMap { $0.groupId }
+            .first { !$0.isEmpty }
+    }
+
+    private func openTripMemories() {
+        view.endEditing(true)
+        guard let groupId = tripGroupId else { return }
+        let memories = TripMemoriesViewController(
+            groupId: groupId,
+            tripTitle: roomTitle,
+            tripStart: nil,          // pass trip dates if you have them here for "Day N" headers
+            tripEnd: nil,
+            creatorId: nil           // pass the trip creator id to let them delete any memory
+        )
+        navigationController?.pushViewController(memories, animated: true)
     }
 
     private func handleMoreTapped() {
